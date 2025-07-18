@@ -9,6 +9,7 @@ Go言語とGinフレームワークを使用したフィットネスアプリの
 - **データベース**: PostgreSQL
 - **ORM**: GORM
 - **マイグレーション**: golang-migrate
+- **テストフレームワーク**: testify
 - **開発環境**: Docker + Air (ホットリロード)
 
 ## 前提条件
@@ -150,6 +151,18 @@ docker compose exec server go mod tidy
 
 # キャッシュをクリアして再ビルド
 docker compose build --no-cache server
+```
+
+## テスト実行方法
+
+### ローカルでのテスト実行
+
+```sh
+# サーバーコンテナに入る
+docker compose exec server bash
+
+# テスト実行
+go test ./...
 ```
 
 ## プロジェクト構造
