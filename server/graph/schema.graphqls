@@ -12,10 +12,13 @@ type Todo {
 type User {
   id: ID!
   name: String!
+  createdAt: String!
+  updatedAt: String!
 }
 
 type Query {
   todos: [Todo!]!
+  users: [User!]!
 }
 
 input NewTodo {
