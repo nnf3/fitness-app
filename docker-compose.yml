@@ -17,15 +17,12 @@ services:
       - APP_ENV=${SERVER_ENV}
     volumes:
       - ./server:/app
-
   db:
     image: postgres:15
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: fitness_app
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -33,19 +30,21 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
-  # migrate:
-  #   image: migrate/migrate
-  #   volumes:
-  #     - ./db/migrations:/migrations
-  #   entrypoint: [
-  #     "migrate",
-  #     "-path=/migrations",
-  #     "-database=postgres://postgres:password@db:5432/fitness_app?sslmode=disable"
-  #   ]
-  #   command: ["up"]
-  #   depends_on:
-  #     - db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  pgadmin:
+    # 使い方はこちらを参考にしてください : https://qiita.com/Akhr/items/8d5b5127ee971a640253
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+    volumes:
+      - volume_pgadmin:/var/lib/pgadmin
 
 volumes:
   postgres_data:
+  volume_pgadmin:
