@@ -1,0 +1,31 @@
+# Go build artifacts
+/main
+*.exe
+*.test
+*.out
+
+# Go modules
+/vendor/
+
+# IDE/editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+pgdata/
+**/pgdata/
+.env
+
+# Air temporary files
+/tmp/
+tmp/
+
+# Migrations logs or lock files (if any)
+*.lock

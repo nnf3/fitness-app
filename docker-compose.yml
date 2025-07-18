@@ -1,0 +1,50 @@
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - APP_PORT=${SERVER_PORT}
+      - APP_ENV=${SERVER_ENV}
+    volumes:
+      - ./server:/app
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: fitness_app
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  pgadmin:
+    # 使い方はこちらを参考にしてください : https://qiita.com/Akhr/items/8d5b5127ee971a640253
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+    volumes:
+      - volume_pgadmin:/var/lib/pgadmin
+
+volumes:
+  postgres_data:
+  volume_pgadmin:

@@ -1,0 +1,6 @@
+root = "."
+tmp_dir = "tmp"
+build = "go build -o main ."
+cmd = "./main"
+include_ext = ["go", "tpl", "tmpl", "html"]
+exclude_dir = ["vendor", "tmp", "node_modules"]
