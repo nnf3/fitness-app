@@ -1,0 +1,7 @@
+# GraphQL query definitions
+# https://gqlgen.com/getting-started/
+
+type Query {
+  todos: [Todo!]!
+  users: [User!]!
+}
