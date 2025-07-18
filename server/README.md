@@ -1,11 +1,11 @@
 # Fitness App Backend
 
-Go言語とGinフレームワークを使用したフィットネスアプリのバックエンドAPIサーバーです。
+Go言語とgqlgenを使用したフィットネスアプリのGraphQLバックエンドサーバーです。
 
 ## 技術スタック
 
 - **言語**: Go 1.24
-- **フレームワーク**: Gin
+- **GraphQL**: gqlgen
 - **データベース**: PostgreSQL
 - **ORM**: GORM
 - **マイグレーション**: golang-migrate
@@ -43,7 +43,9 @@ docker compose run --rm server sh -c "go get app"
 docker compose up server
 ```
 
-サーバーは `http://localhost:8080` でアクセス可能です。
+GraphQL Playgroundでクエリを実行できます：
+- **URL**: http://localhost:8080
+- **エンドポイント**: http://localhost:8080/query
 
 ## 開発
 
@@ -165,17 +167,79 @@ docker compose exec server bash
 go test ./...
 ```
 
+## GraphQL開発
+
+### スキーマの管理
+
+GraphQLスキーマは以下のように分割されています：
+
+```
+server/graph/
+├── schema/
+│   ├── types.graphqls       # 型定義
+│   ├── query.graphqls       # クエリ定義
+│   └── mutation.graphqls    # ミューテーション定義
+├── generated.go             # 生成されたコード（修正不可）
+├── query.resolvers.go       # クエリリゾルバー
+├── mutation.resolvers.go    # ミューテーションリゾルバー
+├── resolver.go              # リゾルバー構造体
+└── model/
+    └── models_gen.go        # 生成されたモデル（修正不可）
+```
+
+### コード生成
+
+スキーマを変更した後は、コードを再生成する必要があります：
+
+```sh
+# サーバーコンテナに入る
+docker compose exec server bash
+
+# GraphQLコードを再生成
+make gqlgen-generate
+```
+
+### サンプルクエリ
+
+GraphQL Playgroundで以下のクエリを実行できます：
+
+```graphql
+# ユーザー一覧を取得
+query {
+  users {
+    id
+    name
+  }
+}
+
+# ユーザーを作成
+mutation {
+  createUser(input: { name: "John Doe" }) {
+    id
+    name
+  }
+}
+```
+
 ## プロジェクト構造
 
 ```
 server/
-├── main.go              # エントリーポイント
-├── go.mod               # Goモジュール定義
-├── go.sum               # 依存関係チェックサム
-├── Dockerfile.dev       # 開発用Dockerfile
-├── .air.toml           # Air設定ファイル
-├── db/
-│   └── migrations/     # マイグレーションファイル
-├── handlers/           # HTTPハンドラー
-├── models/             # データモデル
+├── server.go              # エントリーポイント
+├── go.mod                 # Goモジュール定義
+├── go.sum                 # 依存関係チェックサム
+├── gqlgen.yml             # gqlgen設定ファイル
+├── Dockerfile.dev         # 開発用Dockerfile
+├── .air.toml              # Air設定ファイル
+├── graph/                 # GraphQL関連ファイル
+│   ├── schema.graphqls    # メインスキーマ
+│   ├── schema/            # 分割されたスキーマ
+│   ├── generated.go       # 生成されたコード
+│   ├── query.resolvers.go # クエリリゾルバー
+│   ├── mutation.resolvers.go # ミューテーションリゾルバー
+│   └── model/             # 生成されたモデル
+├── entity/                # データエンティティ
+├── db/                    # データベース関連
+│   └── migrations/        # マイグレーションファイル
+└── makefile               # 作業自動化
 ```

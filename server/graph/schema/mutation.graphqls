@@ -1,0 +1,10 @@
+# GraphQL mutation definitions
+# https://gqlgen.com/getting-started/
+
+input NewUser {
+  name: String!
+}
+
+type Mutation {
+  createUser(input: NewUser!): User!
+}
