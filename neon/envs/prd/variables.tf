@@ -1,0 +1,1 @@
+variable "neon_terraform_api_key" { type = string }
