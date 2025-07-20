@@ -8,7 +8,12 @@ terraform {
 
   backend "gcs" {
     bucket = "fitness-app-prd-tfstate"
+    prefix = "terraform/state"
   }
 }
 
 provider "google" {}
+
+locals {
+  project_id = "fitness-app-prd"
+}
