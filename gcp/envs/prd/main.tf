@@ -25,10 +25,10 @@ module "registry" {
   project_id = var.project_id
 }
 
-# module "server" {
-#   source     = "../../modules/server"
+module "server" {
+  source     = "../../modules/server"
 
-#   project_id = var.project_id
-#   registry_repository_id = module.registry.google_artifact_registry_repository.api.name
-#   neon_database_url = var.neon_database_url
-# }
+  project_id = var.project_id
+  registry_repository_id = module.registry.google_artifact_registry_repository.api.repository_id
+  db_url_secret_id = module.secret.google_secret_manager_secret.db_url.secret_id
+}
