@@ -243,3 +243,33 @@ server/
 │   └── migrations/        # マイグレーションファイル
 └── makefile               # 作業自動化
 ```
+
+## 本番デプロイ
+
+CI/CD パイプラインで自動化してます。
+main ブランチへのマージをトリガーにデプロイが実行されます。
+
+### Artifact Registryへの手動イメージプッシュ
+
+**注意**: 本番デプロイはGitHub Actionsで自動化予定です。以下は手動でプッシュする場合のコマンドです。
+
+```bash
+# プロジェクトIDとリポジトリ名を設定
+export PROJECT_ID="fitness-app-prd"
+export REPOSITORY="fitness-api"
+export REGION="asia-northeast1"
+
+# Docker認証の設定
+gcloud auth configure-docker ${REGION}-docker.pkg.dev
+
+# イメージをビルド（重要：プラットフォームを指定）
+docker build --platform linux/amd64 -t fitness-api .
+
+# イメージにタグを付ける
+docker tag fitness-api ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/fitness-api:latest
+
+# イメージをプッシュ
+docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/fitness-api:latest
+```
+
+**🚨 重要**: macOS（Apple Silicon）でビルドする場合は、必ず`--platform linux/amd64`を指定してください。Cloud Runはx86_64/AMD64アーキテクチャを要求します。
