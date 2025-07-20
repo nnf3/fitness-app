@@ -13,7 +13,4 @@ terraform {
 }
 
 provider "google" {}
-
-locals {
-  project_id = "fitness-app-prd"
-}
+provider "google-beta" {}
