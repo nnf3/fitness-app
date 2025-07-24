@@ -3,4 +3,5 @@
 
 type Query {
   users: [User!]!
+  currentUser: User!
 }

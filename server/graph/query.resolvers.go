@@ -7,6 +7,7 @@ package graph
 import (
 	"app/entity"
 	"app/graph/model"
+	"app/middleware"
 	"context"
 	"fmt"
 )
@@ -29,6 +30,27 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	}
 
 	return modelUsers, nil
+}
+
+// CurrentUser is the resolver for the currentUser field.
+func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
+	// コンテキストからユーザーUIDを取得
+	uid, err := middleware.GetUserUIDFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unauthorized: %w", err)
+	}
+
+	// DBからユーザーを取得
+	var user entity.User
+	if err := r.DB.Where("uid = ?", uid).First(&user).Error; err != nil {
+		return nil, fmt.Errorf("user not found: %w", err)
+	}
+
+	// model.Userに変換して返す
+	return &model.User{
+		ID:   fmt.Sprintf("%d", user.ID),
+		Name: user.Name,
+	}, nil
 }
 
 // Query returns QueryResolver implementation.

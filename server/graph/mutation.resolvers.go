@@ -27,6 +27,22 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	}, nil
 }
 
+// DeleteUser is the resolver for the deleteUser field.
+func (r *mutationResolver) DeleteUser(ctx context.Context, input model.DeleteUser) (bool, error) {
+	id := input.ID
+	user := entity.User{}
+
+	if err := r.DB.First(&user, id).Error; err != nil {
+		return false, err
+	}
+
+	if err := r.DB.Delete(&user).Error; err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
