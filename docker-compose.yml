@@ -15,6 +15,8 @@ services:
       - DB_NAME=${DB_NAME}
       - APP_PORT=${SERVER_PORT}
       - APP_ENV=${SERVER_ENV}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_SERVICE_ACCOUNT_PATH=${FIREBASE_SERVICE_ACCOUNT_PATH}
     volumes:
       - ./server:/app
   db:
