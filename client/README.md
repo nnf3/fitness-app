@@ -70,6 +70,129 @@ EXPO_PUBLIC_SERVER_PORT=8080
 ifconfig | grep "inet " | grep -v 127.0.0.1
 ```
 
+## EAS Build
+
+このプロジェクトは [EAS Build](https://docs.expo.dev/build/introduction/) を使用してネイティブアプリをビルドします。
+
+### 前提条件
+
+1. **EAS CLIのインストール**
+   ```bash
+   npm install -g @expo/eas-cli
+   ```
+
+2. **EASアカウントにログイン**
+   ```bash
+   eas login
+   ```
+
+3. **プロジェクトの設定**
+   ```bash
+   eas build:configure
+   ```
+
+### 環境変数の設定
+
+EAS Buildでは、EAS環境変数を使用します。eas.jsonで環境変数を参照するように設定されています：
+
+```json
+"env": {
+  "EXPO_PUBLIC_SERVER_IP": "EXPO_PUBLIC_SERVER_IP",
+  "EXPO_PUBLIC_SERVER_PORT": "EXPO_PUBLIC_SERVER_PORT"
+}
+```
+
+#### サーバー設定のEAS環境変数を設定
+
+```bash
+# サーバー設定をEAS環境変数に設定
+make server-secret
+```
+
+**注意**: 本番環境では、実際のサーバーIPアドレスを設定してください。
+
+### ビルドプロファイル
+
+このプロジェクトには以下のビルドプロファイルが設定されています：
+
+- **development**: 開発用クライアント（内部配布）
+- **preview**: プレビュー用（内部配布）
+- **production**: 本番用（App Store/Google Play配布）
+
+### ビルド実行
+
+#### iOSビルド
+
+```bash
+# 開発用ビルド
+eas build --platform ios --profile development
+
+# プレビュー用ビルド
+eas build --platform ios --profile preview
+
+# 本番用ビルド
+eas build --platform ios --profile production
+```
+
+#### Androidビルド
+
+```bash
+# 開発用ビルド（APK）
+eas build --platform android --profile development
+
+# プレビュー用ビルド
+eas build --platform android --profile preview
+
+# 本番用ビルド（AAB）
+eas build --platform android --profile production
+```
+
+### トラブルシューティング
+
+#### GoogleService-Info.plistが見つからないエラー
+
+```bash
+# 1. Firebase ConsoleからGoogleService-Info.plistをダウンロード
+# 2. clientディレクトリに配置
+# 3. Gitにコミット
+git add GoogleService-Info.plist
+git commit -m "Add GoogleService-Info.plist"
+```
+
+#### 環境変数が読み込まれない
+
+```bash
+# EAS環境変数を設定
+make server-secret
+
+# または、eas.jsonの環境変数設定を確認
+cat eas.json
+```
+
+#### ビルドが失敗する
+
+1. **EAS CLIのバージョンを確認**
+   ```bash
+   eas --version
+   ```
+
+2. **プロジェクトの設定を確認**
+   ```bash
+   eas build:configure
+   ```
+
+3. **ログを確認**
+   ```bash
+   eas build:list
+   ```
+
+### 設定ファイル
+
+- `eas.json`: EAS Buildの設定ファイル
+- `app.json`: Expoアプリの設定ファイル
+- `GoogleService-Info.plist`: Firebase設定ファイル
+- `google-services.json`: Android用Firebase設定ファイル
+
 ## GraphQL Code Generator
 
 このプロジェクトでは、GraphQLスキーマからTypeScriptの型定義を自動生成するためにGraphQL Code Generatorを使用しています。

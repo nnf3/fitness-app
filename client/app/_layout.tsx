@@ -5,7 +5,9 @@ import { ApolloProvider } from "@apollo/client";
 export default function RootLayout() {
   return (
     <ApolloProvider client={apolloClient}>
-      <Stack />
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
     </ApolloProvider>
   );
 }
