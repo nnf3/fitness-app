@@ -24,7 +24,7 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="client"/>
+        <data android:scheme="com.googleusercontent.apps.fitness-app-prd"/>
         <data android:scheme="exp+fitness-app"/>
       </intent-filter>
     </activity>

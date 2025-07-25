@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 
+GoogleSignin.configure({
+  // webClientId: "fitness-app-prd.apps.googleusercontent.com",
+  iosClientId: "fitness-app-prd.apps.googleusercontent.com",
+});
+
 export const useFirebaseAuth = () => {
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [loading, setLoading] = useState(true);

@@ -7,7 +7,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon-muscle.png",
-  scheme: "client",
+  scheme: "com.googleusercontent.apps.fitness-app-prd",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
   ios: {
@@ -36,7 +36,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "@react-native-firebase/app",
     "@react-native-firebase/auth",
     "@react-native-firebase/crashlytics",
-    "@react-native-google-signin/google-signin",
+    [
+      "@react-native-google-signin/google-signin",
+      {
+        iosUrlScheme: "com.googleusercontent.apps.fitness-app-prd"
+      }
+    ],
     [
       "expo-build-properties",
       {
