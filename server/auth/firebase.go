@@ -32,11 +32,10 @@ func NewFirebaseAuth(ctx context.Context) (*FirebaseAuth, error) {
 	}, nil
 }
 
-// VerifyIDToken verifies the Firebase ID token and returns the user info
 func (fa *FirebaseAuth) VerifyIDToken(ctx context.Context, idToken string) (*auth.Token, error) {
-	// Bearer tokenからID tokenを抽出
-	if strings.HasPrefix(idToken, "Bearer ") {
-		idToken = strings.TrimPrefix(idToken, "Bearer ")
+	idToken, found := strings.CutPrefix(idToken, "Bearer ")
+	if !found {
+		return nil, fmt.Errorf("invalid ID token")
 	}
 
 	token, err := fa.client.VerifyIDToken(ctx, idToken)
@@ -45,28 +44,4 @@ func (fa *FirebaseAuth) VerifyIDToken(ctx context.Context, idToken string) (*aut
 	}
 
 	return token, nil
-}
-
-// GetUserByUID gets user information from Firebase by UID
-func (fa *FirebaseAuth) GetUserByUID(ctx context.Context, uid string) (*auth.UserRecord, error) {
-	user, err := fa.client.GetUser(ctx, uid)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user by UID: %w", err)
-	}
-
-	return user, nil
-}
-
-// CreateUser creates a new user in Firebase
-func (fa *FirebaseAuth) CreateUser(ctx context.Context, email, password string) (*auth.UserRecord, error) {
-	params := (&auth.UserToCreate{}).
-		Email(email).
-		Password(password)
-
-	user, err := fa.client.CreateUser(ctx, params)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create user: %w", err)
-	}
-
-	return user, nil
 }

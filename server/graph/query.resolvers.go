@@ -10,6 +10,7 @@ import (
 	"app/middleware"
 	"context"
 	"fmt"
+	"time"
 )
 
 // Users is the resolver for the users field.
@@ -34,22 +35,23 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 
 // CurrentUser is the resolver for the currentUser field.
 func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
-	// コンテキストからユーザーUIDを取得
 	uid, err := middleware.GetUserUIDFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unauthorized: %w", err)
 	}
 
 	// DBからユーザーを取得
-	var user entity.User
+	user := entity.User{}
 	if err := r.DB.Where("uid = ?", uid).First(&user).Error; err != nil {
 		return nil, fmt.Errorf("user not found: %w", err)
 	}
 
-	// model.Userに変換して返す
 	return &model.User{
-		ID:   fmt.Sprintf("%d", user.ID),
-		Name: user.Name,
+		ID:        fmt.Sprintf("%d", user.ID),
+		UID:       user.UID,
+		Name:      user.Name,
+		CreatedAt: user.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
 	}, nil
 }
 
