@@ -7,8 +7,10 @@ package graph
 import (
 	"app/entity"
 	"app/graph/model"
+	"app/middleware"
 	"context"
 	"fmt"
+	"time"
 )
 
 // Users is the resolver for the users field.
@@ -23,12 +25,44 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	var modelUsers []*model.User
 	for _, user := range users {
 		modelUsers = append(modelUsers, &model.User{
-			ID:   fmt.Sprintf("%d", user.ID),
-			Name: user.Name,
+			ID:        fmt.Sprintf("%d", user.ID),
+			UID:       user.UID,
+			Name:      user.Name,
+			CreatedAt: user.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
 		})
 	}
 
 	return modelUsers, nil
+}
+
+// CurrentUser is the resolver for the currentUser field.
+func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
+	uid, err := middleware.GetUserUIDFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unauthorized: %w", err)
+	}
+
+	// DBからユーザーを取得
+	user := entity.User{}
+	if err := r.DB.Where("uid = ?", uid).First(&user).Error; err != nil {
+		// ユーザーがいなければ新規作成
+		user = entity.User{
+			UID:  uid,
+			Name: "ユーザー", // デフォルト名（必要に応じて変更可能）
+		}
+		if err := r.DB.Create(&user).Error; err != nil {
+			return nil, fmt.Errorf("failed to create user: %w", err)
+		}
+	}
+
+	return &model.User{
+		ID:        fmt.Sprintf("%d", user.ID),
+		UID:       user.UID,
+		Name:      user.Name,
+		CreatedAt: user.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
+	}, nil
 }
 
 // Query returns QueryResolver implementation.

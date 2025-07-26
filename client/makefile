@@ -32,12 +32,29 @@ env-force:
 	@echo "✅ .env.localファイルが上書きされました:"
 	@cat .env.local
 
+# EAS環境変数としてサーバー設定を設定
+.PHONY: server-secret
+server-secret:
+	@echo "🔧 サーバー設定のEAS環境変数を設定中..."
+	@echo "💡 現在の設定: IP=$(EXPO_PUBLIC_SERVER_IP), PORT=$(EXPO_PUBLIC_SERVER_PORT)";
+	@read -p "続行しますか？ (y/N): " confirm; \
+	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
+		eas env:create --scope project --name EXPO_PUBLIC_SERVER_IP --value "$(EXPO_PUBLIC_SERVER_IP)"; \
+		eas env:create --scope project --name EXPO_PUBLIC_SERVER_PORT --value "$(EXPO_PUBLIC_SERVER_PORT)"; \
+		echo "✅ サーバー設定のEAS環境変数が設定されました。"; \
+	else \
+		echo "❌ キャンセルされました。"; \
+	fi
+
 # デフォルトターゲット
 .PHONY: help
 help:
 	@echo "利用可能なコマンド:"
 	@echo "  make env        - .env.localファイルを確認/生成（既存ファイルは保持）"
 	@echo "  make env-force  - .env.localファイルを強制上書き"
+	@echo ""
+	@echo "EAS環境変数設定:"
+	@echo "  make server-secret               - サーバー設定をEAS環境変数に設定"
 	@echo ""
 	@echo "環境変数:"
 	@echo "  LOCAL_IP        - 自動取得されたローカルIP: $(LOCAL_IP)"

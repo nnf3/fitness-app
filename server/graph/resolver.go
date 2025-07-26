@@ -1,6 +1,9 @@
 package graph
 
 import (
+	"app/auth"
+	"app/middleware"
+
 	"gorm.io/gorm"
 )
 
@@ -9,5 +12,7 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	DB *gorm.DB
+	DB             *gorm.DB
+	FirebaseAuth   *auth.FirebaseAuth
+	AuthMiddleware *middleware.AuthMiddleware
 }

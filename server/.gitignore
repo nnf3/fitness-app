@@ -29,3 +29,6 @@ tmp/
 
 # Migrations logs or lock files (if any)
 *.lock
+
+# Firebase
+/google/

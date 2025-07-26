@@ -5,6 +5,11 @@ input NewUser {
   name: String!
 }
 
+input DeleteUser {
+  id: ID!
+}
+
 type Mutation {
   createUser(input: NewUser!): User!
+  deleteUser(input: DeleteUser!): Boolean!
 }

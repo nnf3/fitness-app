@@ -1,0 +1,152 @@
+import { Text, View, Button, StyleSheet } from "react-native";
+import { useAuth } from "../../hooks";
+import { useRouter } from "expo-router";
+import React, { useEffect } from "react";
+import { useQuery, gql } from "@apollo/client";
+
+const CURRENT_USER_QUERY = gql`
+  query CurrentUser {
+    currentUser {
+      id
+      uid
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 20,
+    backgroundColor: '#F2F2F7',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 30,
+    color: '#1C1C1E',
+  },
+  welcomeText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#1C1C1E',
+  },
+  buttonContainer: {
+    marginVertical: 8,
+  },
+  userInfo: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  userEmail: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1C1C1E',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  userDetails: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  loadingText: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#666',
+    marginBottom: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#FF3B30',
+    marginBottom: 20,
+  },
+});
+
+export default function HomeTab() {
+  const { user, signOut } = useAuth();
+  const router = useRouter();
+
+  const { data, loading, error } = useQuery(CURRENT_USER_QUERY, {
+    skip: !user, // ユーザーがログインしていない場合はスキップ
+  });
+
+  // ログアウト時にログイン画面に遷移
+  useEffect(() => {
+    if (!user) {
+      router.replace("/login");
+    }
+  }, [user, router]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.replace("/login");
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
+
+  if (!user) {
+    return null; // ログイン画面に遷移中
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>ホーム</Text>
+
+      <View style={styles.userInfo}>
+        <Text style={styles.welcomeText}>ようこそ！</Text>
+        <Text style={styles.userEmail}>{user.email}</Text>
+
+        {loading && (
+          <Text style={styles.loadingText}>ユーザー情報を取得中...</Text>
+        )}
+
+        {error && (
+          <Text style={styles.errorText}>
+            ユーザー情報の取得に失敗しました: {error.message}
+          </Text>
+        )}
+
+        {data?.currentUser && (
+          <>
+            <Text style={styles.userName}>{data.currentUser.name}</Text>
+            <Text style={styles.userDetails}>
+              ユーザーID: {data.currentUser.id}
+            </Text>
+            <Text style={styles.userDetails}>
+              作成日: {new Date(data.currentUser.createdAt).toLocaleDateString('ja-JP')}
+            </Text>
+          </>
+        )}
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <Button title="ログアウト" onPress={handleSignOut} />
+      </View>
+    </View>
+  );
+}

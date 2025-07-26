@@ -1,0 +1,61 @@
+{
+  "cli": {
+    "version": ">= 16.17.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "environment": "development",
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": false
+      },
+      "env": {
+        "EXPO_PUBLIC_SERVER_IP": "EXPO_PUBLIC_SERVER_IP",
+        "EXPO_PUBLIC_SERVER_PORT": "EXPO_PUBLIC_SERVER_PORT",
+        "GOOGLE_SERVICES_INFO_PLIST": "GOOGLE_SERVICES_INFO_PLIST",
+        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID"
+      }
+    },
+    "preview": {
+      "environment": "preview",
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SERVER_IP": "EXPO_PUBLIC_SERVER_IP",
+        "EXPO_PUBLIC_SERVER_PORT": "EXPO_PUBLIC_SERVER_PORT",
+        "GOOGLE_SERVICES_INFO_PLIST": "GOOGLE_SERVICES_INFO_PLIST",
+        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID"
+      }
+    },
+    "production": {
+      "environment": "production",
+      "autoIncrement": true,
+      "ios": {
+        "simulator": false
+      },
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_SERVER_IP": "EXPO_PUBLIC_SERVER_IP",
+        "EXPO_PUBLIC_SERVER_PORT": "EXPO_PUBLIC_SERVER_PORT",
+        "GOOGLE_SERVICES_INFO_PLIST": "GOOGLE_SERVICES_INFO_PLIST",
+        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

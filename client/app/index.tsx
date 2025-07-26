@@ -1,34 +1,34 @@
-import { Text, View } from "react-native";
-import { gql, useQuery } from "@apollo/client";
-import { UsersQuery } from "../types/graphql";
+import { useEffect } from "react";
+import { useRouter } from "expo-router";
+import { useAuth } from "../hooks";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 
-const GET_USERS = gql`
-  query users {
-    users {
-      id
-      name
-    }
-  }
-`;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: '#F2F2F7',
+  },
+});
 
 export default function Index() {
-  const { data, loading, error } = useQuery<UsersQuery>(GET_USERS);
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-  if (loading) return <Text>Loading...</Text>;
-  if (error) return <Text>Error: {error.message}</Text>;
+  useEffect(() => {
+    if (!loading) {
+      if (user) {
+        router.replace("/(tabs)");
+      } else {
+        router.replace("/login");
+      }
+    }
+  }, [user, loading, router]);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Hello World</Text>
-      {data?.users.map((user: any) => (
-        <Text key={user.id}>{user.name}</Text>
-      ))}
+    <View style={styles.container}>
+      <ActivityIndicator size="large" color="#007AFF" />
     </View>
   );
 }

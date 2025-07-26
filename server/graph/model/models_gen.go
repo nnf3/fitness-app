@@ -2,6 +2,10 @@
 
 package model
 
+type DeleteUser struct {
+	ID string `json:"id"`
+}
+
 type Mutation struct {
 }
 
@@ -14,6 +18,7 @@ type Query struct {
 
 type User struct {
 	ID        string `json:"id"`
+	UID       string `json:"uid"`
 	Name      string `json:"name"`
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`

@@ -1,8 +1,11 @@
 package main
 
 import (
+	"app/auth"
 	"app/db"
 	"app/graph"
+	"app/middleware"
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -22,8 +25,19 @@ func main() {
 
 	db.ConnectDB()
 
+	// Firebase Authの初期化
+	firebaseAuth, err := auth.NewFirebaseAuth(context.Background())
+	if err != nil {
+		log.Fatalf("Failed to initialize Firebase Auth: %v", err)
+	}
+
+	// 認証ミドルウェアの初期化
+	authMiddleware := middleware.NewAuthMiddleware(firebaseAuth)
+
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		DB: db.DB,
+		DB:             db.DB,
+		FirebaseAuth:   firebaseAuth,
+		AuthMiddleware: authMiddleware,
 	}}))
 
 	srv.AddTransport(transport.Options{})
@@ -47,8 +61,8 @@ func main() {
 
 	// GraphQL playground
 	http.Handle("/", c.Handler(playground.Handler("GraphQL playground", "/query")))
-	// GraphQL endpoint
-	http.Handle("/query", c.Handler(srv))
+	// GraphQL endpoint with auth middleware
+	http.Handle("/query", c.Handler(authMiddleware.AuthMiddleware(srv)))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))

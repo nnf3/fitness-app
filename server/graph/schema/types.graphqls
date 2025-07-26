@@ -3,6 +3,7 @@
 
 type User {
   id: ID!
+  uid: String!
   name: String!
   createdAt: String!
   updatedAt: String!

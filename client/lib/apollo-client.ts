@@ -1,5 +1,6 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
 import { Platform } from "react-native";
+import { setContext } from "@apollo/client/link/context";
 
 // プラットフォームに応じてURIを設定
 const getGraphQLUri = () => {
@@ -24,7 +25,19 @@ const httpLink = createHttpLink({
   uri: getGraphQLUri(),
 });
 
-export const apolloClient = new ApolloClient({
-  link: httpLink,
-  cache: new InMemoryCache(),
-});
+export const createApolloClient = (getIdToken: () => Promise<string | null>) => {
+  const authLink = setContext(async (_, { headers }) => {
+    const token = await getIdToken();
+    return {
+      headers: {
+        ...headers,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    };
+  });
+
+  return new ApolloClient({
+    link: authLink.concat(httpLink),
+    cache: new InMemoryCache(),
+  });
+};
