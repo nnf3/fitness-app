@@ -25,8 +25,11 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	var modelUsers []*model.User
 	for _, user := range users {
 		modelUsers = append(modelUsers, &model.User{
-			ID:   fmt.Sprintf("%d", user.ID),
-			Name: user.Name,
+			ID:        fmt.Sprintf("%d", user.ID),
+			UID:       user.UID,
+			Name:      user.Name,
+			CreatedAt: user.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
 		})
 	}
 
@@ -43,7 +46,14 @@ func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
 	// DBからユーザーを取得
 	user := entity.User{}
 	if err := r.DB.Where("uid = ?", uid).First(&user).Error; err != nil {
-		return nil, fmt.Errorf("user not found: %w", err)
+		// ユーザーがいなければ新規作成
+		user = entity.User{
+			UID:  uid,
+			Name: "ユーザー", // デフォルト名（必要に応じて変更可能）
+		}
+		if err := r.DB.Create(&user).Error; err != nil {
+			return nil, fmt.Errorf("failed to create user: %w", err)
+		}
 	}
 
 	return &model.User{
