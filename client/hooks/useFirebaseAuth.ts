@@ -3,8 +3,8 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 
 GoogleSignin.configure({
-  // webClientId: "fitness-app-prd.apps.googleusercontent.com",
-  iosClientId: "fitness-app-prd.apps.googleusercontent.com",
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
 });
 
 export const useFirebaseAuth = () => {
