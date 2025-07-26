@@ -31,18 +31,6 @@ resource "google_identity_platform_config" "authentication" {
     }
   }
 
-  blocking_functions {
-    triggers {
-      event_type = "beforeSignIn"
-      function_uri = "https://asia-northeast1-${var.project_id}.cloudfunctions.net/block_email_spam"
-    }
-    forward_inbound_credentials {
-      refresh_token = true
-      access_token = true
-      id_token = true
-    }
-  }
-
   multi_tenant {
     allow_tenants = false
   }
@@ -61,6 +49,13 @@ resource "google_identity_platform_default_supported_idp_config" "google" {
   idp_id        = "google.com"
   client_id     = "${var.project_id}.apps.googleusercontent.com"
   client_secret = var.auth_client_secret
+
+  lifecycle {
+    ignore_changes = [
+      client_id,
+      client_secret,
+    ]
+  }
 
   depends_on = [
     google_firebase_project.project,
