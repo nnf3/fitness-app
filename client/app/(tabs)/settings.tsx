@@ -1,5 +1,5 @@
 import { Text, View, StyleSheet, Switch, TouchableOpacity, Alert } from "react-native";
-import { useFirebaseAuth } from "../../hooks";
+import { useAuth } from "../../hooks";
 import { useState } from "react";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
 });
 
 export default function SettingsTab() {
-  const { user, signOut } = useFirebaseAuth();
+  const { user, signOut } = useAuth();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
