@@ -1,1 +1,1 @@
-export * from "./useFirebaseAuth";
+export * from "./AuthContext";
