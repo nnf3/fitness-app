@@ -1,7 +1,20 @@
 import { Text, View, Button, StyleSheet } from "react-native";
 import { useAuth } from "../../hooks";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
+import { useQuery, gql } from "@apollo/client";
+
+const CURRENT_USER_QUERY = gql`
+  query CurrentUser {
+    currentUser {
+      id
+      uid
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
 const styles = StyleSheet.create({
   container: {
@@ -45,11 +58,40 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
+  userName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1C1C1E',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  userDetails: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  loadingText: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#666',
+    marginBottom: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#FF3B30',
+    marginBottom: 20,
+  },
 });
 
 export default function HomeTab() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+
+  const { data, loading, error } = useQuery(CURRENT_USER_QUERY, {
+    skip: !user, // ユーザーがログインしていない場合はスキップ
+  });
 
   // ログアウト時にログイン画面に遷移
   useEffect(() => {
@@ -78,6 +120,28 @@ export default function HomeTab() {
       <View style={styles.userInfo}>
         <Text style={styles.welcomeText}>ようこそ！</Text>
         <Text style={styles.userEmail}>{user.email}</Text>
+
+        {loading && (
+          <Text style={styles.loadingText}>ユーザー情報を取得中...</Text>
+        )}
+
+        {error && (
+          <Text style={styles.errorText}>
+            ユーザー情報の取得に失敗しました: {error.message}
+          </Text>
+        )}
+
+        {data?.currentUser && (
+          <>
+            <Text style={styles.userName}>{data.currentUser.name}</Text>
+            <Text style={styles.userDetails}>
+              ユーザーID: {data.currentUser.id}
+            </Text>
+            <Text style={styles.userDetails}>
+              作成日: {new Date(data.currentUser.createdAt).toLocaleDateString('ja-JP')}
+            </Text>
+          </>
+        )}
       </View>
 
       <View style={styles.buttonContainer}>

@@ -14,14 +14,24 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export type DeleteUser = {
+  id: Scalars['ID']['input'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   createUser: User;
+  deleteUser: Scalars['Boolean']['output'];
 };
 
 
 export type MutationCreateUserArgs = {
   input: NewUser;
+};
+
+
+export type MutationDeleteUserArgs = {
+  input: DeleteUser;
 };
 
 export type NewUser = {
@@ -30,6 +40,7 @@ export type NewUser = {
 
 export type Query = {
   __typename?: 'Query';
+  currentUser: User;
   users: Array<User>;
 };
 
@@ -38,10 +49,11 @@ export type User = {
   createdAt: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  uid: Scalars['String']['output'];
   updatedAt: Scalars['String']['output'];
 };
 
-export type UsersQueryVariables = Exact<{ [key: string]: never; }>;
+export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, name: string }> };
+export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, name: string, createdAt: string, updatedAt: string } };

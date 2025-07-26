@@ -1,14 +1,11 @@
 import { Stack } from "expo-router";
-import { createApolloClient } from "../lib/apollo-client";
-import { ApolloProvider } from "@apollo/client";
 import { AuthProvider } from "../hooks";
+import { ApolloWrapper } from "../lib";
 
 export default function RootLayout() {
-  const client = createApolloClient(async () => null)
-
   return (
     <AuthProvider>
-      <ApolloProvider client={client}>
+      <ApolloWrapper>
         <Stack>
           <Stack.Screen
             name="login"
@@ -25,7 +22,7 @@ export default function RootLayout() {
             }}
           />
         </Stack>
-      </ApolloProvider>
+      </ApolloWrapper>
     </AuthProvider>
   );
 }
