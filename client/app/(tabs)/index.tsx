@@ -9,7 +9,6 @@ const CURRENT_USER_QUERY = gql`
     currentUser {
       id
       uid
-      name
       createdAt
       updatedAt
     }

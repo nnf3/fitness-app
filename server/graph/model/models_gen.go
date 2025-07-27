@@ -2,6 +2,14 @@
 
 package model
 
+type CreateProfile struct {
+	Name      string  `json:"name"`
+	BirthDate string  `json:"birthDate"`
+	Gender    string  `json:"gender"`
+	Height    float64 `json:"height"`
+	Weight    float64 `json:"weight"`
+}
+
 type DeleteUser struct {
 	ID string `json:"id"`
 }
@@ -13,13 +21,26 @@ type NewUser struct {
 	Name string `json:"name"`
 }
 
+type Profile struct {
+	ID            string   `json:"id"`
+	User          *User    `json:"user"`
+	Name          string   `json:"name"`
+	BirthDate     *string  `json:"birthDate,omitempty"`
+	Gender        *string  `json:"gender,omitempty"`
+	Height        *float64 `json:"height,omitempty"`
+	Weight        *float64 `json:"weight,omitempty"`
+	ActivityLevel *string  `json:"activityLevel,omitempty"`
+	CreatedAt     string   `json:"createdAt"`
+	UpdatedAt     string   `json:"updatedAt"`
+}
+
 type Query struct {
 }
 
 type User struct {
-	ID        string `json:"id"`
-	UID       string `json:"uid"`
-	Name      string `json:"name"`
-	CreatedAt string `json:"createdAt"`
-	UpdatedAt string `json:"updatedAt"`
+	ID        string   `json:"id"`
+	UID       string   `json:"uid"`
+	CreatedAt string   `json:"createdAt"`
+	UpdatedAt string   `json:"updatedAt"`
+	Profile   *Profile `json:"profile,omitempty"`
 }

@@ -9,7 +9,15 @@ input DeleteUser {
   id: ID!
 }
 
+input CreateProfile {
+  name: String!
+  birthDate: String!
+  gender: String!
+  height: Float!
+  weight: Float!
+}
+
 type Mutation {
-  createUser(input: NewUser!): User!
   deleteUser(input: DeleteUser!): Boolean!
+  createProfile(input: CreateProfile!): Profile!
 }

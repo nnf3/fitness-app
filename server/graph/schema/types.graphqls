@@ -4,7 +4,20 @@
 type User {
   id: ID!
   uid: String!
+  createdAt: String!
+  updatedAt: String!
+  profile: Profile
+}
+
+type Profile {
+  id: ID!
+  user: User!
   name: String!
+  birthDate: String
+  gender: String
+  height: Float
+  weight: Float
+  activityLevel: String
   createdAt: String!
   updatedAt: String!
 }

@@ -20,13 +20,7 @@ export type DeleteUser = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createUser: User;
   deleteUser: Scalars['Boolean']['output'];
-};
-
-
-export type MutationCreateUserArgs = {
-  input: NewUser;
 };
 
 
@@ -48,7 +42,6 @@ export type User = {
   __typename?: 'User';
   createdAt: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  name: Scalars['String']['output'];
   uid: Scalars['String']['output'];
   updatedAt: Scalars['String']['output'];
 };
@@ -56,4 +49,4 @@ export type User = {
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, name: string, createdAt: string, updatedAt: string } };
+export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, createdAt: string, updatedAt: string } };

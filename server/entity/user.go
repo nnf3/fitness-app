@@ -1,43 +1,41 @@
 package entity
 
 import (
+	"fmt"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type User struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
-	UID       string    `json:"uid"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	UID       string    `gorm:"not null;uniqueIndex" json:"uid"`
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
-// 名前が空でないか
-func (u *User) IsNameValid() bool {
-	return u.Name != ""
+// BeforeSave GORMフック - 保存前のバリデーション
+func (u *User) BeforeSave(tx *gorm.DB) error {
+	return u.Validate()
 }
 
-// 作成日時が空でなく、現在時刻よりも前であるか
-func (u *User) IsCreatedAtValid() bool {
-	return !u.CreatedAt.IsZero() && u.CreatedAt.Before(time.Now())
+// BeforeCreate GORMフック - 作成前の処理
+func (u *User) BeforeCreate(tx *gorm.DB) error {
+	u.CreatedAt = time.Now()
+	u.UpdatedAt = time.Now()
+	return u.Validate()
 }
 
-// 更新日時が空でなく、現在時刻よりも前であるか
-func (u *User) IsUpdatedAtValid() bool {
-	return !u.UpdatedAt.IsZero() && u.UpdatedAt.Before(time.Now())
+// BeforeUpdate GORMフック - 更新前の処理
+func (u *User) BeforeUpdate(tx *gorm.DB) error {
+	u.UpdatedAt = time.Now()
+	return u.Validate()
 }
 
-// バリデーションを1つに集約
-func (u *User) Validate() map[string]string {
-	errors := make(map[string]string)
-	if !u.IsNameValid() {
-		errors["name"] = "名前は必須です"
+// Validate カスタムバリデーション
+func (u *User) Validate() error {
+	if u.UID == "" {
+		return fmt.Errorf("UIDは必須です")
 	}
-	if !u.IsCreatedAtValid() {
-		errors["created_at"] = "作成日時は必須です"
-	}
-	if !u.IsUpdatedAtValid() {
-		errors["updated_at"] = "更新日時は必須です"
-	}
-	return errors
+	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"app/auth"
 	"app/db"
 	"app/graph"
+	"app/graph/dataloader"
 	"app/middleware"
 	"context"
 	"log"
@@ -61,8 +62,15 @@ func main() {
 
 	// GraphQL playground
 	http.Handle("/", c.Handler(playground.Handler("GraphQL playground", "/query")))
-	// GraphQL endpoint with auth middleware
-	http.Handle("/query", c.Handler(authMiddleware.AuthMiddleware(srv)))
+	// GraphQL endpoint with auth middleware and data loaders
+	withDataloaderHandler := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := dataloader.WithDataLoaders(r.Context(), db.DB)
+			r = r.WithContext(ctx)
+			next.ServeHTTP(w, r)
+		})
+	}
+	http.Handle("/query", c.Handler(authMiddleware.AuthMiddleware(withDataloaderHandler(srv))))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
