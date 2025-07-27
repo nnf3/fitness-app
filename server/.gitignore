@@ -31,4 +31,4 @@ tmp/
 *.lock
 
 # Firebase
-/google/
+/google/*.json
