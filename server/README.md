@@ -25,14 +25,19 @@ Go言語とgqlgenを使用したフィットネスアプリのGraphQLバック�
 ```sh
 # プロジェクトルートで実行
 cp .env.sample .env
+touch server/google/serviceAccountKey.json
 ```
+
+**注意点**
+以下の環境変数とファイルは管理者から渡された情報で上書きしてください
+- FIREBASE_PROJECT_IDの値
+- google/serviceAccountKey.jsonの中身
 
 ### 2. ビルド & 依存関係のインストール
 
 ```sh
 # プロジェクトルートで実行
 docker compose build
-docker compose run --rm server sh -c "go get app"
 ```
 
 ### 3. サーバーの起動
