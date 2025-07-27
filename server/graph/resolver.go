@@ -2,6 +2,7 @@ package graph
 
 import (
 	"app/auth"
+	"app/graph/dataloader"
 	"app/middleware"
 
 	"gorm.io/gorm"
@@ -15,4 +16,5 @@ type Resolver struct {
 	DB             *gorm.DB
 	FirebaseAuth   *auth.FirebaseAuth
 	AuthMiddleware *middleware.AuthMiddleware
+	DataLoaders    *dataloader.DataLoaders
 }

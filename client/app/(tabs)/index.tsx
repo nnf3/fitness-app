@@ -9,9 +9,17 @@ const CURRENT_USER_QUERY = gql`
     currentUser {
       id
       uid
-      name
       createdAt
       updatedAt
+      profile {
+        id
+        name
+        birthDate
+        gender
+        height
+        weight
+        activityLevel
+      }
     }
   }
 `;
@@ -21,26 +29,27 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#1B4332',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 30,
-    color: '#1C1C1E',
+    marginBottom: 10,
+    color: '#FFFFFF',
   },
-  welcomeText: {
+  subtitle: {
     fontSize: 18,
     textAlign: 'center',
-    marginBottom: 20,
-    color: '#1C1C1E',
+    marginBottom: 40,
+    color: '#FFFFFF',
+    opacity: 0.8,
   },
   buttonContainer: {
     marginVertical: 8,
   },
   userInfo: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#2D5A3D',
     padding: 20,
     borderRadius: 12,
     marginBottom: 20,
@@ -49,38 +58,41 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
   },
   userEmail: {
     fontSize: 16,
-    color: '#666',
+    color: '#FFFFFF',
     textAlign: 'center',
+    opacity: 0.8,
   },
   userName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 8,
   },
   userDetails: {
     fontSize: 14,
-    color: '#666',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginTop: 8,
+    opacity: 0.7,
   },
   loadingText: {
     fontSize: 16,
     textAlign: 'center',
-    color: '#666',
+    color: '#FFFFFF',
     marginBottom: 20,
+    opacity: 0.8,
   },
   errorText: {
     fontSize: 16,
     textAlign: 'center',
-    color: '#FF3B30',
+    color: '#FF6B6B',
     marginBottom: 20,
   },
 });
@@ -115,10 +127,10 @@ export default function HomeTab() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>ホーム</Text>
+      <Text style={styles.title}>Fitness App</Text>
+      <Text style={styles.subtitle}>ようこそ！</Text>
 
       <View style={styles.userInfo}>
-        <Text style={styles.welcomeText}>ようこそ！</Text>
         <Text style={styles.userEmail}>{user.email}</Text>
 
         {loading && (
@@ -133,13 +145,27 @@ export default function HomeTab() {
 
         {data?.currentUser && (
           <>
-            <Text style={styles.userName}>{data.currentUser.name}</Text>
             <Text style={styles.userDetails}>
               ユーザーID: {data.currentUser.id}
             </Text>
             <Text style={styles.userDetails}>
               作成日: {new Date(data.currentUser.createdAt).toLocaleDateString('ja-JP')}
             </Text>
+            {data.currentUser.profile && (
+              <>
+                <Text style={styles.userName}>{data.currentUser.profile.name}</Text>
+                <Text style={styles.userDetails}>
+                  身長: {data.currentUser.profile.height}cm
+                </Text>
+                <Text style={styles.userDetails}>
+                  体重: {data.currentUser.profile.weight}kg
+                </Text>
+                <Text style={styles.userDetails}>
+                  性別: {data.currentUser.profile.gender === 'male' ? '男性' :
+                         data.currentUser.profile.gender === 'female' ? '女性' : 'その他'}
+                </Text>
+              </>
+            )}
           </>
         )}
       </View>

@@ -21,6 +21,23 @@ export default function RootLayout() {
               gestureEnabled: false,
             }}
           />
+          <Stack.Screen
+            name="profile-edit"
+            options={{
+              headerShown: true,
+              title: "設定",
+              headerBackTitle: "設定",
+              gestureEnabled: true,
+              headerStyle: {
+                backgroundColor: '#1B4332',
+              },
+              headerTitleStyle: {
+                color: '#FFFFFF',
+                fontWeight: 'bold',
+              },
+              headerTintColor: '#FFFFFF',
+            }}
+          />
         </Stack>
       </ApolloWrapper>
     </AuthProvider>

@@ -13,62 +13,25 @@
 2. 環境変数を設定
 
    ```bash
-   # .env.localファイルを生成（既存ファイルは保持）
-   make env
+   # 事前にEAS CLIをインストールする必要があります
+   npm install -g @expo/eas-cli
 
-   # または、既存ファイルを強制上書き
-   make env-force
+   # expo.devから環境変数を取得し、ローカルIPなどを設定
+   make setup-dev
    ```
-
-   これにより、ローカルIPアドレスが自動検出され、以下の変数を含む `.env.local` ファイルが作成されます：
-   - `EXPO_PUBLIC_SERVER_IP`: ローカルIPアドレス（自動検出）
-   - `EXPO_PUBLIC_SERVER_PORT`: サーバーポート（デフォルト: 8080）
 
 3. アプリを起動
 
    ```bash
-   npx expo start
+   npx expo start --dev-client
    ```
 
-出力で、以下のオプションからアプリを開くことができます：
+**注意**: この方法を使用するには、事前にdevelopment buildをローカルにインストールする必要があります。
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android エミュレータ](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS シミュレータ](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go) - Expo でのアプリ開発を試すための限定サンドボックス
+- iOS : [expo.dev](https://expo.dev/accounts/nnf3/projects/fitness-app/development-builds) から IPA ファイルをインストールしてください
+- Android : 現状まだ用意されてません
 
 **app** ディレクトリ内のファイルを編集して開発を開始できます。このプロジェクトは [ファイルベースルーティング](https://docs.expo.dev/router/introduction) を使用しています。
-
-## 環境変数
-
-このプロジェクトは、GraphQLサーバーに接続するために環境変数を使用します。Makefileが自動的にセットアップを処理します：
-
-### 利用可能なコマンド
-
-```bash
-# 現在の環境変数を確認
-make help
-
-# .env.localファイルを生成（既存ファイルは保持）
-make env
-
-# .env.localファイルを強制上書き
-make env-force
-```
-
-### 手動設定
-
-環境変数を手動で設定したい場合は、clientディレクトリに `.env.local` ファイルを作成してください：
-
-```bash
-EXPO_PUBLIC_SERVER_IP=192.168.0.3
-EXPO_PUBLIC_SERVER_PORT=8080
-```
-
-**注意**: `192.168.0.3` を実際のローカルIPアドレスに置き換えてください。IPアドレスは以下のコマンドで確認できます：
-```bash
-ifconfig | grep "inet " | grep -v 127.0.0.1
-```
 
 ## EAS Build
 
@@ -91,25 +54,26 @@ ifconfig | grep "inet " | grep -v 127.0.0.1
    eas build:configure
    ```
 
-### 環境変数の設定
+4. .gitignoreをコメントアウト
+   ```.gitignore
+   # **/*.plist
+   # **/google-services.json
+   ```
 
-EAS Buildでは、EAS環境変数を使用します。eas.jsonで環境変数を参照するように設定されています：
+   本来はコメントアウトせずとも読み込んでくれるはずですが、エラーが出ているため暫定対応です。
 
-```json
-"env": {
-  "EXPO_PUBLIC_SERVER_IP": "EXPO_PUBLIC_SERVER_IP",
-  "EXPO_PUBLIC_SERVER_PORT": "EXPO_PUBLIC_SERVER_PORT"
-}
-```
+4. **Development Buildの作成とインストール**
+   ```bash
+   # iOS development buildを作成（.env.localから環境変数を自動読み込み）
+   make build-ios-dev
 
-#### サーバー設定のEAS環境変数を設定
+   # Android development buildを作成（.env.localから環境変数を自動読み込み）
+   make build-android-dev
+   ```
 
-```bash
-# サーバー設定をEAS環境変数に設定
-make server-secret
-```
+   作成されたbuildをローカルデバイスにインストールしてください。
 
-**注意**: 本番環境では、実際のサーバーIPアドレスを設定してください。
+   **注意**: これらのコマンドは`.env.local`ファイルから`EXPO_PUBLIC_GOOGLE_IOS_REVERSED_CLIENT_ID`のみを自動的に読み込みます。先に`make setup-dev`を実行してください。
 
 ### ビルドプロファイル
 
@@ -149,26 +113,6 @@ eas build --platform android --profile production
 
 ### トラブルシューティング
 
-#### GoogleService-Info.plistが見つからないエラー
-
-```bash
-# 1. Firebase ConsoleからGoogleService-Info.plistをダウンロード
-# 2. clientディレクトリに配置
-# 3. Gitにコミット
-git add GoogleService-Info.plist
-git commit -m "Add GoogleService-Info.plist"
-```
-
-#### 環境変数が読み込まれない
-
-```bash
-# EAS環境変数を設定
-make server-secret
-
-# または、eas.jsonの環境変数設定を確認
-cat eas.json
-```
-
 #### ビルドが失敗する
 
 1. **EAS CLIのバージョンを確認**
@@ -189,7 +133,7 @@ cat eas.json
 ### 設定ファイル
 
 - `eas.json`: EAS Buildの設定ファイル
-- `app.json`: Expoアプリの設定ファイル
+- `app.config.ts`: Expoアプリの設定ファイル
 - `GoogleService-Info.plist`: Firebase設定ファイル
 - `google-services.json`: Android用Firebase設定ファイル
 
@@ -204,13 +148,6 @@ cat eas.json
 ```bash
 # GraphQLコードを生成
 npm run codegen
-```
-
-または、Makefileを使用：
-
-```bash
-# 環境変数設定とコード生成を同時実行
-make env && npm run codegen
 ```
 
 ### 生成されるファイル

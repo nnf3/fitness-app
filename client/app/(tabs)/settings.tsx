@@ -1,26 +1,29 @@
 import { Text, View, StyleSheet, Switch, TouchableOpacity, Alert } from "react-native";
 import { useAuth } from "../../hooks";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#1B4332',
   },
   section: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#2D5A3D',
     marginVertical: 8,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#E5E5EA',
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
+    borderRadius: 12,
+    marginHorizontal: 16,
   },
   sectionHeader: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#8E8E93',
+    color: '#FFFFFF',
     marginHorizontal: 16,
     marginVertical: 8,
+    opacity: 0.8,
   },
   settingItem: {
     flexDirection: 'row',
@@ -28,41 +31,51 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   settingItemLast: {
     borderBottomWidth: 0,
   },
   settingText: {
     fontSize: 16,
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   settingValue: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: '#FFFFFF',
+    opacity: 0.7,
   },
   userInfo: {
     padding: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#2D5A3D',
     marginVertical: 8,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#E5E5EA',
+    marginHorizontal: 16,
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
+    borderRadius: 12,
   },
   userEmail: {
     fontSize: 16,
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   logoutButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#FF6B6B',
     marginHorizontal: 16,
     marginVertical: 8,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   logoutButtonText: {
     color: '#FFFFFF',
@@ -76,6 +89,7 @@ const styles = StyleSheet.create({
 
 export default function SettingsTab() {
   const { user, signOut } = useAuth();
+  const router = useRouter();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
@@ -109,10 +123,6 @@ export default function SettingsTab() {
 
   return (
     <View style={styles.container}>
-      {/* ユーザー情報セクション */}
-      <View style={styles.userInfo}>
-        <Text style={styles.userEmail}>{user.email}</Text>
-      </View>
 
       {/* 通知設定セクション */}
       <Text style={styles.sectionHeader}>通知</Text>
@@ -153,7 +163,10 @@ export default function SettingsTab() {
       {/* アカウントセクション */}
       <Text style={styles.sectionHeader}>アカウント</Text>
       <View style={styles.section}>
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity
+          style={styles.settingItem}
+          onPress={() => router.push('/profile-edit')}
+        >
           <Text style={styles.settingText}>プロフィール編集</Text>
           <FontAwesome name="chevron-right" size={16} color="#8E8E93" />
         </TouchableOpacity>

@@ -2,10 +2,14 @@ package db
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"strings"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
@@ -25,10 +29,49 @@ func ConnectDB() {
 			host, user, password, dbname)
 	}
 
-	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	// ログレベルを環境変数から取得
+	logLevel := getLogLevel()
+
+	// GORM設定（SQLログ出力を含む）
+	config := &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+			logger.Config{
+				SlowThreshold:             time.Second, // Slow SQL threshold
+				LogLevel:                  logLevel,    // Log level
+				IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
+				ParameterizedQueries:      false,       // Don't include params in the SQL log
+				Colorful:                  true,        // Enable color
+			},
+		),
+	}
+
+	database, err := gorm.Open(postgres.Open(dsn), config)
 	if err != nil {
 		panic("❌ データベース接続に失敗しました: " + err.Error())
 	}
 
 	DB = database
+	log.Printf("✅ データベース接続が成功しました")
+}
+
+// getLogLevel returns the log level from environment variable
+func getLogLevel() logger.LogLevel {
+	logLevelStr := os.Getenv("GORM_LOG_LEVEL")
+	if logLevelStr == "" {
+		logLevelStr = "info" // デフォルトはinfo
+	}
+
+	switch strings.ToLower(logLevelStr) {
+	case "silent":
+		return logger.Silent
+	case "error":
+		return logger.Error
+	case "warn":
+		return logger.Warn
+	case "info":
+		return logger.Info
+	default:
+		return logger.Info
+	}
 }

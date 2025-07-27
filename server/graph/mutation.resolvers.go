@@ -7,25 +7,9 @@ package graph
 import (
 	"app/entity"
 	"app/graph/model"
+	"app/graph/services"
 	"context"
-	"fmt"
 )
-
-// CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-	user := entity.User{
-		Name: input.Name,
-	}
-
-	if err := r.DB.Create(&user).Error; err != nil {
-		return nil, err
-	}
-
-	return &model.User{
-		ID:   fmt.Sprintf("%d", user.ID),
-		Name: user.Name,
-	}, nil
-}
 
 // DeleteUser is the resolver for the deleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context, input model.DeleteUser) (bool, error) {
@@ -41,6 +25,18 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, input model.DeleteUse
 	}
 
 	return true, nil
+}
+
+// CreateProfile is the resolver for the createProfile field.
+func (r *mutationResolver) CreateProfile(ctx context.Context, input model.CreateProfile) (*model.Profile, error) {
+	profileService := services.NewProfileService(r.DB, r.DataLoaders.ProfileLoader)
+	return profileService.CreateProfile(ctx, input)
+}
+
+// UpdateProfile is the resolver for the updateProfile field.
+func (r *mutationResolver) UpdateProfile(ctx context.Context, input model.UpdateProfile) (*model.Profile, error) {
+	profileService := services.NewProfileService(r.DB, r.DataLoaders.ProfileLoader)
+	return profileService.UpdateProfile(ctx, input)
 }
 
 // Mutation returns MutationResolver implementation.
