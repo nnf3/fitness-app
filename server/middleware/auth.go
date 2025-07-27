@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	"app/auth"
 
@@ -33,6 +34,14 @@ func (am *AuthMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 		// GraphQLのPOSTリクエストのみを処理
 		if r.Method != "POST" {
 			next.ServeHTTP(w, r)
+			return
+		}
+
+		if os.Getenv("ENABLE_MOCK_AUTH") == "true" && r.Header.Get("Authorization") == os.Getenv("MOCK_ADMIN_UID") {
+			ctx := context.WithValue(r.Context(), UserContextKey, &firebaseAuth.Token{
+				UID: os.Getenv("MOCK_ADMIN_UID"),
+			})
+			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
 

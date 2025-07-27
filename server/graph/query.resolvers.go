@@ -8,10 +8,18 @@ import (
 	"app/graph/model"
 	"app/graph/services"
 	"context"
+	"fmt"
 )
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+	currentUser, err := services.NewUserService(r.DB).GetCurrentUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !currentUser.IsAdmin() {
+		return nil, fmt.Errorf("unauthorized")
+	}
 	userService := services.NewUserService(r.DB)
 	return userService.GetUsers(ctx)
 }
