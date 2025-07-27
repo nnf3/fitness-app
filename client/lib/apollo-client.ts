@@ -28,6 +28,7 @@ const httpLink = createHttpLink({
 export const createApolloClient = (getIdToken: () => Promise<string | null>) => {
   const authLink = setContext(async (_, { headers }) => {
     const token = await getIdToken();
+    console.log('token', token);
     return {
       headers: {
         ...headers,

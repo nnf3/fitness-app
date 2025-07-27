@@ -10,89 +10,70 @@ import (
 	"gorm.io/gorm"
 )
 
-// ProfileLoaderKey is the key type for profile loader
-type ProfileLoaderKey string
-
-// String returns the string representation of the key
-func (k ProfileLoaderKey) String() string {
-	return string(k)
+type ProfileLoaderInterface interface {
+	LoadProfile(ctx context.Context, userID string) (*entity.Profile, error)
+	LoadProfiles(ctx context.Context, userIDs []string) ([]*entity.Profile, []error)
 }
 
-// Raw returns the raw string value
-func (k ProfileLoaderKey) Raw() interface{} {
-	return string(k)
-}
-
-// ProfileLoader loads profiles by user IDs
 type ProfileLoader struct {
-	db *gorm.DB
+	db     *gorm.DB
+	loader *dataloader.Loader[StringKey, *entity.Profile]
 }
 
-// NewProfileLoader creates a new profile loader
-func NewProfileLoader(db *gorm.DB) *dataloader.Loader[ProfileLoaderKey, *entity.Profile] {
-	loader := &ProfileLoader{db: db}
-	return dataloader.NewBatchedLoader(loader.batchLoad)
+func NewProfileLoader(db *gorm.DB) ProfileLoaderInterface {
+	profileLoader := &ProfileLoader{db: db}
+	profileLoader.loader = dataloader.NewBatchedLoader(profileLoader.batchLoad)
+	return profileLoader
 }
 
-// batchLoad loads multiple profiles by user IDs
-func (l *ProfileLoader) batchLoad(ctx context.Context, keys []ProfileLoaderKey) []*dataloader.Result[*entity.Profile] {
-	// Convert keys to user IDs
-	var userIDs []uint
-	for _, key := range keys {
-		if userID, err := strconv.ParseUint(string(key), 10, 32); err == nil {
-			userIDs = append(userIDs, uint(userID))
-		}
-	}
+func parseUserIDs(keyStrings []string) ([]uint, []error) {
+	baseLoader := &BaseLoader{}
+	return baseLoader.ParseUintKeys(keyStrings)
+}
 
-	// Fetch profiles from database
+func (l *ProfileLoader) fetchProfilesFromDB(userIDs []uint) ([]entity.Profile, error) {
 	var profiles []entity.Profile
-	if err := l.db.Where("user_id IN ?", userIDs).Find(&profiles).Error; err != nil {
-		// Return errors for all keys
-		results := make([]*dataloader.Result[*entity.Profile], len(keys))
-		for i := range results {
-			results[i] = &dataloader.Result[*entity.Profile]{
-				Error: fmt.Errorf("failed to load profiles: %w", err),
-			}
-		}
-		return results
+	err := l.db.Where("user_id IN ?", userIDs).Find(&profiles).Error
+	return profiles, err
+}
+
+func (l *ProfileLoader) batchLoad(ctx context.Context, keys []StringKey) []*dataloader.Result[*entity.Profile] {
+	keyStrings := convertKeysToStrings(keys)
+
+	userIDs, parseErrors := parseUserIDs(keyStrings)
+	if len(parseErrors) > 0 {
+		return CreateErrorResults[*entity.Profile](keyStrings, fmt.Errorf("failed to parse user IDs"))
 	}
 
-	// Create a map for quick lookup
+	profiles, err := l.fetchProfilesFromDB(userIDs)
+	if err != nil {
+		return CreateErrorResults[*entity.Profile](keyStrings, fmt.Errorf("failed to load profiles: %w", err))
+	}
+
+	return l.createResults(keyStrings, profiles)
+}
+
+func (l *ProfileLoader) createResults(keyStrings []string, profiles []entity.Profile) []*dataloader.Result[*entity.Profile] {
 	profileMap := make(map[uint]*entity.Profile)
 	for i := range profiles {
 		profileMap[profiles[i].UserID] = &profiles[i]
 	}
 
-	// Return results in the same order as keys
-	results := make([]*dataloader.Result[*entity.Profile], len(keys))
-	for i, key := range keys {
-		if userID, err := strconv.ParseUint(string(key), 10, 32); err == nil {
-			if profile, exists := profileMap[uint(userID)]; exists {
-				results[i] = &dataloader.Result[*entity.Profile]{
-					Data: profile,
-				}
-			} else {
-				// Profile doesn't exist, return nil
-				results[i] = &dataloader.Result[*entity.Profile]{
-					Data: nil,
-				}
-			}
-		} else {
-			results[i] = &dataloader.Result[*entity.Profile]{
-				Error: fmt.Errorf("invalid user ID: %s", string(key)),
-			}
+	return CreateResultsFromMap(keyStrings, profileMap, func(key string) (uint, error) {
+		if id, err := strconv.ParseUint(key, 10, 32); err == nil {
+			return uint(id), nil
 		}
-	}
-
-	return results
+		return 0, fmt.Errorf("invalid user ID: %s", key)
+	})
 }
 
-// LoadProfile loads a profile by user ID
-func LoadProfile(ctx context.Context, loader *dataloader.Loader[ProfileLoaderKey, *entity.Profile], userID string) (*entity.Profile, error) {
-	thunk := loader.Load(ctx, ProfileLoaderKey(userID))
-	result, err := thunk()
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
+// ユーザーIDでプロファイルをロード
+func (p *ProfileLoader) LoadProfile(ctx context.Context, userID string) (*entity.Profile, error) {
+	return LoadGeneric(ctx, p.loader, StringKey(userID))
+}
+
+// LoadManyを使用してユーザーIDで複数のプロファイルをロード
+func (p *ProfileLoader) LoadProfiles(ctx context.Context, userIDs []string) ([]*entity.Profile, []error) {
+	keys := ConvertToStringKeys(userIDs)
+	return LoadManyGeneric(ctx, p.loader, keys)
 }

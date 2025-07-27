@@ -39,6 +39,7 @@ func main() {
 		DB:             db.DB,
 		FirebaseAuth:   firebaseAuth,
 		AuthMiddleware: authMiddleware,
+		DataLoaders:    dataloader.NewDataLoaders(db.DB),
 	}}))
 
 	srv.AddTransport(transport.Options{})

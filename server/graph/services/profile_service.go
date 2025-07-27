@@ -11,57 +11,59 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	DateFormat = "2006-01-02"
+	TimeFormat = time.RFC3339
+)
+
 type ProfileService interface {
 	GetProfileByUserID(ctx context.Context, userID string) (*model.Profile, error)
-	GetProfileByUserIDWithFallback(ctx context.Context, userID string) (*model.Profile, error)
 	CreateProfile(ctx context.Context, input model.CreateProfile) (*model.Profile, error)
 }
 
 type profileService struct {
-	db *gorm.DB
+	db            *gorm.DB
+	profileLoader dataloader.ProfileLoaderInterface
 }
 
-func NewProfileService(db *gorm.DB) ProfileService {
-	return &profileService{db: db}
+func NewProfileService(db *gorm.DB, profileLoader dataloader.ProfileLoaderInterface) ProfileService {
+	return &profileService{
+		db:            db,
+		profileLoader: profileLoader,
+	}
 }
 
 func convertProfile(profile entity.Profile) *model.Profile {
-	var birthDate *string
-	if profile.BirthDate != nil {
-		formatted := profile.BirthDate.Format("2006-01-02")
-		birthDate = &formatted
+	formatDate := func(t *time.Time) *string {
+		if t == nil {
+			return nil
+		}
+		formatted := t.Format(DateFormat)
+		return &formatted
 	}
 
-	var gender *string
-	if profile.Gender != "" {
-		gender = &profile.Gender
-	}
-
-	var activityLevel *string
-	if profile.ActivityLevel != "" {
-		activityLevel = &profile.ActivityLevel
+	formatString := func(s string) *string {
+		if s == "" {
+			return nil
+		}
+		return &s
 	}
 
 	return &model.Profile{
 		ID:            fmt.Sprintf("%d", profile.ID),
 		Name:          profile.Name,
-		BirthDate:     birthDate,
-		Gender:        gender,
+		BirthDate:     formatDate(profile.BirthDate),
+		Gender:        formatString(profile.Gender),
 		Height:        profile.Height,
 		Weight:        profile.Weight,
-		ActivityLevel: activityLevel,
-		CreatedAt:     profile.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:     profile.UpdatedAt.Format(time.RFC3339),
+		ActivityLevel: formatString(profile.ActivityLevel),
+		CreatedAt:     profile.CreatedAt.Format(TimeFormat),
+		UpdatedAt:     profile.UpdatedAt.Format(TimeFormat),
 	}
 }
 
 func (p *profileService) GetProfileByUserID(ctx context.Context, userID string) (*model.Profile, error) {
-	loader := dataloader.GetProfileLoader(ctx)
-	if loader == nil {
-		return nil, fmt.Errorf("profile loader not available")
-	}
-
-	profile, err := dataloader.LoadProfile(ctx, loader, userID)
+	profile, err := p.profileLoader.LoadProfile(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load profile: %w", err)
 	}
@@ -73,40 +75,13 @@ func (p *profileService) GetProfileByUserID(ctx context.Context, userID string) 
 	return convertProfile(*profile), nil
 }
 
-func (p *profileService) GetProfileByUserIDWithFallback(ctx context.Context, userID string) (*model.Profile, error) {
-	// Try DataLoader first
-	loader := dataloader.GetProfileLoader(ctx)
-	if loader != nil {
-		profile, err := dataloader.LoadProfile(ctx, loader, userID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load profile: %w", err)
-		}
-
-		if profile == nil {
-			return nil, nil
-		}
-
-		return convertProfile(*profile), nil
-	}
-
-	// Fallback to direct database query
-	var profile entity.Profile
-	if err := p.db.Where("user_id = ?", userID).First(&profile).Error; err != nil {
-		// Profile doesn't exist, return nil
-		return nil, nil
-	}
-
-	return convertProfile(profile), nil
-}
-
 func (p *profileService) CreateProfile(ctx context.Context, input model.CreateProfile) (*model.Profile, error) {
 	currentUser, err := NewUserService(p.db).GetCurrentUser(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get current user: %w", err)
 	}
 
-	// Parse birth date in "YYYY-MM-DD" format
-	birthDate, err := time.Parse("2006-01-02", input.BirthDate)
+	birthDate, err := time.Parse(DateFormat, input.BirthDate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse birth date: %w", err)
 	}

@@ -12,8 +12,8 @@ import (
 
 // Profile is the resolver for the profile field.
 func (r *userResolver) Profile(ctx context.Context, obj *model.User) (*model.Profile, error) {
-	profileService := services.NewProfileService(r.DB)
-	return profileService.GetProfileByUserIDWithFallback(ctx, obj.ID)
+	profileService := services.NewProfileService(r.DB, r.DataLoaders.ProfileLoader)
+	return profileService.GetProfileByUserID(ctx, obj.ID)
 }
 
 // User returns UserResolver implementation.

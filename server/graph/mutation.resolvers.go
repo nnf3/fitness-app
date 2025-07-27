@@ -29,7 +29,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, input model.DeleteUse
 
 // CreateProfile is the resolver for the createProfile field.
 func (r *mutationResolver) CreateProfile(ctx context.Context, input model.CreateProfile) (*model.Profile, error) {
-	profileService := services.NewProfileService(r.DB)
+	profileService := services.NewProfileService(r.DB, r.DataLoaders.ProfileLoader)
 	return profileService.CreateProfile(ctx, input)
 }
 
