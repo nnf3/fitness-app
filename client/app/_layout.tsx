@@ -28,6 +28,14 @@ export default function RootLayout() {
               title: "設定",
               headerBackTitle: "設定",
               gestureEnabled: true,
+              headerStyle: {
+                backgroundColor: '#1B4332',
+              },
+              headerTitleStyle: {
+                color: '#FFFFFF',
+                fontWeight: 'bold',
+              },
+              headerTintColor: '#FFFFFF',
             }}
           />
         </Stack>

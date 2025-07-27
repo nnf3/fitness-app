@@ -49,21 +49,31 @@ const UPDATE_PROFILE_MUTATION = gql`
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#1B4332', // ダークグリーン背景
   },
-
   scrollView: {
     flex: 1,
   },
   content: {
     padding: 20,
+    paddingTop: 40,
+    paddingBottom: 40,
+    flex: 1,
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 30,
-    color: '#1C1C1E',
+    marginBottom: 10,
+    color: '#FFFFFF',
+  },
+  subtitle: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 40,
+    color: '#FFFFFF',
+    opacity: 0.8,
   },
   formGroup: {
     marginBottom: 20,
@@ -71,63 +81,70 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    backgroundColor: '#2D5A3D', // より明るいグリーン
+    borderWidth: 0,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     fontSize: 16,
-    color: '#1C1C1E',
+    color: '#FFFFFF',
+    minHeight: 50,
   },
   pickerContainer: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    borderRadius: 8,
+    backgroundColor: '#2D5A3D',
+    borderWidth: 0,
+    borderRadius: 12,
     overflow: 'hidden',
     minHeight: 50,
   },
   picker: {
     height: 50,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
     fontSize: 16,
-    color: '#1C1C1E',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-
-  saveButton: {
-    backgroundColor: '#007AFF',
+    color: '#FFFFFF',
+    paddingHorizontal: 16,
     paddingVertical: 16,
-    borderRadius: 8,
+  },
+  saveButton: {
+    backgroundColor: '#4CAF50', // 明るいグリーン
+    paddingVertical: 18,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 30,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   saveButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   saveButtonDisabled: {
-    backgroundColor: '#C7C7CC',
+    backgroundColor: '#2D5A3D',
+    opacity: 0.6,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#1B4332',
   },
   errorText: {
-    color: '#FF3B30',
+    color: '#FF6B6B',
     fontSize: 14,
     textAlign: 'center',
     marginTop: 8,
   },
-
 });
 
 export default function ProfileEditScreen() {
@@ -239,7 +256,7 @@ export default function ProfileEditScreen() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>プロフィール編集</Text>
+        <Text style={styles.subtitle}>プロフィールを編集</Text>
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>名前 *</Text>
@@ -282,7 +299,8 @@ export default function ProfileEditScreen() {
                 inputIOS: styles.picker,
                 inputAndroid: styles.picker,
                 placeholder: {
-                  color: '#8E8E93',
+                  color: '#FFFFFF',
+                  opacity: 0.6,
                 },
               }}
               onValueChange={(value: string) => setFormData({ ...formData, gender: value })}
@@ -331,7 +349,8 @@ export default function ProfileEditScreen() {
                 inputIOS: styles.picker,
                 inputAndroid: styles.picker,
                 placeholder: {
-                  color: '#8E8E93',
+                  color: '#FFFFFF',
+                  opacity: 0.6,
                 },
               }}
               onValueChange={(value: string) => setFormData({ ...formData, activityLevel: value })}
@@ -350,7 +369,7 @@ export default function ProfileEditScreen() {
           {mutationLoading ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.saveButtonText}>保存</Text>
+            <Text style={styles.saveButtonText}>プロフィールを保存</Text>
           )}
         </TouchableOpacity>
       </ScrollView>
