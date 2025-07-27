@@ -21,6 +21,15 @@ export default function RootLayout() {
               gestureEnabled: false,
             }}
           />
+          <Stack.Screen
+            name="profile-edit"
+            options={{
+              headerShown: true,
+              title: "設定",
+              headerBackTitle: "設定",
+              gestureEnabled: true,
+            }}
+          />
         </Stack>
       </ApolloWrapper>
     </AuthProvider>

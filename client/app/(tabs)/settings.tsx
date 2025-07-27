@@ -1,5 +1,6 @@
 import { Text, View, StyleSheet, Switch, TouchableOpacity, Alert } from "react-native";
 import { useAuth } from "../../hooks";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -76,6 +77,7 @@ const styles = StyleSheet.create({
 
 export default function SettingsTab() {
   const { user, signOut } = useAuth();
+  const router = useRouter();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
@@ -109,10 +111,6 @@ export default function SettingsTab() {
 
   return (
     <View style={styles.container}>
-      {/* ユーザー情報セクション */}
-      <View style={styles.userInfo}>
-        <Text style={styles.userEmail}>{user.email}</Text>
-      </View>
 
       {/* 通知設定セクション */}
       <Text style={styles.sectionHeader}>通知</Text>
@@ -153,7 +151,10 @@ export default function SettingsTab() {
       {/* アカウントセクション */}
       <Text style={styles.sectionHeader}>アカウント</Text>
       <View style={styles.section}>
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity
+          style={styles.settingItem}
+          onPress={() => router.push('/profile-edit')}
+        >
           <Text style={styles.settingText}>プロフィール編集</Text>
           <FontAwesome name="chevron-right" size={16} color="#8E8E93" />
         </TouchableOpacity>

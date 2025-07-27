@@ -13,11 +13,22 @@ input CreateProfile {
   name: String!
   birthDate: String!
   gender: String!
-  height: Float!
-  weight: Float!
+  height: Float
+  weight: Float
+  activityLevel: String
+}
+
+input UpdateProfile {
+  name: String
+  birthDate: String
+  gender: String
+  height: Float
+  weight: Float
+  activityLevel: String
 }
 
 type Mutation {
   deleteUser(input: DeleteUser!): Boolean!
   createProfile(input: CreateProfile!): Profile!
+  updateProfile(input: UpdateProfile!): Profile!
 }

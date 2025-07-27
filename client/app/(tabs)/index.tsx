@@ -11,6 +11,15 @@ const CURRENT_USER_QUERY = gql`
       uid
       createdAt
       updatedAt
+      profile {
+        id
+        name
+        birthDate
+        gender
+        height
+        weight
+        activityLevel
+      }
     }
   }
 `;
@@ -132,13 +141,27 @@ export default function HomeTab() {
 
         {data?.currentUser && (
           <>
-            <Text style={styles.userName}>{data.currentUser.name}</Text>
             <Text style={styles.userDetails}>
               ユーザーID: {data.currentUser.id}
             </Text>
             <Text style={styles.userDetails}>
               作成日: {new Date(data.currentUser.createdAt).toLocaleDateString('ja-JP')}
             </Text>
+            {data.currentUser.profile && (
+              <>
+                <Text style={styles.userName}>{data.currentUser.profile.name}</Text>
+                <Text style={styles.userDetails}>
+                  身長: {data.currentUser.profile.height}cm
+                </Text>
+                <Text style={styles.userDetails}>
+                  体重: {data.currentUser.profile.weight}kg
+                </Text>
+                <Text style={styles.userDetails}>
+                  性別: {data.currentUser.profile.gender === 'male' ? '男性' :
+                         data.currentUser.profile.gender === 'female' ? '女性' : 'その他'}
+                </Text>
+              </>
+            )}
           </>
         )}
       </View>

@@ -19,6 +19,7 @@ const (
 type ProfileService interface {
 	GetProfileByUserID(ctx context.Context, userID string) (*model.Profile, error)
 	CreateProfile(ctx context.Context, input model.CreateProfile) (*model.Profile, error)
+	UpdateProfile(ctx context.Context, input model.UpdateProfile) (*model.Profile, error)
 }
 
 type profileService struct {
@@ -91,12 +92,53 @@ func (p *profileService) CreateProfile(ctx context.Context, input model.CreatePr
 		Name:      input.Name,
 		BirthDate: &birthDate,
 		Gender:    input.Gender,
-		Height:    &input.Height,
-		Weight:    &input.Weight,
+		Height:    input.Height,
+		Weight:    input.Weight,
 	}
 
 	if err := p.db.Create(&profile).Error; err != nil {
 		return nil, fmt.Errorf("failed to create profile: %w", err)
+	}
+
+	return convertProfile(profile), nil
+}
+
+func (p *profileService) UpdateProfile(ctx context.Context, input model.UpdateProfile) (*model.Profile, error) {
+	currentUser, err := NewUserService(p.db).GetCurrentUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
+	}
+
+	var profile entity.Profile
+	if err := p.db.Where("user_id = ?", currentUser.ID).First(&profile).Error; err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
+	}
+
+	if input.Name != nil {
+		profile.Name = *input.Name
+	}
+	if input.BirthDate != nil {
+		birthDate, err := time.Parse(DateFormat, *input.BirthDate)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse birth date: %w", err)
+		}
+		profile.BirthDate = &birthDate
+	}
+	if input.Gender != nil {
+		profile.Gender = *input.Gender
+	}
+	if input.Height != nil {
+		profile.Height = input.Height
+	}
+	if input.Weight != nil {
+		profile.Weight = input.Weight
+	}
+	if input.ActivityLevel != nil {
+		profile.ActivityLevel = *input.ActivityLevel
+	}
+
+	if err := p.db.Save(&profile).Error; err != nil {
+		return nil, fmt.Errorf("failed to update profile: %w", err)
 	}
 
 	return convertProfile(profile), nil

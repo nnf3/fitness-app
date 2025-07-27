@@ -33,6 +33,12 @@ func (r *mutationResolver) CreateProfile(ctx context.Context, input model.Create
 	return profileService.CreateProfile(ctx, input)
 }
 
+// UpdateProfile is the resolver for the updateProfile field.
+func (r *mutationResolver) UpdateProfile(ctx context.Context, input model.UpdateProfile) (*model.Profile, error) {
+	profileService := services.NewProfileService(r.DB, r.DataLoaders.ProfileLoader)
+	return profileService.UpdateProfile(ctx, input)
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
