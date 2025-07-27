@@ -2,16 +2,13 @@ package entity
 
 import (
 	"fmt"
-	"time"
 
 	"gorm.io/gorm"
 )
 
 type User struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
-	UID       string    `gorm:"not null;uniqueIndex" json:"uid"`
-	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+	gorm.Model
+	UID string `gorm:"unique;not null"`
 }
 
 // BeforeSave GORMフック - 保存前のバリデーション
@@ -21,14 +18,14 @@ func (u *User) BeforeSave(tx *gorm.DB) error {
 
 // BeforeCreate GORMフック - 作成前の処理
 func (u *User) BeforeCreate(tx *gorm.DB) error {
-	u.CreatedAt = time.Now()
-	u.UpdatedAt = time.Now()
+	if err := tx.Where("uid = ?", u.UID).First(&User{}).Error; err == nil {
+		return fmt.Errorf("UIDはすでに存在します")
+	}
 	return u.Validate()
 }
 
 // BeforeUpdate GORMフック - 更新前の処理
 func (u *User) BeforeUpdate(tx *gorm.DB) error {
-	u.UpdatedAt = time.Now()
 	return u.Validate()
 }
 

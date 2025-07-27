@@ -8,7 +8,7 @@ Go言語とgqlgenを使用したフィットネスアプリのGraphQLバック�
 - **GraphQL**: gqlgen
 - **データベース**: PostgreSQL
 - **ORM**: GORM
-- **マイグレーション**: golang-migrate
+- **マイグレーション**: gormigrate
 - **テストフレームワーク**: testify
 - **開発環境**: Docker + Air (ホットリロード)
 
@@ -16,7 +16,7 @@ Go言語とgqlgenを使用したフィットネスアプリのGraphQLバック�
 
 - Docker
 - Docker Compose
-- Make (オプション、マイグレーション管理用)
+- Make
 
 ## セットアップ
 
@@ -81,22 +81,9 @@ docker compose exec server bash
 
 ### マイグレーション
 
-Makefileを使用した簡単なマイグレーション管理：
-
-```sh
-# サーバーコンテナに入る
-docker compose exec server bash
-
-# 新しいマイグレーションファイルを作成
-make migrate-create
-# プロンプトが表示されるので、マイグレーション名を入力（例: create_users）
-
-# マイグレーションを実行
-make migrate-up
-
-# マイグレーションをロールバック
-make migrate-down
-```
+gormigrate + gorm auto-migration を使います。
+`gorm.Model` で sturct を定義した後、`db/database.go` に Migration を追加していきます。
+詳しくは `db/database.go` を参照ください。
 
 ### データベース操作
 
@@ -245,7 +232,6 @@ server/
 │   └── model/             # 生成されたモデル
 ├── entity/                # データエンティティ
 ├── db/                    # データベース関連
-│   └── migrations/        # マイグレーションファイル
 └── makefile               # 作業自動化
 ```
 

@@ -1,12 +1,12 @@
 package db
 
 import (
+	"app/entity"
 	"fmt"
 	"log"
 	"os"
-	"strings"
-	"time"
 
+	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -29,49 +29,40 @@ func ConnectDB() {
 			host, user, password, dbname)
 	}
 
-	// ログレベルを環境変数から取得
-	logLevel := getLogLevel()
-
-	// GORM設定（SQLログ出力を含む）
-	config := &gorm.Config{
-		Logger: logger.New(
-			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-			logger.Config{
-				SlowThreshold:             time.Second, // Slow SQL threshold
-				LogLevel:                  logLevel,    // Log level
-				IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
-				ParameterizedQueries:      false,       // Don't include params in the SQL log
-				Colorful:                  true,        // Enable color
-			},
-		),
-	}
-
-	database, err := gorm.Open(postgres.Open(dsn), config)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		panic("❌ データベース接続に失敗しました: " + err.Error())
 	}
 
-	DB = database
+	DB = db
 	log.Printf("✅ データベース接続が成功しました")
-}
 
-// getLogLevel returns the log level from environment variable
-func getLogLevel() logger.LogLevel {
-	logLevelStr := os.Getenv("GORM_LOG_LEVEL")
-	if logLevelStr == "" {
-		logLevelStr = "info" // デフォルトはinfo
+	m := gormigrate.New(db, gormigrate.DefaultOptions, []*gormigrate.Migration{
+		{
+			ID: "202507281400_create_users",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&entity.User{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&entity.User{})
+			},
+		},
+		{
+			ID: "202507281401_create_profiles",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&entity.Profile{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&entity.Profile{})
+			},
+		},
+	})
+
+	if err := m.Migrate(); err != nil {
+		panic("Could not migrate: " + err.Error())
 	}
 
-	switch strings.ToLower(logLevelStr) {
-	case "silent":
-		return logger.Silent
-	case "error":
-		return logger.Error
-	case "warn":
-		return logger.Warn
-	case "info":
-		return logger.Info
-	default:
-		return logger.Info
-	}
+	log.Printf("Migration did run successfully")
 }
