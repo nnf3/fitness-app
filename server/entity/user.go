@@ -2,6 +2,7 @@ package entity
 
 import (
 	"fmt"
+	"os"
 
 	"gorm.io/gorm"
 )
@@ -35,4 +36,8 @@ func (u *User) Validate() error {
 		return fmt.Errorf("UIDは必須です")
 	}
 	return nil
+}
+
+func (u *User) IsAdmin() bool {
+	return u.UID == os.Getenv("MOCK_ADMIN_UID")
 }

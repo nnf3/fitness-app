@@ -213,6 +213,66 @@ mutation {
 }
 ```
 
+## Adminユーザーアクセス
+
+開発環境では、Firebase認証に依存せずにadminユーザーとしてアクセスできるモック認証機能が利用できます。
+
+### 使用方法
+
+GraphQL Playground（http://localhost:8080）で以下の手順でadminユーザーとしてアクセスできます：
+
+1. **HTTP HEADERS**セクションに以下を追加：
+```json
+{
+  "Authorization": "admin-user-123"
+}
+```
+
+2. **クエリ例**：
+```graphql
+# 全ユーザー一覧を取得（adminユーザーのみ実行可能）
+query {
+  users {
+    id
+    uid
+    createdAt
+    profile {
+      name
+      birthDate
+      gender
+      height
+      weight
+      activityLevel
+    }
+  }
+}
+
+# 現在のユーザー情報を取得
+query {
+  currentUser {
+    id
+    uid
+    profile {
+      name
+      birthDate
+      gender
+      height
+      weight
+      activityLevel
+    }
+  }
+}
+```
+
+
+### 注意事項
+
+- **開発環境のみ**: この機能は開発環境でのみ使用してください
+- **本番環境**: 本番環境では`ENABLE_MOCK_AUTH=false`に設定するか、環境変数を削除してください
+- **セキュリティ**: モックトークンは固定値のため、本番環境では使用しないでください
+- **データベース**: adminユーザーはマイグレーション時に自動的に作成されます
+
+
 ## プロジェクト構造
 
 ```
