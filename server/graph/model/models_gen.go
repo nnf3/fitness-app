@@ -3,12 +3,13 @@
 package model
 
 type CreateProfile struct {
-	Name          string   `json:"name"`
-	BirthDate     string   `json:"birthDate"`
-	Gender        string   `json:"gender"`
-	Height        *float64 `json:"height,omitempty"`
-	Weight        *float64 `json:"weight,omitempty"`
-	ActivityLevel *string  `json:"activityLevel,omitempty"`
+	Name          string         `json:"name"`
+	BirthDate     string         `json:"birthDate"`
+	Gender        Gender         `json:"gender"`
+	Height        *float64       `json:"height,omitempty"`
+	Weight        *float64       `json:"weight,omitempty"`
+	ActivityLevel *ActivityLevel `json:"activityLevel,omitempty"`
+	ImageURL      *string        `json:"imageURL,omitempty"`
 }
 
 type DeleteUser struct {
@@ -23,28 +24,30 @@ type NewUser struct {
 }
 
 type Profile struct {
-	ID            string   `json:"id"`
-	User          *User    `json:"user"`
-	Name          string   `json:"name"`
-	BirthDate     *string  `json:"birthDate,omitempty"`
-	Gender        *string  `json:"gender,omitempty"`
-	Height        *float64 `json:"height,omitempty"`
-	Weight        *float64 `json:"weight,omitempty"`
-	ActivityLevel *string  `json:"activityLevel,omitempty"`
-	CreatedAt     string   `json:"createdAt"`
-	UpdatedAt     string   `json:"updatedAt"`
+	ID            string         `json:"id"`
+	User          *User          `json:"user"`
+	Name          string         `json:"name"`
+	BirthDate     *string        `json:"birthDate,omitempty"`
+	Gender        *Gender        `json:"gender,omitempty"`
+	Height        *float64       `json:"height,omitempty"`
+	Weight        *float64       `json:"weight,omitempty"`
+	ActivityLevel *ActivityLevel `json:"activityLevel,omitempty"`
+	ImageURL      *string        `json:"imageURL,omitempty"`
+	CreatedAt     string         `json:"createdAt"`
+	UpdatedAt     string         `json:"updatedAt"`
 }
 
 type Query struct {
 }
 
 type UpdateProfile struct {
-	Name          *string  `json:"name,omitempty"`
-	BirthDate     *string  `json:"birthDate,omitempty"`
-	Gender        *string  `json:"gender,omitempty"`
-	Height        *float64 `json:"height,omitempty"`
-	Weight        *float64 `json:"weight,omitempty"`
-	ActivityLevel *string  `json:"activityLevel,omitempty"`
+	Name          *string        `json:"name,omitempty"`
+	BirthDate     *string        `json:"birthDate,omitempty"`
+	Gender        *Gender        `json:"gender,omitempty"`
+	Height        *float64       `json:"height,omitempty"`
+	Weight        *float64       `json:"weight,omitempty"`
+	ActivityLevel *ActivityLevel `json:"activityLevel,omitempty"`
+	ImageURL      *string        `json:"imageURL,omitempty"`
 }
 
 type User struct {

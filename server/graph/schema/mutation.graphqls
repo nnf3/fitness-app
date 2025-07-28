@@ -12,19 +12,21 @@ input DeleteUser {
 input CreateProfile {
   name: String!
   birthDate: String!
-  gender: String!
+  gender: Gender!
   height: Float
   weight: Float
-  activityLevel: String
+  activityLevel: ActivityLevel
+  imageURL: String
 }
 
 input UpdateProfile {
   name: String
   birthDate: String
-  gender: String
+  gender: Gender
   height: Float
   weight: Float
-  activityLevel: String
+  activityLevel: ActivityLevel
+  imageURL: String
 }
 
 type Mutation {

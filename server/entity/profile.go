@@ -2,10 +2,21 @@ package entity
 
 import (
 	"fmt"
+	"strings"
 	"time"
+
+	"app/graph/model"
 
 	"gorm.io/gorm"
 )
+
+const (
+	GenderMale   = "male"
+	GenderFemale = "female"
+	GenderOther  = "other"
+)
+
+var GenderEnum = []string{GenderMale, GenderFemale, GenderOther}
 
 type Profile struct {
 	gorm.Model
@@ -13,10 +24,92 @@ type Profile struct {
 	User          User
 	Name          string     `gorm:"not null;size:255"`
 	BirthDate     *time.Time `gorm:"type:date"`
-	Gender        string     `gorm:"size:10"`
+	Gender        string     `gorm:"type: enum('male', 'female', 'other')"`
 	Height        *float64
 	Weight        *float64
-	ActivityLevel string
+	ActivityLevel string `gorm:"type: enum('sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active')"`
+	ImageURL      string
+}
+
+// GenderToGraphQL GraphQL enumに変換
+func (p *Profile) GenderToGraphQL() *model.Gender {
+	switch p.Gender {
+	case "male":
+		gender := model.GenderMale
+		return &gender
+	case "female":
+		gender := model.GenderFemale
+		return &gender
+	case "other":
+		gender := model.GenderOther
+		return &gender
+	case "prefer_not_to_say":
+		gender := model.GenderPreferNotToSay
+		return &gender
+	default:
+		return nil
+	}
+}
+
+// ActivityLevelToGraphQL GraphQL enumに変換
+func (p *Profile) ActivityLevelToGraphQL() *model.ActivityLevel {
+	switch p.ActivityLevel {
+	case "sedentary":
+		level := model.ActivityLevelSedentary
+		return &level
+	case "lightly_active":
+		level := model.ActivityLevelLightlyActive
+		return &level
+	case "moderately_active":
+		level := model.ActivityLevelModeratelyActive
+		return &level
+	case "very_active":
+		level := model.ActivityLevelVeryActive
+		return &level
+	case "extremely_active":
+		level := model.ActivityLevelExtremelyActive
+		return &level
+	default:
+		return nil
+	}
+}
+
+// GenderFromGraphQL GraphQL enumから変換
+func (p *Profile) GenderFromGraphQL(gender *model.Gender) {
+	if gender == nil {
+		p.Gender = ""
+		return
+	}
+
+	switch *gender {
+	case model.GenderMale:
+		p.Gender = "male"
+	case model.GenderFemale:
+		p.Gender = "female"
+	case model.GenderOther:
+		p.Gender = "other"
+	}
+}
+
+// ActivityLevelFromGraphQL GraphQL enumから変換
+func (p *Profile) ActivityLevelFromGraphQL(level *model.ActivityLevel) {
+	if level == nil {
+		p.ActivityLevel = ""
+		return
+	}
+
+	switch *level {
+	case model.ActivityLevelSedentary:
+		p.ActivityLevel = "sedentary"
+	case model.ActivityLevelLightlyActive:
+		p.ActivityLevel = "lightly_active"
+	case model.ActivityLevelModeratelyActive:
+		p.ActivityLevel = "moderately_active"
+	case model.ActivityLevelVeryActive:
+		p.ActivityLevel = "very_active"
+	case model.ActivityLevelExtremelyActive:
+		p.ActivityLevel = "extremely_active"
+	}
 }
 
 // BeforeSave GORMフック - 保存前のバリデーション
@@ -49,16 +142,15 @@ func (p *Profile) Validate() error {
 	}
 
 	if p.Gender != "" {
-		validGenders := []string{"male", "female", "other", "prefer_not_to_say"}
 		isValid := false
-		for _, gender := range validGenders {
+		for _, gender := range GenderEnum {
 			if p.Gender == gender {
 				isValid = true
 				break
 			}
 		}
 		if !isValid {
-			return fmt.Errorf("性別は male, female, other, prefer_not_to_say のいずれかを選択してください")
+			return fmt.Errorf("性別は %s, %s, %s のいずれかを選択してください", GenderMale, GenderFemale, GenderOther)
 		}
 	}
 
@@ -85,6 +177,12 @@ func (p *Profile) Validate() error {
 		}
 		if !isValid {
 			return fmt.Errorf("活動レベルは sedentary, lightly_active, moderately_active, very_active, extremely_active のいずれかを選択してください")
+		}
+	}
+
+	if p.ImageURL != "" {
+		if !strings.HasPrefix(p.ImageURL, "https://") {
+			return fmt.Errorf("画像URLはhttpsから始まる必要があります")
 		}
 	}
 

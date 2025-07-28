@@ -75,6 +75,15 @@ func ConnectDB() {
 				return tx.Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")).Delete(&entity.User{}).Error
 			},
 		},
+		{
+			ID: "202507281403_add_image_url_to_profiles",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.Migrator().AddColumn(&entity.Profile{}, "image_url")
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropColumn(&entity.Profile{}, "image_url")
+			},
+		},
 	})
 
 	if err := m.Migrate(); err != nil {

@@ -61,6 +61,7 @@ type ComplexityRoot struct {
 		Gender        func(childComplexity int) int
 		Height        func(childComplexity int) int
 		ID            func(childComplexity int) int
+		ImageURL      func(childComplexity int) int
 		Name          func(childComplexity int) int
 		UpdatedAt     func(childComplexity int) int
 		User          func(childComplexity int) int
@@ -190,6 +191,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Profile.ID(childComplexity), true
+
+	case "Profile.imageURL":
+		if e.complexity.Profile.ImageURL == nil {
+			break
+		}
+
+		return e.complexity.Profile.ImageURL(childComplexity), true
 
 	case "Profile.name":
 		if e.complexity.Profile.Name == nil {
@@ -376,7 +384,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/mutation.graphqls" "schema/query.graphqls" "schema/types.graphqls"
+//go:embed "schema/enums.graphqls" "schema/mutation.graphqls" "schema/query.graphqls" "schema/types.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -388,6 +396,7 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
+	{Name: "schema/enums.graphqls", Input: sourceData("schema/enums.graphqls"), BuiltIn: false},
 	{Name: "schema/mutation.graphqls", Input: sourceData("schema/mutation.graphqls"), BuiltIn: false},
 	{Name: "schema/query.graphqls", Input: sourceData("schema/query.graphqls"), BuiltIn: false},
 	{Name: "schema/types.graphqls", Input: sourceData("schema/types.graphqls"), BuiltIn: false},
@@ -700,6 +709,8 @@ func (ec *executionContext) fieldContext_Mutation_createProfile(ctx context.Cont
 				return ec.fieldContext_Profile_weight(ctx, field)
 			case "activityLevel":
 				return ec.fieldContext_Profile_activityLevel(ctx, field)
+			case "imageURL":
+				return ec.fieldContext_Profile_imageURL(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Profile_createdAt(ctx, field)
 			case "updatedAt":
@@ -777,6 +788,8 @@ func (ec *executionContext) fieldContext_Mutation_updateProfile(ctx context.Cont
 				return ec.fieldContext_Profile_weight(ctx, field)
 			case "activityLevel":
 				return ec.fieldContext_Profile_activityLevel(ctx, field)
+			case "imageURL":
+				return ec.fieldContext_Profile_imageURL(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Profile_createdAt(ctx, field)
 			case "updatedAt":
@@ -1007,9 +1020,9 @@ func (ec *executionContext) _Profile_gender(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*model.Gender)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOGender2ᚖappᚋgraphᚋmodelᚐGender(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Profile_gender(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1019,7 +1032,7 @@ func (ec *executionContext) fieldContext_Profile_gender(_ context.Context, field
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Gender does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1130,12 +1143,53 @@ func (ec *executionContext) _Profile_activityLevel(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
+	res := resTmp.(*model.ActivityLevel)
+	fc.Result = res
+	return ec.marshalOActivityLevel2ᚖappᚋgraphᚋmodelᚐActivityLevel(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Profile_activityLevel(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Profile",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ActivityLevel does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Profile_imageURL(ctx context.Context, field graphql.CollectedField, obj *model.Profile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Profile_imageURL(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImageURL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
 	res := resTmp.(*string)
 	fc.Result = res
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Profile_activityLevel(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Profile_imageURL(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Profile",
 		Field:      field,
@@ -1707,6 +1761,8 @@ func (ec *executionContext) fieldContext_User_profile(_ context.Context, field g
 				return ec.fieldContext_Profile_weight(ctx, field)
 			case "activityLevel":
 				return ec.fieldContext_Profile_activityLevel(ctx, field)
+			case "imageURL":
+				return ec.fieldContext_Profile_imageURL(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Profile_createdAt(ctx, field)
 			case "updatedAt":
@@ -3676,7 +3732,7 @@ func (ec *executionContext) unmarshalInputCreateProfile(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "birthDate", "gender", "height", "weight", "activityLevel"}
+	fieldsInOrder := [...]string{"name", "birthDate", "gender", "height", "weight", "activityLevel", "imageURL"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3699,7 +3755,7 @@ func (ec *executionContext) unmarshalInputCreateProfile(ctx context.Context, obj
 			it.BirthDate = data
 		case "gender":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gender"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNGender2appᚋgraphᚋmodelᚐGender(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3720,11 +3776,18 @@ func (ec *executionContext) unmarshalInputCreateProfile(ctx context.Context, obj
 			it.Weight = data
 		case "activityLevel":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("activityLevel"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOActivityLevel2ᚖappᚋgraphᚋmodelᚐActivityLevel(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.ActivityLevel = data
+		case "imageURL":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageURL"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ImageURL = data
 		}
 	}
 
@@ -3792,7 +3855,7 @@ func (ec *executionContext) unmarshalInputUpdateProfile(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "birthDate", "gender", "height", "weight", "activityLevel"}
+	fieldsInOrder := [...]string{"name", "birthDate", "gender", "height", "weight", "activityLevel", "imageURL"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3815,7 +3878,7 @@ func (ec *executionContext) unmarshalInputUpdateProfile(ctx context.Context, obj
 			it.BirthDate = data
 		case "gender":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gender"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOGender2ᚖappᚋgraphᚋmodelᚐGender(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3836,11 +3899,18 @@ func (ec *executionContext) unmarshalInputUpdateProfile(ctx context.Context, obj
 			it.Weight = data
 		case "activityLevel":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("activityLevel"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOActivityLevel2ᚖappᚋgraphᚋmodelᚐActivityLevel(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.ActivityLevel = data
+		case "imageURL":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageURL"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ImageURL = data
 		}
 	}
 
@@ -3954,6 +4024,8 @@ func (ec *executionContext) _Profile(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Profile_weight(ctx, field, obj)
 		case "activityLevel":
 			out.Values[i] = ec._Profile_activityLevel(ctx, field, obj)
+		case "imageURL":
+			out.Values[i] = ec._Profile_imageURL(ctx, field, obj)
 		case "createdAt":
 			out.Values[i] = ec._Profile_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4529,6 +4601,36 @@ func (ec *executionContext) unmarshalNDeleteUser2appᚋgraphᚋmodelᚐDeleteUse
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNGender2appᚋgraphᚋmodelᚐGender(ctx context.Context, v any) (model.Gender, error) {
+	tmp, err := graphql.UnmarshalString(v)
+	res := unmarshalNGender2appᚋgraphᚋmodelᚐGender[tmp]
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNGender2appᚋgraphᚋmodelᚐGender(ctx context.Context, sel ast.SelectionSet, v model.Gender) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalString(marshalNGender2appᚋgraphᚋmodelᚐGender[v])
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+var (
+	unmarshalNGender2appᚋgraphᚋmodelᚐGender = map[string]model.Gender{
+		"MALE":   model.GenderMale,
+		"FEMALE": model.GenderFemale,
+		"OTHER":  model.GenderOther,
+	}
+	marshalNGender2appᚋgraphᚋmodelᚐGender = map[model.Gender]string{
+		model.GenderMale:   "MALE",
+		model.GenderFemale: "FEMALE",
+		model.GenderOther:  "OTHER",
+	}
+)
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4891,6 +4993,42 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalOActivityLevel2ᚖappᚋgraphᚋmodelᚐActivityLevel(ctx context.Context, v any) (*model.ActivityLevel, error) {
+	if v == nil {
+		return nil, nil
+	}
+	tmp, err := graphql.UnmarshalString(v)
+	res := unmarshalOActivityLevel2ᚖappᚋgraphᚋmodelᚐActivityLevel[tmp]
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOActivityLevel2ᚖappᚋgraphᚋmodelᚐActivityLevel(ctx context.Context, sel ast.SelectionSet, v *model.ActivityLevel) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalString(marshalOActivityLevel2ᚖappᚋgraphᚋmodelᚐActivityLevel[*v])
+	return res
+}
+
+var (
+	unmarshalOActivityLevel2ᚖappᚋgraphᚋmodelᚐActivityLevel = map[string]model.ActivityLevel{
+		"SEDENTARY":         model.ActivityLevelSedentary,
+		"LIGHTLY_ACTIVE":    model.ActivityLevelLightlyActive,
+		"MODERATELY_ACTIVE": model.ActivityLevelModeratelyActive,
+		"VERY_ACTIVE":       model.ActivityLevelVeryActive,
+		"EXTREMELY_ACTIVE":  model.ActivityLevelExtremelyActive,
+	}
+	marshalOActivityLevel2ᚖappᚋgraphᚋmodelᚐActivityLevel = map[model.ActivityLevel]string{
+		model.ActivityLevelSedentary:        "SEDENTARY",
+		model.ActivityLevelLightlyActive:    "LIGHTLY_ACTIVE",
+		model.ActivityLevelModeratelyActive: "MODERATELY_ACTIVE",
+		model.ActivityLevelVeryActive:       "VERY_ACTIVE",
+		model.ActivityLevelExtremelyActive:  "EXTREMELY_ACTIVE",
+	}
+)
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4937,6 +5075,38 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	res := graphql.MarshalFloatContext(*v)
 	return graphql.WrapContextMarshaler(ctx, res)
 }
+
+func (ec *executionContext) unmarshalOGender2ᚖappᚋgraphᚋmodelᚐGender(ctx context.Context, v any) (*model.Gender, error) {
+	if v == nil {
+		return nil, nil
+	}
+	tmp, err := graphql.UnmarshalString(v)
+	res := unmarshalOGender2ᚖappᚋgraphᚋmodelᚐGender[tmp]
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOGender2ᚖappᚋgraphᚋmodelᚐGender(ctx context.Context, sel ast.SelectionSet, v *model.Gender) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalString(marshalOGender2ᚖappᚋgraphᚋmodelᚐGender[*v])
+	return res
+}
+
+var (
+	unmarshalOGender2ᚖappᚋgraphᚋmodelᚐGender = map[string]model.Gender{
+		"MALE":   model.GenderMale,
+		"FEMALE": model.GenderFemale,
+		"OTHER":  model.GenderOther,
+	}
+	marshalOGender2ᚖappᚋgraphᚋmodelᚐGender = map[model.Gender]string{
+		model.GenderMale:   "MALE",
+		model.GenderFemale: "FEMALE",
+		model.GenderOther:  "OTHER",
+	}
+)
 
 func (ec *executionContext) marshalOProfile2ᚖappᚋgraphᚋmodelᚐProfile(ctx context.Context, sel ast.SelectionSet, v *model.Profile) graphql.Marshaler {
 	if v == nil {
