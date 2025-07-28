@@ -11,7 +11,7 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../hooks';
+import { useAuth, useFirebaseStorage } from '../hooks';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import RNPickerSelect from 'react-native-picker-select';
 import * as ImagePicker from 'expo-image-picker';
@@ -180,11 +180,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  // アップロード関連のスタイル
+  imageContainerDisabled: {
+    opacity: 0.6,
+  },
+  imageButtonDisabled: {
+    backgroundColor: '#2D5A3D',
+    opacity: 0.6,
+  },
+  uploadOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 60,
+  },
+  uploadText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: 'center',
+  },
 });
 
 export default function ProfileEditScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { uploadImage, isUploading, uploadProgress } = useFirebaseStorage();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -250,8 +276,28 @@ export default function ProfileEditScreen() {
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const imageUri = result.assets[0].uri;
       setSelectedImage(imageUri);
-      // ここでは一時的にローカルURIを設定（本来はFirebase Storageにアップロード）
-      setFormData({ ...formData, imageURL: imageUri });
+
+      try {
+        // Firebase Storageにアップロード
+        const uploadResult = await uploadImage(
+          imageUri,
+          `users/${user?.uid}/profile-images`,
+          {
+            customMetadata: {
+              uploadedAt: new Date().toISOString(),
+              userId: user?.uid || '',
+            },
+          }
+        );
+
+        // アップロード成功後、URLをフォームデータに設定
+        setFormData({ ...formData, imageURL: uploadResult.url });
+        Alert.alert('成功', '画像をアップロードしました');
+      } catch (error) {
+        console.error('Image upload failed:', error);
+        Alert.alert('エラー', '画像のアップロードに失敗しました');
+        setSelectedImage(null);
+      }
     }
   };
 
@@ -329,16 +375,32 @@ export default function ProfileEditScreen() {
 
         {/* 画像選択セクション */}
         <View style={styles.imageSection}>
-          <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+          <TouchableOpacity 
+            style={[styles.imageContainer, isUploading && styles.imageContainerDisabled]}
+            onPress={pickImage}
+            disabled={isUploading}
+          >
             {selectedImage ? (
               <Image source={{ uri: selectedImage }} style={styles.profileImage} />
             ) : (
               <Text style={styles.imagePlaceholder}>📷</Text>
             )}
+            {isUploading && (
+              <View style={styles.uploadOverlay}>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+                <Text style={styles.uploadText}>
+                  {uploadProgress ? `${Math.round(uploadProgress.percentage)}%` : 'アップロード中...'}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
-          <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
+          <TouchableOpacity 
+            style={[styles.imageButton, isUploading && styles.imageButtonDisabled]} 
+            onPress={pickImage}
+            disabled={isUploading}
+          >
             <Text style={styles.imageButtonText}>
-              {selectedImage ? '写真を変更' : '写真を選択'}
+              {isUploading ? 'アップロード中...' : (selectedImage ? '写真を変更' : '写真を選択')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -452,10 +514,10 @@ export default function ProfileEditScreen() {
         <TouchableOpacity
           style={[
             styles.saveButton,
-            (!isFormValid || mutationLoading) && styles.saveButtonDisabled,
+            (!isFormValid || mutationLoading || isUploading) && styles.saveButtonDisabled,
           ]}
           onPress={handleSave}
-          disabled={!isFormValid || mutationLoading}
+          disabled={!isFormValid || mutationLoading || isUploading}
         >
           {mutationLoading ? (
             <ActivityIndicator color="#FFFFFF" />
