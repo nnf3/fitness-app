@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import storage from '@react-native-firebase/storage';
-import { Platform } from 'react-native';
 
 export interface UploadResult {
   url: string;
