@@ -8,11 +8,13 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../hooks';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import RNPickerSelect from 'react-native-picker-select';
+import * as ImagePicker from 'expo-image-picker';
 
 const CURRENT_USER_QUERY = gql`
   query ProfileEditCurrentUser {
@@ -27,6 +29,7 @@ const CURRENT_USER_QUERY = gql`
         height
         weight
         activityLevel
+        imageURL
       }
     }
   }
@@ -42,6 +45,7 @@ const UPDATE_PROFILE_MUTATION = gql`
       height
       weight
       activityLevel
+      imageURL
     }
   }
 `;
@@ -102,42 +106,31 @@ const styles = StyleSheet.create({
     minHeight: 50,
   },
   picker: {
-    height: 50,
-    backgroundColor: 'transparent',
-    fontSize: 16,
     color: '#FFFFFF',
+    fontSize: 16,
     paddingHorizontal: 16,
     paddingVertical: 16,
   },
   saveButton: {
-    backgroundColor: '#4CAF50', // 明るいグリーン
+    backgroundColor: '#4CAF50',
     paddingVertical: 18,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 30,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   saveButtonDisabled: {
     backgroundColor: '#2D5A3D',
     opacity: 0.6,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1B4332',
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   errorText: {
     color: '#FF6B6B',
@@ -145,11 +138,54 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // 画像選択関連のスタイル
+  imageSection: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  imageContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#2D5A3D',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    overflow: 'hidden',
+  },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  imagePlaceholder: {
+    fontSize: 48,
+    color: '#FFFFFF',
+    opacity: 0.6,
+  },
+  imageButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  imageButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
 
 export default function ProfileEditScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     birthDate: '',
@@ -157,8 +193,8 @@ export default function ProfileEditScreen() {
     height: '',
     weight: '',
     activityLevel: '',
+    imageURL: '',
   });
-
 
   const { data, loading: queryLoading, error: queryError } = useQuery(CURRENT_USER_QUERY, {
     skip: !user,
@@ -185,9 +221,39 @@ export default function ProfileEditScreen() {
         height: profile.height?.toString() || '',
         weight: profile.weight?.toString() || '',
         activityLevel: profile.activityLevel || '',
+        imageURL: profile.imageURL || '',
       });
+      // 既存の画像URLがあれば選択状態にする
+      if (profile.imageURL) {
+        setSelectedImage(profile.imageURL);
+      }
     }
   }, [data]);
+
+  const pickImage = async () => {
+    // カメラロールへのアクセス許可をリクエスト
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== 'granted') {
+      Alert.alert('権限が必要です', '写真を選択するにはカメラロールへのアクセス許可が必要です。');
+      return;
+    }
+
+    // 画像選択を実行
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const imageUri = result.assets[0].uri;
+      setSelectedImage(imageUri);
+      // ここでは一時的にローカルURIを設定（本来はFirebase Storageにアップロード）
+      setFormData({ ...formData, imageURL: imageUri });
+    }
+  };
 
   const handleSave = () => {
     if (!formData.name.trim()) {
@@ -218,6 +284,8 @@ export default function ProfileEditScreen() {
           gender: formData.gender,
           height: parseFloat(formData.height),
           weight: parseFloat(formData.weight),
+          activityLevel: formData.activityLevel || undefined,
+          imageURL: formData.imageURL || undefined,
         },
       },
     });
@@ -256,7 +324,24 @@ export default function ProfileEditScreen() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Fitness App</Text>
         <Text style={styles.subtitle}>プロフィールを編集</Text>
+
+        {/* 画像選択セクション */}
+        <View style={styles.imageSection}>
+          <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+            {selectedImage ? (
+              <Image source={{ uri: selectedImage }} style={styles.profileImage} />
+            ) : (
+              <Text style={styles.imagePlaceholder}>📷</Text>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
+            <Text style={styles.imageButtonText}>
+              {selectedImage ? '写真を変更' : '写真を選択'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>名前 *</Text>
@@ -265,6 +350,7 @@ export default function ProfileEditScreen() {
             value={formData.name}
             onChangeText={(text) => setFormData({ ...formData, name: text })}
             placeholder="名前を入力"
+            placeholderTextColor="#FFFFFF"
             autoCapitalize="words"
           />
         </View>
@@ -276,6 +362,7 @@ export default function ProfileEditScreen() {
             value={formData.birthDate}
             onChangeText={(text) => setFormData({ ...formData, birthDate: text })}
             placeholder="YYYY-MM-DD"
+            placeholderTextColor="#FFFFFF"
             keyboardType="numeric"
           />
         </View>
@@ -315,6 +402,7 @@ export default function ProfileEditScreen() {
             value={formData.height}
             onChangeText={(text) => setFormData({ ...formData, height: text })}
             placeholder="身長を入力"
+            placeholderTextColor="#FFFFFF"
             keyboardType="numeric"
           />
         </View>
@@ -326,6 +414,7 @@ export default function ProfileEditScreen() {
             value={formData.weight}
             onChangeText={(text) => setFormData({ ...formData, weight: text })}
             placeholder="体重を入力"
+            placeholderTextColor="#FFFFFF"
             keyboardType="numeric"
           />
         </View>
@@ -336,9 +425,11 @@ export default function ProfileEditScreen() {
             <RNPickerSelect
               items={[
                 { label: '活動レベルを選択', value: '' },
-                { label: '低い（座り仕事中心）', value: 'low' },
-                { label: '普通（軽い運動）', value: 'moderate' },
-                { label: '高い（激しい運動）', value: 'high' },
+                { label: '低い（座り仕事中心）', value: 'sedentary' },
+                { label: '軽い（軽い運動）', value: 'lightly_active' },
+                { label: '普通（適度な運動）', value: 'moderately_active' },
+                { label: '高い（激しい運動）', value: 'very_active' },
+                { label: '非常に高い（非常に激しい運動）', value: 'extremely_active' },
               ]}
               placeholder={{
                 label: '活動レベルを選択',

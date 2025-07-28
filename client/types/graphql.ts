@@ -14,18 +14,33 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export enum ActivityLevel {
+  ExtremelyActive = 'EXTREMELY_ACTIVE',
+  LightlyActive = 'LIGHTLY_ACTIVE',
+  ModeratelyActive = 'MODERATELY_ACTIVE',
+  Sedentary = 'SEDENTARY',
+  VeryActive = 'VERY_ACTIVE'
+}
+
 export type CreateProfile = {
-  activityLevel: Scalars['String']['input'];
+  activityLevel?: InputMaybe<ActivityLevel>;
   birthDate: Scalars['String']['input'];
-  gender: Scalars['String']['input'];
-  height: Scalars['Float']['input'];
+  gender: Gender;
+  height?: InputMaybe<Scalars['Float']['input']>;
+  imageURL?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  weight: Scalars['Float']['input'];
+  weight?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type DeleteUser = {
   id: Scalars['ID']['input'];
 };
+
+export enum Gender {
+  Female = 'FEMALE',
+  Male = 'MALE',
+  Other = 'OTHER'
+}
 
 export type Mutation = {
   __typename?: 'Mutation';
@@ -55,12 +70,13 @@ export type NewUser = {
 
 export type Profile = {
   __typename?: 'Profile';
-  activityLevel?: Maybe<Scalars['String']['output']>;
+  activityLevel?: Maybe<ActivityLevel>;
   birthDate?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
-  gender?: Maybe<Scalars['String']['output']>;
+  gender?: Maybe<Gender>;
   height?: Maybe<Scalars['Float']['output']>;
   id: Scalars['ID']['output'];
+  imageURL?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   updatedAt: Scalars['String']['output'];
   user: User;
@@ -74,12 +90,13 @@ export type Query = {
 };
 
 export type UpdateProfile = {
-  activityLevel: Scalars['String']['input'];
-  birthDate: Scalars['String']['input'];
-  gender: Scalars['String']['input'];
-  height: Scalars['Float']['input'];
-  name: Scalars['String']['input'];
-  weight: Scalars['Float']['input'];
+  activityLevel?: InputMaybe<ActivityLevel>;
+  birthDate?: InputMaybe<Scalars['String']['input']>;
+  gender?: InputMaybe<Gender>;
+  height?: InputMaybe<Scalars['Float']['input']>;
+  imageURL?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  weight?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type User = {
@@ -94,16 +111,16 @@ export type User = {
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, createdAt: string, updatedAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: string | null, height?: number | null, weight?: number | null, activityLevel?: string | null } | null } };
+export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, createdAt: string, updatedAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null } };
 
 export type ProfileEditCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ProfileEditCurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: string | null, height?: number | null, weight?: number | null, activityLevel?: string | null } | null } };
+export type ProfileEditCurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null } };
 
 export type UpdateProfileMutationVariables = Exact<{
   input: UpdateProfile;
 }>;
 
 
-export type UpdateProfileMutation = { __typename?: 'Mutation', updateProfile: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: string | null, height?: number | null, weight?: number | null, activityLevel?: string | null } };
+export type UpdateProfileMutation = { __typename?: 'Mutation', updateProfile: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } };
