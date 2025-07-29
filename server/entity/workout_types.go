@@ -10,7 +10,7 @@ type WorkoutType struct {
 	gorm.Model
 	Name string `gorm:"size:255;not null;unipue"`
 	
-	SetLog []SetLog `gorm:"foreignKey:WorkoutTypeID;constraint:OnDelete:CASCADE"`
+	SetLogs []SetLog `gorm:"foreignKey:WorkoutTypeID;constraint:OnDelete:CASCADE"`
 }
 
 func (w *WorkoutType) BeforeSave(tx *gorm.DB) error {

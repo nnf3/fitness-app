@@ -12,7 +12,7 @@ type SetLog struct {
 	WorkoutTypeID uint `gorm:"not null;index"`
 	Weight         int  `gorm:"not null"`  // 何キロでやったか
 	RepCount       int  `gorm:"not null"`  // 何レップやったか
-	SerNumber      int  `gorm:"not null"`  // 何セット目か
+	SetNumber      int  `gorm:"not null"`  // 何セット目か
 
 	WorkoutLog   WorkoutLog   `gorm:"constraint:OnDelete:CASCADE;foreignKey:WorkoutLogID"`
 	WorkoutType  WorkoutType  `gorm:"constraint:OnDelete:CASCADE;foreignKey:WorkoutTypeID"`
@@ -47,7 +47,7 @@ func (s *SetLog) Validate() error {
 	if s.RepCount <= 0 {
 		return fmt.Errorf("レップ数は正の整数で入力してください")
 	}
-	if s.SerNumber <= 0 {
+	if s.SetNumber <= 0 {
 		return fmt.Errorf("セット番号は正の整数で入力してください")
 	}
 	return nil

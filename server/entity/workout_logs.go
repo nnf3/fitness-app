@@ -11,7 +11,7 @@ type WorkoutLog struct {
 	UserID    uint           `gorm:"not null;index"`
 
 	User     User      `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
-	SetLog  []SetLog  `gorm:"foreignKey:WorkoutLogID;constraint:OnDelete:CASCADE"`
+	SetLogs  []SetLog  `gorm:"foreignKey:WorkoutLogID;constraint:OnDelete:CASCADE"`
 }
 
 func (w *WorkoutLog) BeforeSave(tx *gorm.DB) error {
