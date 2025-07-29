@@ -84,6 +84,33 @@ func ConnectDB() {
 				return tx.Migrator().DropColumn(&entity.Profile{}, "image_url")
 			},
 		},
+		{
+			ID: "202507281403_create_workout_types",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&entity.WorkoutType{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&entity.WorkoutType{})
+			},
+		},
+		{
+			ID: "202507281404_create_workout_logs",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&entity.WorkoutLog{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&entity.WorkoutLog{})
+			},
+		},
+		{
+			ID: "202507281405_create_set_logs",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&entity.SetLog{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&entity.SetLog{})
+			},
+		},
 	})
 
 	if err := m.Migrate(); err != nil {
