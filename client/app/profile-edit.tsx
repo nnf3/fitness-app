@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useAuth, useFirebaseStorage } from '../hooks';
 import { useQuery, useMutation, gql } from '@apollo/client';
@@ -104,12 +105,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     minHeight: 50,
+    justifyContent: 'center',
   },
   picker: {
     color: '#FFFFFF',
     fontSize: 16,
     paddingHorizontal: 16,
     paddingVertical: 16,
+    backgroundColor: 'transparent',
   },
   saveButton: {
     backgroundColor: '#4CAF50',
@@ -451,13 +454,29 @@ export default function ProfileEditScreen() {
               value={formData.gender}
               style={{
                 inputIOS: styles.picker,
+                inputIOSContainer: {
+                  pointerEvents: 'none',
+                },
                 inputAndroid: styles.picker,
+                inputAndroidContainer: {
+                  pointerEvents: 'none',
+                },
                 placeholder: {
                   color: '#FFFFFF',
                   opacity: 0.6,
                 },
+                iconContainer: {
+                  top: 16,
+                  right: 12,
+                },
               }}
               onValueChange={(value: string) => setFormData({ ...formData, gender: value })}
+              Icon={() => <Ionicons name="chevron-down" size={20} color="#FFFFFF" />}
+              useNativeAndroidPickerStyle={false}
+              fixAndroidTouchableBug={true}
+              pickerProps={{
+                itemStyle: { color: '#000000' },
+              }}
             />
           </View>
         </View>
@@ -505,13 +524,29 @@ export default function ProfileEditScreen() {
               value={formData.activityLevel}
               style={{
                 inputIOS: styles.picker,
+                inputIOSContainer: {
+                  pointerEvents: 'none',
+                },
                 inputAndroid: styles.picker,
+                inputAndroidContainer: {
+                  pointerEvents: 'none',
+                },
                 placeholder: {
                   color: '#FFFFFF',
                   opacity: 0.6,
                 },
+                iconContainer: {
+                  top: 16,
+                  right: 12,
+                },
               }}
               onValueChange={(value: string) => setFormData({ ...formData, activityLevel: value })}
+              Icon={() => <Ionicons name="chevron-down" size={20} color="#FFFFFF" />}
+              useNativeAndroidPickerStyle={false}
+              fixAndroidTouchableBug={true}
+              pickerProps={{
+                itemStyle: { color: '#000000' },
+              }}
             />
           </View>
         </View>
