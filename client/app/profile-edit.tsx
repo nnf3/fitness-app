@@ -15,8 +15,9 @@ import { useAuth, useFirebaseStorage } from '../hooks';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import RNPickerSelect from 'react-native-picker-select';
 import * as ImagePicker from 'expo-image-picker';
+import { ProfileEditCurrentUserQuery, UpdateProfileMutation } from '@/graphql/graphql';
 
-const CURRENT_USER_QUERY = gql`
+const CURRENT_USER_DOCUMET = gql`
   query ProfileEditCurrentUser {
     currentUser {
       id
@@ -35,7 +36,7 @@ const CURRENT_USER_QUERY = gql`
   }
 `;
 
-const UPDATE_PROFILE_MUTATION = gql`
+const UPDATE_PROFILE_DOCUMENT = gql`
   mutation UpdateProfile($input: UpdateProfile!) {
     updateProfile(input: $input) {
       id
@@ -222,11 +223,11 @@ export default function ProfileEditScreen() {
     imageURL: '',
   });
 
-  const { data, loading: queryLoading, error: queryError } = useQuery(CURRENT_USER_QUERY, {
+  const { data, loading: queryLoading, error: queryError } = useQuery<ProfileEditCurrentUserQuery>(CURRENT_USER_DOCUMET, {
     skip: !user,
   });
 
-  const [createProfile, { loading: mutationLoading }] = useMutation(UPDATE_PROFILE_MUTATION, {
+  const [createProfile, { loading: mutationLoading }] = useMutation<UpdateProfileMutation>(UPDATE_PROFILE_DOCUMENT, {
     onCompleted: () => {
       Alert.alert('成功', 'プロフィールを保存しました', [
         { text: 'OK', onPress: () => router.back() }
@@ -439,9 +440,9 @@ export default function ProfileEditScreen() {
             <RNPickerSelect
               items={[
                 { label: '性別を選択', value: '' },
-                { label: '男性', value: 'male' },
-                { label: '女性', value: 'female' },
-                { label: 'その他', value: 'other' },
+                { label: '男性', value: 'MALE' },
+                { label: '女性', value: 'FEMALE' },
+                { label: 'その他', value: 'OTHER' },
               ]}
               placeholder={{
                 label: '性別を選択',
@@ -491,11 +492,11 @@ export default function ProfileEditScreen() {
             <RNPickerSelect
               items={[
                 { label: '活動レベルを選択', value: '' },
-                { label: '低い（座り仕事中心）', value: 'sedentary' },
-                { label: '軽い（軽い運動）', value: 'lightly_active' },
-                { label: '普通（適度な運動）', value: 'moderately_active' },
-                { label: '高い（激しい運動）', value: 'very_active' },
-                { label: '非常に高い（非常に激しい運動）', value: 'extremely_active' },
+                { label: '低い（座り仕事中心）', value: 'SEDENTARY' },
+                { label: '軽い（軽い運動）', value: 'LIGHTLY_ACTIVE' },
+                { label: '普通（適度な運動）', value: 'MODERATELY_ACTIVE' },
+                { label: '高い（激しい運動）', value: 'VERY_ACTIVE' },
+                { label: '非常に高い（非常に激しい運動）', value: 'EXTREMELY_ACTIVE' },
               ]}
               placeholder={{
                 label: '活動レベルを選択',

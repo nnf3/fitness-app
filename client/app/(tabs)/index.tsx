@@ -3,6 +3,7 @@ import { useAuth } from "../../hooks";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { useQuery, gql } from "@apollo/client";
+import { CurrentUserQuery } from "@/graphql/graphql";
 
 const CURRENT_USER_QUERY = gql`
   query CurrentUser {
@@ -101,7 +102,7 @@ export default function HomeTab() {
   const { user, signOut } = useAuth();
   const router = useRouter();
 
-  const { data, loading, error } = useQuery(CURRENT_USER_QUERY, {
+  const { data, loading, error } = useQuery<CurrentUserQuery>(CURRENT_USER_QUERY, {
     skip: !user, // ユーザーがログインしていない場合はスキップ
   });
 
@@ -121,7 +122,7 @@ export default function HomeTab() {
     }
   };
 
-  if (!user) {
+  if (!user || !data?.currentUser) {
     return null; // ログイン画面に遷移中
   }
 
@@ -161,8 +162,8 @@ export default function HomeTab() {
                   体重: {data.currentUser.profile.weight}kg
                 </Text>
                 <Text style={styles.userDetails}>
-                  性別: {data.currentUser.profile.gender === 'male' ? '男性' :
-                         data.currentUser.profile.gender === 'female' ? '女性' : 'その他'}
+                  性別: {data.currentUser.profile?.gender === 'MALE' ? '男性' :
+                         data.currentUser.profile?.gender === 'FEMALE' ? '女性' : 'その他'}
                 </Text>
               </>
             )}
