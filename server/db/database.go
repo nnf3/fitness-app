@@ -76,6 +76,15 @@ func ConnectDB() {
 			},
 		},
 		{
+			ID: "202507281403_add_image_url_to_profiles",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.Migrator().AddColumn(&entity.Profile{}, "image_url")
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropColumn(&entity.Profile{}, "image_url")
+			},
+		},
+		{
 			ID: "202507281403_create_workout_types",
 			Migrate: func(tx *gorm.DB) error {
 				return tx.AutoMigrate(&entity.WorkoutType{})

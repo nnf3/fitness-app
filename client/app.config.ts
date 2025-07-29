@@ -15,7 +15,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: "com.nnf3.fitness-app",
     googleServicesFile: process.env.GOOGLE_SERVICES_INFO_PLIST ?? "./GoogleService-Info.plist",
     infoPlist: {
-      ITSAppUsesNonExemptEncryption: false
+      ITSAppUsesNonExemptEncryption: false,
+      NSPhotoLibraryUsageDescription: "プロフィール写真を選択するためにカメラロールへのアクセスが必要です。",
+      NSCameraUsageDescription: "プロフィール写真を撮影するためにカメラへのアクセスが必要です。"
     }
   },
   android: {
@@ -25,7 +27,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     edgeToEdgeEnabled: true,
     package: "com.nnf3.fitnessapp",
-    googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json"
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
+    permissions: [
+      "android.permission.CAMERA",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ]
   },
   web: {
     bundler: "metro",
@@ -50,7 +57,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         }
       }
     ],
-    "expo-router"
+    "expo-router",
+    "expo-image-picker"
   ],
   experiments: {
     typedRoutes: true

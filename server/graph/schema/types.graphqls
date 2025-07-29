@@ -14,10 +14,11 @@ type Profile {
   user: User!
   name: String!
   birthDate: String
-  gender: String
+  gender: Gender
   height: Float
   weight: Float
-  activityLevel: String
+  activityLevel: ActivityLevel
+  imageURL: String
   createdAt: String!
   updatedAt: String!
 }

@@ -54,10 +54,11 @@ func convertProfile(profile entity.Profile) *model.Profile {
 		ID:            fmt.Sprintf("%d", profile.ID),
 		Name:          profile.Name,
 		BirthDate:     formatDate(profile.BirthDate),
-		Gender:        formatString(profile.Gender),
+		Gender:        profile.GenderToGraphQL(),
 		Height:        profile.Height,
 		Weight:        profile.Weight,
-		ActivityLevel: formatString(profile.ActivityLevel),
+		ActivityLevel: profile.ActivityLevelToGraphQL(),
+		ImageURL:      formatString(profile.ImageURL),
 		CreatedAt:     profile.CreatedAt.Format(TimeFormat),
 		UpdatedAt:     profile.UpdatedAt.Format(TimeFormat),
 	}
@@ -91,9 +92,22 @@ func (p *profileService) CreateProfile(ctx context.Context, input model.CreatePr
 		UserID:    currentUser.ID,
 		Name:      input.Name,
 		BirthDate: &birthDate,
-		Gender:    input.Gender,
-		Height:    input.Height,
-		Weight:    input.Weight,
+	}
+
+	// enum型の変換
+	profile.GenderFromGraphQL(&input.Gender)
+
+	if input.Height != nil {
+		profile.Height = input.Height
+	}
+	if input.Weight != nil {
+		profile.Weight = input.Weight
+	}
+	if input.ActivityLevel != nil {
+		profile.ActivityLevelFromGraphQL(input.ActivityLevel)
+	}
+	if input.ImageURL != nil {
+		profile.ImageURL = *input.ImageURL
 	}
 
 	if err := p.db.Create(&profile).Error; err != nil {
@@ -125,7 +139,7 @@ func (p *profileService) UpdateProfile(ctx context.Context, input model.UpdatePr
 		profile.BirthDate = &birthDate
 	}
 	if input.Gender != nil {
-		profile.Gender = *input.Gender
+		profile.GenderFromGraphQL(input.Gender)
 	}
 	if input.Height != nil {
 		profile.Height = input.Height
@@ -134,7 +148,10 @@ func (p *profileService) UpdateProfile(ctx context.Context, input model.UpdatePr
 		profile.Weight = input.Weight
 	}
 	if input.ActivityLevel != nil {
-		profile.ActivityLevel = *input.ActivityLevel
+		profile.ActivityLevelFromGraphQL(input.ActivityLevel)
+	}
+	if input.ImageURL != nil {
+		profile.ImageURL = *input.ImageURL
 	}
 
 	if err := p.db.Save(&profile).Error; err != nil {
