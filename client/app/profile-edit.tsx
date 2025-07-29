@@ -61,9 +61,8 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     paddingTop: 40,
-    paddingBottom: 40,
-    flex: 1,
-    justifyContent: 'center',
+    paddingBottom: 100, // 下部のパディングを増やして保存ボタンが見切れないようにする
+    flexGrow: 1, // flex: 1をflexGrow: 1に変更
   },
   title: {
     fontSize: 28,
@@ -117,6 +116,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 30,
+    marginBottom: 20, // 下部マージンを追加
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -369,13 +369,17 @@ export default function ProfileEditScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Fitness App</Text>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.subtitle}>プロフィールを編集</Text>
 
         {/* 画像選択セクション */}
         <View style={styles.imageSection}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.imageContainer, isUploading && styles.imageContainerDisabled]}
             onPress={pickImage}
             disabled={isUploading}
@@ -394,8 +398,8 @@ export default function ProfileEditScreen() {
               </View>
             )}
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.imageButton, isUploading && styles.imageButtonDisabled]} 
+          <TouchableOpacity
+            style={[styles.imageButton, isUploading && styles.imageButtonDisabled]}
             onPress={pickImage}
             disabled={isUploading}
           >
