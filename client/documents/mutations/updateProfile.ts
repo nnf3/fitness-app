@@ -1,6 +1,6 @@
-import { graphql } from '@/graphql/gql';
+import { gql } from 'graphql-tag';
 
-export const UpdateProfileDocument = graphql(`
+export const UpdateProfileDocument = gql(`
   mutation UpdateProfile($input: UpdateProfile!) {
     updateProfile(input: $input) {
       id
