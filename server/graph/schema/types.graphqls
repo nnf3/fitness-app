@@ -22,3 +22,25 @@ type Profile {
   createdAt: String!
   updatedAt: String!
 }
+
+type WorkoutType {
+  id: ID!
+  name: String!
+  setLogs: [SetLog!]!
+}
+
+type WorkoutLog {
+  id: ID!
+  user: User!
+  createdAt: String!
+  setLogs: [SetLog!]!
+}
+
+type SetLog {
+  id: ID!
+  workoutLog: WorkoutLog!
+  workoutType: WorkoutType!
+  weight: Int!
+  repCount: Int!
+  setNumber: Int!
+}

@@ -179,7 +179,27 @@ models:
         value: ./graph/model.ActivityLevelVeryActive
       EXTREMELY_ACTIVE:
         value: ./graph/model.ActivityLevelExtremelyActive
+        
   User:
     fields:
       profile:
+        resolver: true
+
+  WorkoutLog:
+    fields:
+      user:
+        resolver: true 
+      setLogs:
+        resolver: true
+
+  WorkoutType:
+    fields:
+      setLogs:
+        resolver: true
+
+  SetLog:
+    fields:
+      workoutLog:
+        resolver: true
+      workoutType:
         resolver: true

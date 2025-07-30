@@ -30,6 +30,11 @@ func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
 	return userService.GetOrCreateUserByUID(ctx)
 }
 
+// WorkoutLogs is the resolver for the workoutLogs field.
+func (r *queryResolver) WorkoutLogs(ctx context.Context) ([]*model.WorkoutLog, error) {
+	panic(fmt.Errorf("not implemented: WorkoutLogs - workoutLogs"))
+}
+
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 

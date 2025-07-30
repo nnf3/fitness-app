@@ -8,7 +8,18 @@ import (
 	"app/graph/model"
 	"app/graph/services"
 	"context"
+	"fmt"
 )
+
+// WorkoutLog is the resolver for the workoutLog field.
+func (r *setLogResolver) WorkoutLog(ctx context.Context, obj *model.SetLog) (*model.WorkoutLog, error) {
+	panic(fmt.Errorf("not implemented: WorkoutLog - workoutLog"))
+}
+
+// WorkoutType is the resolver for the workoutType field.
+func (r *setLogResolver) WorkoutType(ctx context.Context, obj *model.SetLog) (*model.WorkoutType, error) {
+	panic(fmt.Errorf("not implemented: WorkoutType - workoutType"))
+}
 
 // Profile is the resolver for the profile field.
 func (r *userResolver) Profile(ctx context.Context, obj *model.User) (*model.Profile, error) {
@@ -16,7 +27,34 @@ func (r *userResolver) Profile(ctx context.Context, obj *model.User) (*model.Pro
 	return profileService.GetProfileByUserID(ctx, obj.ID)
 }
 
+// User is the resolver for the user field.
+func (r *workoutLogResolver) User(ctx context.Context, obj *model.WorkoutLog) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: User - user"))
+}
+
+// SetLogs is the resolver for the setLogs field.
+func (r *workoutLogResolver) SetLogs(ctx context.Context, obj *model.WorkoutLog) ([]*model.SetLog, error) {
+	panic(fmt.Errorf("not implemented: SetLogs - setLogs"))
+}
+
+// SetLogs is the resolver for the setLogs field.
+func (r *workoutTypeResolver) SetLogs(ctx context.Context, obj *model.WorkoutType) ([]*model.SetLog, error) {
+	panic(fmt.Errorf("not implemented: SetLogs - setLogs"))
+}
+
+// SetLog returns SetLogResolver implementation.
+func (r *Resolver) SetLog() SetLogResolver { return &setLogResolver{r} }
+
 // User returns UserResolver implementation.
 func (r *Resolver) User() UserResolver { return &userResolver{r} }
 
+// WorkoutLog returns WorkoutLogResolver implementation.
+func (r *Resolver) WorkoutLog() WorkoutLogResolver { return &workoutLogResolver{r} }
+
+// WorkoutType returns WorkoutTypeResolver implementation.
+func (r *Resolver) WorkoutType() WorkoutTypeResolver { return &workoutTypeResolver{r} }
+
+type setLogResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
+type workoutLogResolver struct{ *Resolver }
+type workoutTypeResolver struct{ *Resolver }

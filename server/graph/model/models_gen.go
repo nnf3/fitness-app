@@ -40,6 +40,15 @@ type Profile struct {
 type Query struct {
 }
 
+type SetLog struct {
+	ID          string       `json:"id"`
+	WorkoutLog  *WorkoutLog  `json:"workoutLog"`
+	WorkoutType *WorkoutType `json:"workoutType"`
+	Weight      int32        `json:"weight"`
+	RepCount    int32        `json:"repCount"`
+	SetNumber   int32        `json:"setNumber"`
+}
+
 type UpdateProfile struct {
 	Name          *string        `json:"name,omitempty"`
 	BirthDate     *string        `json:"birthDate,omitempty"`
@@ -56,4 +65,17 @@ type User struct {
 	CreatedAt string   `json:"createdAt"`
 	UpdatedAt string   `json:"updatedAt"`
 	Profile   *Profile `json:"profile,omitempty"`
+}
+
+type WorkoutLog struct {
+	ID        string    `json:"id"`
+	User      *User     `json:"user"`
+	CreatedAt string    `json:"createdAt"`
+	SetLogs   []*SetLog `json:"setLogs"`
+}
+
+type WorkoutType struct {
+	ID      string    `json:"id"`
+	Name    string    `json:"name"`
+	SetLogs []*SetLog `json:"setLogs"`
 }
