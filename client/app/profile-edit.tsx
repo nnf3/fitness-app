@@ -13,44 +13,11 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useAuth, useFirebaseStorage } from '../hooks';
-import { useQuery, useMutation, gql } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import RNPickerSelect from 'react-native-picker-select';
 import * as ImagePicker from 'expo-image-picker';
+import { ProfileEditCurrentUserDocument, UpdateProfileDocument } from '@/documents';
 import { ProfileEditCurrentUserQuery, UpdateProfileMutation } from '@/graphql/graphql';
-
-const CURRENT_USER_DOCUMET = gql`
-  query ProfileEditCurrentUser {
-    currentUser {
-      id
-      uid
-      profile {
-        id
-        name
-        birthDate
-        gender
-        height
-        weight
-        activityLevel
-        imageURL
-      }
-    }
-  }
-`;
-
-const UPDATE_PROFILE_DOCUMENT = gql`
-  mutation UpdateProfile($input: UpdateProfile!) {
-    updateProfile(input: $input) {
-      id
-      name
-      birthDate
-      gender
-      height
-      weight
-      activityLevel
-      imageURL
-    }
-  }
-`;
 
 const styles = StyleSheet.create({
   container: {
@@ -226,11 +193,11 @@ export default function ProfileEditScreen() {
     imageURL: '',
   });
 
-  const { data, loading: queryLoading, error: queryError } = useQuery<ProfileEditCurrentUserQuery>(CURRENT_USER_DOCUMET, {
+  const { data, loading: queryLoading, error: queryError } = useQuery<ProfileEditCurrentUserQuery>(ProfileEditCurrentUserDocument, {
     skip: !user,
   });
 
-  const [createProfile, { loading: mutationLoading }] = useMutation<UpdateProfileMutation>(UPDATE_PROFILE_DOCUMENT, {
+  const [createProfile, { loading: mutationLoading }] = useMutation<UpdateProfileMutation>(UpdateProfileDocument, {
     onCompleted: () => {
       Alert.alert('成功', 'プロフィールを保存しました', [
         { text: 'OK', onPress: () => router.back() }

@@ -2,28 +2,9 @@ import { Text, View, Button, StyleSheet } from "react-native";
 import { useAuth } from "../../hooks";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery } from "@apollo/client";
+import { CurrentUserDocument } from "@/documents";
 import { CurrentUserQuery } from "@/graphql/graphql";
-
-const CURRENT_USER_QUERY = gql`
-  query CurrentUser {
-    currentUser {
-      id
-      uid
-      createdAt
-      updatedAt
-      profile {
-        id
-        name
-        birthDate
-        gender
-        height
-        weight
-        activityLevel
-      }
-    }
-  }
-`;
 
 const styles = StyleSheet.create({
   container: {
@@ -102,7 +83,7 @@ export default function HomeTab() {
   const { user, signOut } = useAuth();
   const router = useRouter();
 
-  const { data, loading, error } = useQuery<CurrentUserQuery>(CURRENT_USER_QUERY, {
+  const { data, loading, error } = useQuery<CurrentUserQuery>(CurrentUserDocument, {
     skip: !user, // ユーザーがログインしていない場合はスキップ
   });
 
