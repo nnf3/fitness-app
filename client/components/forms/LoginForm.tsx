@@ -2,7 +2,7 @@ import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import { useAuth } from "../../hooks";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import GoogleIcon from "../GoogleIcon";
+import { GoogleIcon } from "../ui";
 
 const styles = StyleSheet.create({
   container: {
