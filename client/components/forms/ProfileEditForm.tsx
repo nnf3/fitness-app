@@ -97,23 +97,9 @@ const activityLevelOptions = [
   { label: '非常に活発な運動', value: 'EXTREMELY_ACTIVE' },
 ];
 
-export function ProfileEditForm() {
-  const { user } = useAuth();
+const useProfileEditQuery = () => {
   const router = useRouter();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<{ percentage: number } | null>(null);
-
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    birthDate: '',
-    gender: '',
-    height: '',
-    weight: '',
-    activityLevel: '',
-    imageURL: '',
-  });
-
+  const { user } = useAuth();
   const { data, loading: queryLoading, error: queryError } = useQuery<ProfileEditCurrentUserQuery>(ProfileEditCurrentUserDocument, {
     skip: !user,
   });
@@ -128,6 +114,70 @@ export function ProfileEditForm() {
       Alert.alert('エラー', `プロフィールの保存に失敗しました: ${error.message}`);
     },
   });
+
+  return {
+    router,
+    user,
+    data,
+    loading: queryLoading,
+    error: queryError,
+    createProfile,
+    mutationLoading,
+  };
+}
+
+const useProfileEditForm = () => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ percentage: number } | null>(null);
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    birthDate: '',
+    gender: '',
+    height: '',
+    weight: '',
+    activityLevel: '',
+    imageURL: '',
+  });
+
+  const handleImageSelect = (imageUrl: string) => {
+    setFormData({ ...formData, imageURL: imageUrl });
+    setSelectedImage(imageUrl);
+  };
+
+  return {
+    selectedImage,
+    setSelectedImage,
+    isUploading,
+    uploadProgress,
+    setUploadProgress,
+    setIsUploading,
+    formData,
+    setFormData,
+    handleImageSelect,
+  }
+}
+
+export const ProfileEditForm = () => {
+  const {
+    router,
+    user,
+    data,
+    loading: queryLoading,
+    error: queryError,
+    createProfile,
+    mutationLoading,
+  } = useProfileEditQuery();
+
+  const {
+    selectedImage,
+    setSelectedImage,
+    isUploading,
+    uploadProgress,
+    formData,
+    setFormData,
+    handleImageSelect,
+  } = useProfileEditForm();
 
   useEffect(() => {
     if (data?.currentUser?.profile) {
@@ -145,12 +195,7 @@ export function ProfileEditForm() {
         setSelectedImage(profile.imageURL);
       }
     }
-  }, [data]);
-
-  const handleImageSelect = (imageUrl: string) => {
-    setFormData({ ...formData, imageURL: imageUrl });
-    setSelectedImage(imageUrl);
-  };
+  }, [data, setFormData, setSelectedImage]);
 
   const handleSave = () => {
     if (!formData.name.trim()) {
