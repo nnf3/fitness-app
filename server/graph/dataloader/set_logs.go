@@ -41,10 +41,10 @@ func (l *SetLogLoader) batchLoad(ctx context.Context, keys []StringKey) []*datal
 		grouped[log.WorkoutLogID] = append(grouped[log.WorkoutLogID], log)
 	}
 
-return CreateResultsFromMap[[]*entity.SetLog](convertKeysToStrings(keys), grouped, func(key string) (uint,error) {
-	id, err := strconv.ParseUint(key, 10, 32)
-	return uint(id), err
-})
+	return CreateResultsFromMapArray[entity.SetLog](convertKeysToStrings(keys), grouped, func(key string) (uint, error) {
+		id, err := strconv.ParseUint(key, 10, 32)
+		return uint(id), err
+	})
 }
 
 func (l *SetLogLoader) LoadSetLogs(ctx context.Context, workoutLogID string) ([]*entity.SetLog, error) {

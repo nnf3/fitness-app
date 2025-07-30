@@ -42,7 +42,7 @@ func (l *WorkoutLogLoader) batchLoad(ctx context.Context, keys []StringKey) []*d
 		grouped[log.UserID] = append(grouped[log.UserID], log)
 	}
 
-	return CreateResultsFromMap(convertKeysToStrings(keys), grouped, func(key string) (uint, error) {
+	return CreateResultsFromMapArray[entity.WorkoutLog](convertKeysToStrings(keys), grouped, func(key string) (uint, error) {
 		id, err := strconv.ParseUint(key, 10, 32)
 		return uint(id), err
 	})

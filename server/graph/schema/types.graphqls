@@ -7,6 +7,7 @@ type User {
   createdAt: String!
   updatedAt: String!
   profile: Profile
+  workoutLogs: [WorkoutLog!]!
 }
 
 type Profile {
@@ -33,6 +34,7 @@ type WorkoutLog {
   id: ID!
   user: User!
   createdAt: String!
+  updatedAt: String!
   setLogs: [SetLog!]!
 }
 

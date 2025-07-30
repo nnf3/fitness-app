@@ -27,6 +27,11 @@ func (r *userResolver) Profile(ctx context.Context, obj *model.User) (*model.Pro
 	return profileService.GetProfileByUserID(ctx, obj.ID)
 }
 
+// WorkoutLogs is the resolver for the workoutLogs field.
+func (r *userResolver) WorkoutLogs(ctx context.Context, obj *model.User) ([]*model.WorkoutLog, error) {
+	panic(fmt.Errorf("not implemented: WorkoutLogs - workoutLogs"))
+}
+
 // User is the resolver for the user field.
 func (r *workoutLogResolver) User(ctx context.Context, obj *model.WorkoutLog) (*model.User, error) {
 	panic(fmt.Errorf("not implemented: User - user"))

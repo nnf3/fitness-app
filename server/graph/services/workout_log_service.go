@@ -30,8 +30,6 @@ func (s *workoutLogsService) GetWorkoutLogs(ctx context.Context, userID string) 
 	for _, wl := range entities {
 		result = append(result, &model.WorkoutLog{
 			ID:        fmt.Sprintf("%d", wl.ID),
-			Date:      wl.Date.Format("2006-01-02"),
-			Note:      &wl.Note,
 			CreatedAt: wl.CreatedAt.Format(time.RFC3339),
 			UpdatedAt: wl.UpdatedAt.Format(time.RFC3339),
 		})

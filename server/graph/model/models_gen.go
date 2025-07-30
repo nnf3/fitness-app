@@ -60,17 +60,19 @@ type UpdateProfile struct {
 }
 
 type User struct {
-	ID        string   `json:"id"`
-	UID       string   `json:"uid"`
-	CreatedAt string   `json:"createdAt"`
-	UpdatedAt string   `json:"updatedAt"`
-	Profile   *Profile `json:"profile,omitempty"`
+	ID          string        `json:"id"`
+	UID         string        `json:"uid"`
+	CreatedAt   string        `json:"createdAt"`
+	UpdatedAt   string        `json:"updatedAt"`
+	Profile     *Profile      `json:"profile,omitempty"`
+	WorkoutLogs []*WorkoutLog `json:"workoutLogs"`
 }
 
 type WorkoutLog struct {
 	ID        string    `json:"id"`
 	User      *User     `json:"user"`
 	CreatedAt string    `json:"createdAt"`
+	UpdatedAt string    `json:"updatedAt"`
 	SetLogs   []*SetLog `json:"setLogs"`
 }
 

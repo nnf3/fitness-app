@@ -12,8 +12,8 @@ type SetLogsService interface {
 }
 
 type setLogsService struct {
-	setLogLoader        dataloader.SetLogLoaderInterface
-	workoutTypeLoader   dataloader.WorkoutTypeLoaderInterface
+	setLogLoader      dataloader.SetLogLoaderInterface
+	workoutTypeLoader dataloader.WorkoutTypeLoaderInterface
 }
 
 func NewSetLogsService(setLoader dataloader.SetLogLoaderInterface, typeLoader dataloader.WorkoutTypeLoaderInterface) SetLogsService {
@@ -37,9 +37,9 @@ func (s *setLogsService) GetSetLogs(ctx context.Context, workoutLogID string) ([
 		}
 		result = append(result, &model.SetLog{
 			ID:        fmt.Sprintf("%d", sl.ID),
-			Weight:    sl.Weight,
-			RepCount:  sl.RepCount,
-			SerNumber: sl.SetNumber,
+			Weight:    int32(sl.Weight),
+			RepCount:  int32(sl.RepCount),
+			SetNumber: int32(sl.SetNumber),
 			WorkoutType: &model.WorkoutType{
 				ID:   fmt.Sprintf("%d", typeEntity.ID),
 				Name: typeEntity.Name,
