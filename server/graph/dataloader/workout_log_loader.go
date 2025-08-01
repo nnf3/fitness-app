@@ -25,27 +25,38 @@ func NewWorkoutLogLoader(db *gorm.DB) WorkoutLogLoaderInterface {
 	return loader
 }
 
+func (l *WorkoutLogLoader) fetchWorkoutLogsFromDB(userIDs []uint) ([]entity.WorkoutLog, error) {
+	var logs []entity.WorkoutLog
+	err := l.db.Where("user_id IN ?", userIDs).Find(&logs).Error
+	return logs, err
+}
+
+func (l *WorkoutLogLoader) createResults(keyStrings []string, logs []entity.WorkoutLog) []*dataloader.Result[[]*entity.WorkoutLog] {
+	workoutLogMap := make(map[uint][]*entity.WorkoutLog)
+	for i := range logs {
+		workoutLogMap[logs[i].UserID] = append(workoutLogMap[logs[i].UserID], &logs[i])
+	}
+
+	return CreateResultsFromMapArray[entity.WorkoutLog](keyStrings, workoutLogMap, func(key string) (uint, error) {
+		if id, err := strconv.ParseUint(key, 10, 32); err == nil {
+			return uint(id), nil
+		}
+		return 0, fmt.Errorf("invalid user ID: %s", key)
+	})
+}
+
 func (l *WorkoutLogLoader) batchLoad(ctx context.Context, keys []StringKey) []*dataloader.Result[[]*entity.WorkoutLog] {
 	userIDs, errs := (&BaseLoader{}).ParseUintKeys(convertKeysToStrings(keys))
 	if len(errs) > 0 {
 		return CreateErrorResults[[]*entity.WorkoutLog](convertKeysToStrings(keys), fmt.Errorf("invalid user IDs"))
 	}
 
-	var logs []*entity.WorkoutLog
-	if err := l.db.Where("user_id IN ?", userIDs).Find(&logs).Error; err != nil {
+	logs, err := l.fetchWorkoutLogsFromDB(userIDs)
+	if err != nil {
 		return CreateErrorResults[[]*entity.WorkoutLog](convertKeysToStrings(keys), err)
 	}
 
-	// グループ化
-	grouped := make(map[uint][]*entity.WorkoutLog)
-	for _, log := range logs {
-		grouped[log.UserID] = append(grouped[log.UserID], log)
-	}
-
-	return CreateResultsFromMapArray[entity.WorkoutLog](convertKeysToStrings(keys), grouped, func(key string) (uint, error) {
-		id, err := strconv.ParseUint(key, 10, 32)
-		return uint(id), err
-	})
+	return l.createResults(convertKeysToStrings(keys), logs)
 }
 
 func (l *WorkoutLogLoader) LoadWorkoutLogs(ctx context.Context, userID string) ([]*entity.WorkoutLog, error) {

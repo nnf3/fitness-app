@@ -1,6 +1,7 @@
 package services
 
 import (
+	"app/entity"
 	"app/graph/dataloader"
 	"app/graph/model"
 	"context"
@@ -23,6 +24,15 @@ func NewSetLogsService(setLoader dataloader.SetLogLoaderInterface, typeLoader da
 	}
 }
 
+func convertSetLog(setLog entity.SetLog) *model.SetLog {
+	return &model.SetLog{
+		ID:        fmt.Sprintf("%d", setLog.ID),
+		Weight:    int32(setLog.Weight),
+		RepCount:  int32(setLog.RepCount),
+		SetNumber: int32(setLog.SetNumber),
+	}
+}
+
 func (s *setLogsService) GetSetLogs(ctx context.Context, workoutLogID string) ([]*model.SetLog, error) {
 	entities, err := s.setLogLoader.LoadSetLogs(ctx, workoutLogID)
 	if err != nil {
@@ -31,20 +41,7 @@ func (s *setLogsService) GetSetLogs(ctx context.Context, workoutLogID string) ([
 
 	var result []*model.SetLog
 	for _, sl := range entities {
-		typeEntity, err := s.workoutTypeLoader.LoadWorkoutType(ctx, fmt.Sprintf("%d", sl.WorkoutTypeID))
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, &model.SetLog{
-			ID:        fmt.Sprintf("%d", sl.ID),
-			Weight:    int32(sl.Weight),
-			RepCount:  int32(sl.RepCount),
-			SetNumber: int32(sl.SetNumber),
-			WorkoutType: &model.WorkoutType{
-				ID:   fmt.Sprintf("%d", typeEntity.ID),
-				Name: typeEntity.Name,
-			},
-		})
+		result = append(result, convertSetLog(*sl))
 	}
 	return result, nil
 }

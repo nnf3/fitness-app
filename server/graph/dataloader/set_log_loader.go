@@ -25,26 +25,36 @@ func NewSetLogLoader(db *gorm.DB) SetLogLoaderInterface {
 	return loader
 }
 
+func (l *SetLogLoader) fetchSetLogsFromDB(workoutLogIDs []uint) ([]entity.SetLog, error) {
+	var logs []entity.SetLog
+	err := l.db.Where("workout_log_id IN ?", workoutLogIDs).Find(&logs).Error
+	return logs, err
+}
+
+func (l *SetLogLoader) createResults(keyStrings []string, logs []entity.SetLog) []*dataloader.Result[[]*entity.SetLog] {
+	grouped := make(map[uint][]*entity.SetLog)
+	for _, log := range logs {
+		grouped[log.WorkoutLogID] = append(grouped[log.WorkoutLogID], &log)
+	}
+
+	return CreateResultsFromMapArray[entity.SetLog](keyStrings, grouped, func(key string) (uint, error) {
+		id, err := strconv.ParseUint(key, 10, 32)
+		return uint(id), err
+	})
+}
+
 func (l *SetLogLoader) batchLoad(ctx context.Context, keys []StringKey) []*dataloader.Result[[]*entity.SetLog] {
 	ids, errs := (&BaseLoader{}).ParseUintKeys(convertKeysToStrings(keys))
 	if len(errs) > 0 {
 		return CreateErrorResults[[]*entity.SetLog](convertKeysToStrings(keys), fmt.Errorf("invalid workout log IDs"))
 	}
 
-	var logs []*entity.SetLog
-	if err := l.db.Where("workout_log_id IN ?", ids).Find(&logs).Error; err != nil {
+	logs, err := l.fetchSetLogsFromDB(ids)
+	if err != nil {
 		return CreateErrorResults[[]*entity.SetLog](convertKeysToStrings(keys), err)
 	}
 
-	grouped := make(map[uint][]*entity.SetLog)
-	for _, log := range logs {
-		grouped[log.WorkoutLogID] = append(grouped[log.WorkoutLogID], log)
-	}
-
-	return CreateResultsFromMapArray[entity.SetLog](convertKeysToStrings(keys), grouped, func(key string) (uint, error) {
-		id, err := strconv.ParseUint(key, 10, 32)
-		return uint(id), err
-	})
+	return l.createResults(convertKeysToStrings(keys), logs)
 }
 
 func (l *SetLogLoader) LoadSetLogs(ctx context.Context, workoutLogID string) ([]*entity.SetLog, error) {

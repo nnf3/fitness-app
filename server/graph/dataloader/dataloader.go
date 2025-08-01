@@ -8,23 +8,16 @@ import (
 
 type ContextKey string
 
-const (
-	ProfileLoaderContextKey ContextKey = "profileLoader"
-	WorkoutLogsLoaderContextKey ContextKey = "workoutLogsLoader"
-	SetLogsLoaderContextKey     ContextKey = "setLogsLoader"
-	WorkoutTypesLoaderContextKey ContextKey = "workoutTypesLoader"
-)
-
 type DataLoaders struct {
-	ProfileLoader ProfileLoaderInterface
-	WorkoutLogLoader WorkoutLogLoaderInterface
-	SetLogLoader     SetLogLoaderInterface
+	ProfileLoader     ProfileLoaderInterface
+	WorkoutLogLoader  WorkoutLogLoaderInterface
+	SetLogLoader      SetLogLoaderInterface
 	WorkoutTypeLoader WorkoutTypeLoaderInterface
 }
 
 func NewDataLoaders(db *gorm.DB) *DataLoaders {
 	return &DataLoaders{
-		ProfileLoader: NewProfileLoader(db),
+		ProfileLoader:     NewProfileLoader(db),
 		WorkoutLogLoader:  NewWorkoutLogLoader(db),
 		SetLogLoader:      NewSetLogLoader(db),
 		WorkoutTypeLoader: NewWorkoutTypeLoader(db),

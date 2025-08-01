@@ -1,6 +1,7 @@
 package services
 
 import (
+	"app/entity"
 	"app/graph/dataloader"
 	"app/graph/model"
 	"context"
@@ -19,13 +20,17 @@ func NewWorkoutTypesService(loader dataloader.WorkoutTypeLoaderInterface) Workou
 	return &workoutTypesService{loader: loader}
 }
 
+func convertWorkoutType(workoutType entity.WorkoutType) *model.WorkoutType {
+	return &model.WorkoutType{
+		ID:   fmt.Sprintf("%d", workoutType.ID),
+		Name: workoutType.Name,
+	}
+}
+
 func (s *workoutTypesService) GetWorkoutType(ctx context.Context, id string) (*model.WorkoutType, error) {
 	entity, err := s.loader.LoadWorkoutType(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return &model.WorkoutType{
-		ID:   fmt.Sprintf("%d", entity.ID),
-		Name: entity.Name,
-	}, nil
+	return convertWorkoutType(*entity), nil
 }
