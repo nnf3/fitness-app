@@ -3,19 +3,17 @@ import type { CodegenConfig } from '@graphql-codegen/cli';
 const config: CodegenConfig = {
   overwrite: true,
   schema: "../server/graph/schema/*.graphqls",
-  documents: [
-    "./app/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./hooks/**/*.{ts,tsx}",
-    "./features/**/*.{ts,tsx}",
-  ],
+  documents: "./documents/**/*.{ts,tsx}",
   generates: {
-    "graphql/": {
-      preset: "client",
+    "types/graphql.ts": {
       plugins: [
         "typescript",
-        "typescript-operations"
+        "typescript-operations",
+        "typescript-graphql-request",
       ],
+      config: {
+        gqlImport: "graphql-tag#gql",
+      },
     },
   },
 };
