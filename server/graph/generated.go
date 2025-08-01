@@ -60,9 +60,10 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateProfile func(childComplexity int, input model.CreateProfile) int
-		DeleteUser    func(childComplexity int, input model.DeleteUser) int
-		UpdateProfile func(childComplexity int, input model.UpdateProfile) int
+		CreateProfile         func(childComplexity int, input model.CreateProfile) int
+		DeleteUser            func(childComplexity int, input model.DeleteUser) int
+		SendFriendshipRequest func(childComplexity int, input model.SendFriendshipRequest) int
+		UpdateProfile         func(childComplexity int, input model.UpdateProfile) int
 	}
 
 	Profile struct {
@@ -125,6 +126,7 @@ type MutationResolver interface {
 	DeleteUser(ctx context.Context, input model.DeleteUser) (bool, error)
 	CreateProfile(ctx context.Context, input model.CreateProfile) (*model.Profile, error)
 	UpdateProfile(ctx context.Context, input model.UpdateProfile) (*model.Profile, error)
+	SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
@@ -216,6 +218,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.DeleteUser(childComplexity, args["input"].(model.DeleteUser)), true
+
+	case "Mutation.sendFriendshipRequest":
+		if e.complexity.Mutation.SendFriendshipRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sendFriendshipRequest_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SendFriendshipRequest(childComplexity, args["input"].(model.SendFriendshipRequest)), true
 
 	case "Mutation.updateProfile":
 		if e.complexity.Mutation.UpdateProfile == nil {
@@ -471,6 +485,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateProfile,
 		ec.unmarshalInputDeleteUser,
 		ec.unmarshalInputNewUser,
+		ec.unmarshalInputSendFriendshipRequest,
 		ec.unmarshalInputUpdateProfile,
 	)
 	first := true
@@ -634,6 +649,29 @@ func (ec *executionContext) field_Mutation_deleteUser_argsInput(
 	}
 
 	var zeroVal model.DeleteUser
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_sendFriendshipRequest_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_sendFriendshipRequest_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_sendFriendshipRequest_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.SendFriendshipRequest, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNSendFriendshipRequest2appᚋgraphᚋmodelᚐSendFriendshipRequest(ctx, tmp)
+	}
+
+	var zeroVal model.SendFriendshipRequest
 	return zeroVal, nil
 }
 
@@ -1198,6 +1236,71 @@ func (ec *executionContext) fieldContext_Mutation_updateProfile(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updateProfile_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_sendFriendshipRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_sendFriendshipRequest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SendFriendshipRequest(rctx, fc.Args["input"].(model.SendFriendshipRequest))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Friendship)
+	fc.Result = res
+	return ec.marshalNFriendship2ᚖappᚋgraphᚋmodelᚐFriendship(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_sendFriendshipRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Friendship_id(ctx, field)
+			case "requester":
+				return ec.fieldContext_Friendship_requester(ctx, field)
+			case "requestee":
+				return ec.fieldContext_Friendship_requestee(ctx, field)
+			case "status":
+				return ec.fieldContext_Friendship_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_sendFriendshipRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4978,6 +5081,33 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj any) 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSendFriendshipRequest(ctx context.Context, obj any) (model.SendFriendshipRequest, error) {
+	var it model.SendFriendshipRequest
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"requesteeID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "requesteeID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("requesteeID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RequesteeID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateProfile(ctx context.Context, obj any) (model.UpdateProfile, error) {
 	var it model.UpdateProfile
 	asMap := map[string]any{}
@@ -5207,6 +5337,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updateProfile":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateProfile(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sendFriendshipRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sendFriendshipRequest(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -6210,6 +6347,10 @@ func (ec *executionContext) unmarshalNDeleteUser2appᚋgraphᚋmodelᚐDeleteUse
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNFriendship2appᚋgraphᚋmodelᚐFriendship(ctx context.Context, sel ast.SelectionSet, v model.Friendship) graphql.Marshaler {
+	return ec._Friendship(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNFriendship2ᚕᚖappᚋgraphᚋmodelᚐFriendshipᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Friendship) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -6265,14 +6406,34 @@ func (ec *executionContext) marshalNFriendship2ᚖappᚋgraphᚋmodelᚐFriendsh
 }
 
 func (ec *executionContext) unmarshalNFriendshipStatus2appᚋgraphᚋmodelᚐFriendshipStatus(ctx context.Context, v any) (model.FriendshipStatus, error) {
-	var res model.FriendshipStatus
-	err := res.UnmarshalGQL(v)
+	tmp, err := graphql.UnmarshalString(v)
+	res := unmarshalNFriendshipStatus2appᚋgraphᚋmodelᚐFriendshipStatus[tmp]
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNFriendshipStatus2appᚋgraphᚋmodelᚐFriendshipStatus(ctx context.Context, sel ast.SelectionSet, v model.FriendshipStatus) graphql.Marshaler {
-	return v
+	_ = sel
+	res := graphql.MarshalString(marshalNFriendshipStatus2appᚋgraphᚋmodelᚐFriendshipStatus[v])
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
+
+var (
+	unmarshalNFriendshipStatus2appᚋgraphᚋmodelᚐFriendshipStatus = map[string]model.FriendshipStatus{
+		"PENDING":  model.FriendshipStatusPending,
+		"ACCEPTED": model.FriendshipStatusAccepted,
+		"REJECTED": model.FriendshipStatusRejected,
+	}
+	marshalNFriendshipStatus2appᚋgraphᚋmodelᚐFriendshipStatus = map[model.FriendshipStatus]string{
+		model.FriendshipStatusPending:  "PENDING",
+		model.FriendshipStatusAccepted: "ACCEPTED",
+		model.FriendshipStatusRejected: "REJECTED",
+	}
+)
 
 func (ec *executionContext) unmarshalNGender2appᚋgraphᚋmodelᚐGender(ctx context.Context, v any) (model.Gender, error) {
 	tmp, err := graphql.UnmarshalString(v)
@@ -6348,6 +6509,11 @@ func (ec *executionContext) marshalNProfile2ᚖappᚋgraphᚋmodelᚐProfile(ctx
 		return graphql.Null
 	}
 	return ec._Profile(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSendFriendshipRequest2appᚋgraphᚋmodelᚐSendFriendshipRequest(ctx context.Context, v any) (model.SendFriendshipRequest, error) {
+	res, err := ec.unmarshalInputSendFriendshipRequest(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNSetLog2ᚕᚖappᚋgraphᚋmodelᚐSetLogᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.SetLog) graphql.Marshaler {

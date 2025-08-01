@@ -29,8 +29,13 @@ input UpdateProfile {
   imageURL: String
 }
 
+input SendFriendshipRequest {
+  requesteeID: ID!
+}
+
 type Mutation {
   deleteUser(input: DeleteUser!): Boolean!
   createProfile(input: CreateProfile!): Profile!
   updateProfile(input: UpdateProfile!): Profile!
+  sendFriendshipRequest(input: SendFriendshipRequest!): Friendship!
 }

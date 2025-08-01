@@ -3,6 +3,8 @@ package entity
 import (
 	"fmt"
 
+	"app/graph/model"
+
 	"gorm.io/gorm"
 )
 
@@ -70,5 +72,21 @@ func (f *Friendship) GetValidStatuses() []string {
 		string(Pending),
 		string(Accepted),
 		string(Rejected),
+	}
+}
+
+func (f *Friendship) StatusToGraphQL() *model.FriendshipStatus {
+	switch f.Status {
+	case string(Pending):
+		friendshipStatus := model.FriendshipStatusPending
+		return &friendshipStatus
+	case string(Accepted):
+		friendshipStatus := model.FriendshipStatusAccepted
+		return &friendshipStatus
+	case string(Rejected):
+		friendshipStatus := model.FriendshipStatusRejected
+		return &friendshipStatus
+	default:
+		return nil
 	}
 }

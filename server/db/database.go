@@ -126,6 +126,23 @@ func ConnectDB() {
 				return tx.Migrator().DropTable(&entity.Friendship{})
 			},
 		},
+		{
+			ID: "202508021518_create_admin_user_2",
+			Migrate: func(tx *gorm.DB) error {
+				var count int64
+				tx.Model(&entity.User{}).Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")+"-2").Count(&count)
+				if count == 0 {
+					adminUser := &entity.User{
+						UID: os.Getenv("MOCK_ADMIN_UID") + "-2",
+					}
+					return tx.Create(adminUser).Error
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")).Delete(&entity.User{}).Error
+			},
+		},
 	})
 
 	if err := m.Migrate(); err != nil {

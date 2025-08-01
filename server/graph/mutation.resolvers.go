@@ -39,6 +39,12 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, input model.Update
 	return profileService.UpdateProfile(ctx, input)
 }
 
+// SendFriendshipRequest is the resolver for the sendFriendshipRequest field.
+func (r *mutationResolver) SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error) {
+	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	return friendshipService.SendFriendshipRequest(ctx, input)
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 

@@ -2,13 +2,6 @@
 
 package model
 
-import (
-	"bytes"
-	"fmt"
-	"io"
-	"strconv"
-)
-
 type CreateProfile struct {
 	Name          string         `json:"name"`
 	BirthDate     string         `json:"birthDate"`
@@ -54,6 +47,10 @@ type Profile struct {
 type Query struct {
 }
 
+type SendFriendshipRequest struct {
+	RequesteeID string `json:"requesteeID"`
+}
+
 type SetLog struct {
 	ID          string       `json:"id"`
 	WorkoutLog  *WorkoutLog  `json:"workoutLog"`
@@ -94,61 +91,4 @@ type WorkoutType struct {
 	ID      string    `json:"id"`
 	Name    string    `json:"name"`
 	SetLogs []*SetLog `json:"setLogs"`
-}
-
-type FriendshipStatus string
-
-const (
-	FriendshipStatusPending  FriendshipStatus = "PENDING"
-	FriendshipStatusAccepted FriendshipStatus = "ACCEPTED"
-	FriendshipStatusRejected FriendshipStatus = "REJECTED"
-)
-
-var AllFriendshipStatus = []FriendshipStatus{
-	FriendshipStatusPending,
-	FriendshipStatusAccepted,
-	FriendshipStatusRejected,
-}
-
-func (e FriendshipStatus) IsValid() bool {
-	switch e {
-	case FriendshipStatusPending, FriendshipStatusAccepted, FriendshipStatusRejected:
-		return true
-	}
-	return false
-}
-
-func (e FriendshipStatus) String() string {
-	return string(e)
-}
-
-func (e *FriendshipStatus) UnmarshalGQL(v any) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = FriendshipStatus(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid FriendshipStatus", str)
-	}
-	return nil
-}
-
-func (e FriendshipStatus) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
-func (e *FriendshipStatus) UnmarshalJSON(b []byte) error {
-	s, err := strconv.Unquote(string(b))
-	if err != nil {
-		return err
-	}
-	return e.UnmarshalGQL(s)
-}
-
-func (e FriendshipStatus) MarshalJSON() ([]byte, error) {
-	var buf bytes.Buffer
-	e.MarshalGQL(&buf)
-	return buf.Bytes(), nil
 }

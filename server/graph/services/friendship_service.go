@@ -16,6 +16,7 @@ type FriendshipService interface {
 	GetFriendshipByID(ctx context.Context, friendshipID string) (*model.Friendship, error)
 	GetFriendshipRequesterID(ctx context.Context, friendshipID string) (string, error)
 	GetFriendshipRequesteeID(ctx context.Context, friendshipID string) (string, error)
+	SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error)
 }
 
 type friendshipService struct {
@@ -33,7 +34,7 @@ func NewFriendshipService(db *gorm.DB, loader dataloader.FriendshipLoaderInterfa
 func convertFriendship(friendship entity.Friendship) *model.Friendship {
 	return &model.Friendship{
 		ID:     fmt.Sprintf("%d", friendship.ID),
-		Status: model.FriendshipStatus(friendship.Status),
+		Status: *friendship.StatusToGraphQL(),
 	}
 }
 
@@ -90,4 +91,28 @@ func (s *friendshipService) GetFriendshipRequesteeID(ctx context.Context, friend
 		return "", err
 	}
 	return fmt.Sprintf("%d", friendship.RequesteeID), nil
+}
+
+func (s *friendshipService) SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error) {
+	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
+	}
+
+	requesteeID, err := strconv.ParseUint(input.RequesteeID, 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("invalid requestee ID: %s", input.RequesteeID)
+	}
+
+	friendship := entity.Friendship{
+		RequesterID: currentUser.ID,
+		RequesteeID: uint(requesteeID),
+		Status:      model.FriendshipStatusPending.String(),
+	}
+
+	if err := s.db.Create(&friendship).Error; err != nil {
+		return nil, fmt.Errorf("failed to create friendship: %w", err)
+	}
+
+	return convertFriendship(friendship), nil
 }

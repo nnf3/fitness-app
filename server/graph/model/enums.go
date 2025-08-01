@@ -109,3 +109,48 @@ func (a *ActivityLevel) UnmarshalJSON(b []byte) error {
 	}
 	return nil
 }
+
+// FriendshipStatus enum
+type FriendshipStatus int
+
+const (
+	FriendshipStatusPending FriendshipStatus = iota
+	FriendshipStatusAccepted
+	FriendshipStatusRejected
+)
+
+func (f FriendshipStatus) String() string {
+	switch f {
+	case FriendshipStatusPending:
+		return "PENDING"
+	case FriendshipStatusAccepted:
+		return "ACCEPTED"
+	case FriendshipStatusRejected:
+		return "REJECTED"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+func (f FriendshipStatus) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, f.String())), nil
+}
+
+func (f *FriendshipStatus) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+
+	switch s {
+	case "PENDING":
+		*f = FriendshipStatusPending
+	case "ACCEPTED":
+		*f = FriendshipStatusAccepted
+	case "REJECTED":
+		*f = FriendshipStatusRejected
+	default:
+		return fmt.Errorf("unexpected friendship status value %q", s)
+	}
+	return nil
+}
