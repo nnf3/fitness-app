@@ -50,9 +50,9 @@ func (u *User) GetFriends() []User {
 	return friends
 }
 
-func (u *User) GetFriendRequests() []User {
-	var requests []User
+func (u *User) GetFriendshipRequest(friendshipID string) *Friendship {
+	var request *Friendship
 	db := gorm.DB{}
-	db.Model(&Friendship{}).Where("requestee_id = ?", u.ID).Where("status = ?", Pending).Find(&requests)
-	return requests
+	db.Model(&Friendship{}).Where("id = ?", friendshipID).Where("requestee_id = ?", u.ID).Where("status = ?", Pending).Find(&request)
+	return request
 }

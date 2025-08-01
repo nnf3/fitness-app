@@ -2,6 +2,10 @@
 
 package model
 
+type AcceptFriendshipRequest struct {
+	FriendshipID string `json:"friendshipID"`
+}
+
 type CreateProfile struct {
 	Name          string         `json:"name"`
 	BirthDate     string         `json:"birthDate"`
@@ -45,6 +49,10 @@ type Profile struct {
 }
 
 type Query struct {
+}
+
+type RejectFriendshipRequest struct {
+	FriendshipID string `json:"friendshipID"`
 }
 
 type SendFriendshipRequest struct {

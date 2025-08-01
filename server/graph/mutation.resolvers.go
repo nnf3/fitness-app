@@ -45,6 +45,18 @@ func (r *mutationResolver) SendFriendshipRequest(ctx context.Context, input mode
 	return friendshipService.SendFriendshipRequest(ctx, input)
 }
 
+// AcceptFriendshipRequest is the resolver for the acceptFriendshipRequest field.
+func (r *mutationResolver) AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error) {
+	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	return friendshipService.AcceptFriendshipRequest(ctx, input)
+}
+
+// RejectFriendshipRequest is the resolver for the rejectFriendshipRequest field.
+func (r *mutationResolver) RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error) {
+	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	return friendshipService.RejectFriendshipRequest(ctx, input)
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 

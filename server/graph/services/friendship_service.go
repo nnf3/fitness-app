@@ -17,6 +17,8 @@ type FriendshipService interface {
 	GetFriendshipRequesterID(ctx context.Context, friendshipID string) (string, error)
 	GetFriendshipRequesteeID(ctx context.Context, friendshipID string) (string, error)
 	SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error)
+	AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error)
+	RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error)
 }
 
 type friendshipService struct {
@@ -115,4 +117,44 @@ func (s *friendshipService) SendFriendshipRequest(ctx context.Context, input mod
 	}
 
 	return convertFriendship(friendship), nil
+}
+
+func (s *friendshipService) AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error) {
+	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
+	}
+
+	friendRequest := currentUser.GetFriendshipRequest(input.FriendshipID)
+	if friendRequest == nil {
+		return nil, fmt.Errorf("friendship request not found")
+	}
+
+	// ステータスをAcceptedに更新
+	friendRequest.Status = model.FriendshipStatusAccepted.String()
+	if err := s.db.Save(&friendRequest).Error; err != nil {
+		return nil, fmt.Errorf("failed to update friendship: %w", err)
+	}
+
+	return convertFriendship(*friendRequest), nil
+}
+
+func (s *friendshipService) RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error) {
+	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
+	}
+
+	friendRequest := currentUser.GetFriendshipRequest(input.FriendshipID)
+	if friendRequest == nil {
+		return nil, fmt.Errorf("friendship request not found")
+	}
+
+	// ステータスをRejectedに更新
+	friendRequest.Status = model.FriendshipStatusRejected.String()
+	if err := s.db.Save(&friendRequest).Error; err != nil {
+		return nil, fmt.Errorf("failed to update friendship: %w", err)
+	}
+
+	return convertFriendship(*friendRequest), nil
 }
