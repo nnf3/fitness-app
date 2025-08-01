@@ -2,6 +2,13 @@
 
 package model
 
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type CreateProfile struct {
 	Name          string         `json:"name"`
 	BirthDate     string         `json:"birthDate"`
@@ -14,6 +21,13 @@ type CreateProfile struct {
 
 type DeleteUser struct {
 	ID string `json:"id"`
+}
+
+type Friendship struct {
+	ID        string           `json:"id"`
+	Requester *User            `json:"requester"`
+	Requestee *User            `json:"requestee"`
+	Status    FriendshipStatus `json:"status"`
 }
 
 type Mutation struct {
@@ -66,11 +80,11 @@ type User struct {
 	UpdatedAt   string        `json:"updatedAt"`
 	Profile     *Profile      `json:"profile,omitempty"`
 	WorkoutLogs []*WorkoutLog `json:"workoutLogs"`
+	Friendships []*Friendship `json:"friendships"`
 }
 
 type WorkoutLog struct {
 	ID        string    `json:"id"`
-	User      *User     `json:"user"`
 	CreatedAt string    `json:"createdAt"`
 	UpdatedAt string    `json:"updatedAt"`
 	SetLogs   []*SetLog `json:"setLogs"`
@@ -80,4 +94,61 @@ type WorkoutType struct {
 	ID      string    `json:"id"`
 	Name    string    `json:"name"`
 	SetLogs []*SetLog `json:"setLogs"`
+}
+
+type FriendshipStatus string
+
+const (
+	FriendshipStatusPending  FriendshipStatus = "PENDING"
+	FriendshipStatusAccepted FriendshipStatus = "ACCEPTED"
+	FriendshipStatusRejected FriendshipStatus = "REJECTED"
+)
+
+var AllFriendshipStatus = []FriendshipStatus{
+	FriendshipStatusPending,
+	FriendshipStatusAccepted,
+	FriendshipStatusRejected,
+}
+
+func (e FriendshipStatus) IsValid() bool {
+	switch e {
+	case FriendshipStatusPending, FriendshipStatusAccepted, FriendshipStatusRejected:
+		return true
+	}
+	return false
+}
+
+func (e FriendshipStatus) String() string {
+	return string(e)
+}
+
+func (e *FriendshipStatus) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = FriendshipStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid FriendshipStatus", str)
+	}
+	return nil
+}
+
+func (e FriendshipStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *FriendshipStatus) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e FriendshipStatus) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }

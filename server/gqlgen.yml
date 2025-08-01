@@ -179,6 +179,15 @@ models:
         value: ./graph/model.ActivityLevelVeryActive
       EXTREMELY_ACTIVE:
         value: ./graph/model.ActivityLevelExtremelyActive
+  FriendshipStatus:
+    model: ./graph/model.FriendshipStatus
+    enum_values:
+      PENDING:
+        value: ./graph/model.FriendshipStatusPending
+      ACCEPTED:
+        value: ./graph/model.FriendshipStatusAccepted
+      REJECTED:
+        value: ./graph/model.FriendshipStatusRejected
 
   User:
     fields:
@@ -186,11 +195,11 @@ models:
         resolver: true
       workoutLogs:
         resolver: true
+      friendships:
+        resolver: true
 
   WorkoutLog:
     fields:
-      user:
-        resolver: true
       setLogs:
         resolver: true
 
@@ -204,4 +213,11 @@ models:
       workoutLog:
         resolver: true
       workoutType:
+        resolver: true
+
+  Friendship:
+    fields:
+      requester:
+        resolver: true
+      requestee:
         resolver: true

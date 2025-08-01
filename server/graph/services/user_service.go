@@ -6,6 +6,7 @@ import (
 	"app/middleware"
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"gorm.io/gorm"
@@ -15,6 +16,7 @@ type UserService interface {
 	GetCurrentUser(ctx context.Context) (*entity.User, error)
 	GetOrCreateUserByUID(ctx context.Context) (user *model.User, err error)
 	GetUserByUID(ctx context.Context) (user *model.User, err error)
+	GetUserByID(ctx context.Context, userID string) (*model.User, error)
 	GetUsers(ctx context.Context) ([]*model.User, error)
 }
 
@@ -95,4 +97,18 @@ func (u *userService) GetUsers(ctx context.Context) ([]*model.User, error) {
 	}
 
 	return convertedUsers, nil
+}
+
+func (u *userService) GetUserByID(ctx context.Context, userID string) (*model.User, error) {
+	id, err := strconv.ParseUint(userID, 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %s", userID)
+	}
+
+	user := entity.User{}
+	if err := u.db.Where("id = ?", uint(id)).First(&user).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch user: %w", err)
+	}
+
+	return convertUser(user), nil
 }

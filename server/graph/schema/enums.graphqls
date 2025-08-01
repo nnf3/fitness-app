@@ -11,3 +11,9 @@ enum ActivityLevel {
   VERY_ACTIVE
   EXTREMELY_ACTIVE
 }
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}

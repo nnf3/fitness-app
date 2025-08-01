@@ -10,6 +10,8 @@ type ContextKey string
 
 type DataLoaders struct {
 	ProfileLoader     ProfileLoaderInterface
+	UserLoader        UserLoaderInterface
+	FriendshipLoader  FriendshipLoaderInterface
 	WorkoutLogLoader  WorkoutLogLoaderInterface
 	SetLogLoader      SetLogLoaderInterface
 	WorkoutTypeLoader WorkoutTypeLoaderInterface
@@ -18,6 +20,8 @@ type DataLoaders struct {
 func NewDataLoaders(db *gorm.DB) *DataLoaders {
 	return &DataLoaders{
 		ProfileLoader:     NewProfileLoader(db),
+		UserLoader:        NewUserLoader(db),
+		FriendshipLoader:  NewFriendshipLoader(db),
 		WorkoutLogLoader:  NewWorkoutLogLoader(db),
 		SetLogLoader:      NewSetLogLoader(db),
 		WorkoutTypeLoader: NewWorkoutTypeLoader(db),
