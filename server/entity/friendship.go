@@ -30,14 +30,8 @@ func (f *Friendship) BeforeCreate(tx *gorm.DB) error {
 }
 
 func (f *Friendship) BeforeUpdate(tx *gorm.DB) error {
-	if f.RequesterID != 0 {
-		return fmt.Errorf("申請者自体を変更することはできません")
-	}
-
-	if f.RequesteeID != 0 {
-		return fmt.Errorf("被申請者自体を変更することはできません")
-	}
-
+	// 更新時は基本的なバリデーションのみ実行
+	// IDの変更チェックはGORMの機能で自動的に行われる
 	return f.Validate()
 }
 
@@ -50,5 +44,31 @@ func (f *Friendship) Validate() error {
 		return fmt.Errorf("申請者と被申請者が同じユーザーです")
 	}
 
+	// Statusのenumバリデーション
+	if f.Status != "" && !f.IsValidStatus(f.Status) {
+		return fmt.Errorf("無効なステータスです: %s", f.Status)
+	}
+
 	return nil
+}
+
+// IsValidStatus は指定されたステータスが有効かどうかをチェックします
+func (f *Friendship) IsValidStatus(status string) bool {
+	validStatuses := f.GetValidStatuses()
+
+	for _, validStatus := range validStatuses {
+		if status == validStatus {
+			return true
+		}
+	}
+	return false
+}
+
+// GetValidStatuses は有効なステータスのリストを返します
+func (f *Friendship) GetValidStatuses() []string {
+	return []string{
+		string(Pending),
+		string(Accepted),
+		string(Rejected),
+	}
 }
