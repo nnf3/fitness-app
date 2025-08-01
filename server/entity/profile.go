@@ -10,13 +10,22 @@ import (
 	"gorm.io/gorm"
 )
 
+type Gender string
+type ActivityLevel string
+
 const (
-	GenderMale   = "male"
-	GenderFemale = "female"
-	GenderOther  = "other"
+	Male   Gender = "male"
+	Female Gender = "female"
+	Other  Gender = "other"
 )
 
-var GenderEnum = []string{GenderMale, GenderFemale, GenderOther}
+const (
+	Sedentary        ActivityLevel = "sedentary"
+	LightlyActive    ActivityLevel = "lightly_active"
+	ModeratelyActive ActivityLevel = "moderately_active"
+	VeryActive       ActivityLevel = "very_active"
+	ExtremelyActive  ActivityLevel = "extremely_active"
+)
 
 type Profile struct {
 	gorm.Model
@@ -24,27 +33,24 @@ type Profile struct {
 	User          User
 	Name          string     `gorm:"not null;size:255"`
 	BirthDate     *time.Time `gorm:"type:date"`
-	Gender        string     `gorm:"type: enum('male', 'female', 'other')"`
+	Gender        Gender
 	Height        *float64
 	Weight        *float64
-	ActivityLevel string `gorm:"type: enum('sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active')"`
+	ActivityLevel ActivityLevel
 	ImageURL      string
 }
 
 // GenderToGraphQL GraphQL enumに変換
 func (p *Profile) GenderToGraphQL() *model.Gender {
 	switch p.Gender {
-	case "male":
+	case Male:
 		gender := model.GenderMale
 		return &gender
-	case "female":
+	case Female:
 		gender := model.GenderFemale
 		return &gender
-	case "other":
+	case Other:
 		gender := model.GenderOther
-		return &gender
-	case "prefer_not_to_say":
-		gender := model.GenderPreferNotToSay
 		return &gender
 	default:
 		return nil
@@ -54,21 +60,21 @@ func (p *Profile) GenderToGraphQL() *model.Gender {
 // ActivityLevelToGraphQL GraphQL enumに変換
 func (p *Profile) ActivityLevelToGraphQL() *model.ActivityLevel {
 	switch p.ActivityLevel {
-	case "sedentary":
-		level := model.ActivityLevelSedentary
-		return &level
-	case "lightly_active":
-		level := model.ActivityLevelLightlyActive
-		return &level
-	case "moderately_active":
-		level := model.ActivityLevelModeratelyActive
-		return &level
-	case "very_active":
-		level := model.ActivityLevelVeryActive
-		return &level
-	case "extremely_active":
-		level := model.ActivityLevelExtremelyActive
-		return &level
+	case Sedentary:
+		activityLevel := model.ActivityLevelSedentary
+		return &activityLevel
+	case LightlyActive:
+		activityLevel := model.ActivityLevelLightlyActive
+		return &activityLevel
+	case ModeratelyActive:
+		activityLevel := model.ActivityLevelModeratelyActive
+		return &activityLevel
+	case VeryActive:
+		activityLevel := model.ActivityLevelVeryActive
+		return &activityLevel
+	case ExtremelyActive:
+		activityLevel := model.ActivityLevelExtremelyActive
+		return &activityLevel
 	default:
 		return nil
 	}
@@ -141,19 +147,6 @@ func (p *Profile) Validate() error {
 		return fmt.Errorf("名前は255文字以内で入力してください")
 	}
 
-	if p.Gender != "" {
-		isValid := false
-		for _, gender := range GenderEnum {
-			if p.Gender == gender {
-				isValid = true
-				break
-			}
-		}
-		if !isValid {
-			return fmt.Errorf("性別は %s, %s, %s のいずれかを選択してください", GenderMale, GenderFemale, GenderOther)
-		}
-	}
-
 	if p.Height != nil {
 		if *p.Height < 50 || *p.Height > 300 {
 			return fmt.Errorf("身長は50cm〜300cmの範囲で入力してください")
@@ -163,20 +156,6 @@ func (p *Profile) Validate() error {
 	if p.Weight != nil {
 		if *p.Weight < 20 || *p.Weight > 500 {
 			return fmt.Errorf("体重は20kg〜500kgの範囲で入力してください")
-		}
-	}
-
-	if p.ActivityLevel != "" {
-		validLevels := []string{"sedentary", "lightly_active", "moderately_active", "very_active", "extremely_active"}
-		isValid := false
-		for _, level := range validLevels {
-			if p.ActivityLevel == level {
-				isValid = true
-				break
-			}
-		}
-		if !isValid {
-			return fmt.Errorf("活動レベルは sedentary, lightly_active, moderately_active, very_active, extremely_active のいずれかを選択してください")
 		}
 	}
 

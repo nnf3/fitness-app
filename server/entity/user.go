@@ -9,7 +9,8 @@ import (
 
 type User struct {
 	gorm.Model
-	UID string `gorm:"unique;not null"`
+	UID         string       `gorm:"unique;not null"`
+	WorkoutLogs []WorkoutLog `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
 }
 
 // BeforeSave GORMフック - 保存前のバリデーション
@@ -40,4 +41,18 @@ func (u *User) Validate() error {
 
 func (u *User) IsAdmin() bool {
 	return u.UID == os.Getenv("MOCK_ADMIN_UID")
+}
+
+func (u *User) GetFriends() []User {
+	var friends []User
+	db := gorm.DB{}
+	db.Model(&Friendship{}).Where("requester_id = ? OR requestee_id = ?", u.ID, u.ID).Where("status = ?", Accepted).Find(&friends)
+	return friends
+}
+
+func (u *User) GetFriendRequests() []User {
+	var requests []User
+	db := gorm.DB{}
+	db.Model(&Friendship{}).Where("requestee_id = ?", u.ID).Where("status = ?", Pending).Find(&requests)
+	return requests
 }
