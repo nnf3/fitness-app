@@ -109,7 +109,7 @@ func (s *friendshipService) SendFriendshipRequest(ctx context.Context, input mod
 	friendship := entity.Friendship{
 		RequesterID: currentUser.ID,
 		RequesteeID: uint(requesteeID),
-		Status:      model.FriendshipStatusPending.String(),
+		Status:      string(entity.Pending),
 	}
 
 	if err := s.db.Create(&friendship).Error; err != nil {
@@ -125,13 +125,13 @@ func (s *friendshipService) AcceptFriendshipRequest(ctx context.Context, input m
 		return nil, fmt.Errorf("failed to get current user: %w", err)
 	}
 
-	friendRequest := currentUser.GetFriendshipRequest(input.FriendshipID)
+	friendRequest := currentUser.GetFriendshipRequest(s.db, input.FriendshipID)
 	if friendRequest == nil {
 		return nil, fmt.Errorf("friendship request not found")
 	}
 
 	// ステータスをAcceptedに更新
-	friendRequest.Status = model.FriendshipStatusAccepted.String()
+	friendRequest.Status = string(entity.Accepted)
 	if err := s.db.Save(&friendRequest).Error; err != nil {
 		return nil, fmt.Errorf("failed to update friendship: %w", err)
 	}
@@ -145,13 +145,13 @@ func (s *friendshipService) RejectFriendshipRequest(ctx context.Context, input m
 		return nil, fmt.Errorf("failed to get current user: %w", err)
 	}
 
-	friendRequest := currentUser.GetFriendshipRequest(input.FriendshipID)
+	friendRequest := currentUser.GetFriendshipRequest(s.db, input.FriendshipID)
 	if friendRequest == nil {
 		return nil, fmt.Errorf("friendship request not found")
 	}
 
 	// ステータスをRejectedに更新
-	friendRequest.Status = model.FriendshipStatusRejected.String()
+	friendRequest.Status = string(entity.Rejected)
 	if err := s.db.Save(&friendRequest).Error; err != nil {
 		return nil, fmt.Errorf("failed to update friendship: %w", err)
 	}

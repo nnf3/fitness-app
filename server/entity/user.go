@@ -43,16 +43,10 @@ func (u *User) IsAdmin() bool {
 	return u.UID == os.Getenv("MOCK_ADMIN_UID")
 }
 
-func (u *User) GetFriends() []User {
-	var friends []User
-	db := gorm.DB{}
-	db.Model(&Friendship{}).Where("requester_id = ? OR requestee_id = ?", u.ID, u.ID).Where("status = ?", Accepted).Find(&friends)
-	return friends
-}
-
-func (u *User) GetFriendshipRequest(friendshipID string) *Friendship {
-	var request *Friendship
-	db := gorm.DB{}
-	db.Model(&Friendship{}).Where("id = ?", friendshipID).Where("requestee_id = ?", u.ID).Where("status = ?", Pending).Find(&request)
-	return request
+func (u *User) GetFriendshipRequest(db *gorm.DB, friendshipID string) *Friendship {
+	var request Friendship
+	if err := db.Model(&Friendship{}).Where("id = ?", friendshipID).Where("requestee_id = ?", u.ID).Where("status = ?", Pending).First(&request).Error; err != nil {
+		return nil
+	}
+	return &request
 }
