@@ -97,6 +97,36 @@ func CreateResultsFromMap[T any](
 	return results
 }
 
+// 配列マップから結果を作成し、キーの順序を保持
+func CreateResultsFromMapArray[T any](
+	keys []string,
+	dataMap map[uint][]*T,
+	parseKey func(string) (uint, error),
+) []*dataloader.Result[[]*T] {
+	results := make([]*dataloader.Result[[]*T], len(keys))
+
+	for i, key := range keys {
+		if id, err := parseKey(key); err == nil {
+			if data, exists := dataMap[id]; exists {
+				results[i] = &dataloader.Result[[]*T]{
+					Data: data,
+				}
+			} else {
+				// データが存在しない場合、空配列を返す
+				results[i] = &dataloader.Result[[]*T]{
+					Data: []*T{},
+				}
+			}
+		} else {
+			results[i] = &dataloader.Result[[]*T]{
+				Error: fmt.Errorf(ErrInvalidKey, key),
+			}
+		}
+	}
+
+	return results
+}
+
 func LoadGeneric[T any, K comparable](
 	ctx context.Context,
 	loader *dataloader.Loader[K, T],

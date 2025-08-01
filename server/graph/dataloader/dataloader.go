@@ -8,17 +8,19 @@ import (
 
 type ContextKey string
 
-const (
-	ProfileLoaderContextKey ContextKey = "profileLoader"
-)
-
 type DataLoaders struct {
-	ProfileLoader ProfileLoaderInterface
+	ProfileLoader     ProfileLoaderInterface
+	WorkoutLogLoader  WorkoutLogLoaderInterface
+	SetLogLoader      SetLogLoaderInterface
+	WorkoutTypeLoader WorkoutTypeLoaderInterface
 }
 
 func NewDataLoaders(db *gorm.DB) *DataLoaders {
 	return &DataLoaders{
-		ProfileLoader: NewProfileLoader(db),
+		ProfileLoader:     NewProfileLoader(db),
+		WorkoutLogLoader:  NewWorkoutLogLoader(db),
+		SetLogLoader:      NewSetLogLoader(db),
+		WorkoutTypeLoader: NewWorkoutTypeLoader(db),
 	}
 }
 
@@ -27,4 +29,12 @@ const DataLoadersContextKey ContextKey = "dataLoaders"
 func WithDataLoaders(ctx context.Context, db *gorm.DB) context.Context {
 	loaders := NewDataLoaders(db)
 	return context.WithValue(ctx, DataLoadersContextKey, loaders)
+}
+
+func For(ctx context.Context) *DataLoaders {
+	loaders, ok := ctx.Value(DataLoadersContextKey).(*DataLoaders)
+	if !ok {
+		panic("no dataloaders found in context")
+	}
+	return loaders
 }

@@ -7,6 +7,7 @@ type User {
   createdAt: String!
   updatedAt: String!
   profile: Profile
+  workoutLogs: [WorkoutLog!]!
 }
 
 type Profile {
@@ -21,4 +22,27 @@ type Profile {
   imageURL: String
   createdAt: String!
   updatedAt: String!
+}
+
+type WorkoutType {
+  id: ID!
+  name: String!
+  setLogs: [SetLog!]!
+}
+
+type WorkoutLog {
+  id: ID!
+  user: User!
+  createdAt: String!
+  updatedAt: String!
+  setLogs: [SetLog!]!
+}
+
+type SetLog {
+  id: ID!
+  workoutLog: WorkoutLog!
+  workoutType: WorkoutType!
+  weight: Int!
+  repCount: Int!
+  setNumber: Int!
 }
