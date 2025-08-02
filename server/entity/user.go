@@ -50,3 +50,34 @@ func (u *User) GetFriendshipRequest(db *gorm.DB, friendshipID string) *Friendshi
 	}
 	return &request
 }
+
+func (u *User) GetFriends(db *gorm.DB) []User {
+	var friendships []Friendship
+	if err := db.Model(&Friendship{}).
+		Preload("Requester").
+		Preload("Requestee").
+		Where("requester_id = ? OR requestee_id = ?", u.ID, u.ID).
+		Where("status = ?", Accepted).
+		Find(&friendships).Error; err != nil {
+		return nil
+	}
+
+	var friends []User
+	for _, friendship := range friendships {
+		if friendship.RequesterID == u.ID {
+			friends = append(friends, friendship.Requestee)
+		} else {
+			friends = append(friends, friendship.Requester)
+		}
+	}
+
+	return friends
+}
+
+func (u *User) GetFriendshipRequests(db *gorm.DB) []Friendship {
+	var requests []Friendship
+	if err := db.Model(&Friendship{}).Where("requestee_id = ?", u.ID).Where("status = ?", Pending).Find(&requests).Error; err != nil {
+		return nil
+	}
+	return requests
+}

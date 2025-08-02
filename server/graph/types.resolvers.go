@@ -57,10 +57,16 @@ func (r *userResolver) WorkoutLogs(ctx context.Context, obj *model.User) ([]*mod
 	return workoutLogService.GetWorkoutLogs(ctx, obj.ID)
 }
 
-// Friendships is the resolver for the friendships field.
-func (r *userResolver) Friendships(ctx context.Context, obj *model.User) ([]*model.Friendship, error) {
+// Friends is the resolver for the friends field.
+func (r *userResolver) Friends(ctx context.Context, obj *model.User) ([]*model.User, error) {
 	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
-	return friendshipService.GetFriendships(ctx, obj.ID)
+	return friendshipService.GetFriends(ctx, obj.ID)
+}
+
+// FriendshipRequests is the resolver for the friendshipRequests field.
+func (r *userResolver) FriendshipRequests(ctx context.Context, obj *model.User) ([]*model.Friendship, error) {
+	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	return friendshipService.GetFriendshipRequests(ctx, obj.ID)
 }
 
 // SetLogs is the resolver for the setLogs field.

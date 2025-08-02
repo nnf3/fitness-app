@@ -28,7 +28,11 @@ func NewFriendshipLoader(db *gorm.DB) FriendshipLoaderInterface {
 
 func (l *FriendshipLoader) fetchFriendshipsFromDB(userIDs []uint) ([]entity.Friendship, error) {
 	var friendships []entity.Friendship
-	err := l.db.Where("requester_id IN ? OR requestee_id IN ?", userIDs, userIDs).Find(&friendships).Error
+	err := l.db.
+		Preload("Requester").
+		Preload("Requestee").
+		Where("requester_id IN ? OR requestee_id IN ?", userIDs, userIDs).
+		Find(&friendships).Error
 	return friendships, err
 }
 

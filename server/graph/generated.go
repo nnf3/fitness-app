@@ -97,13 +97,14 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		CreatedAt   func(childComplexity int) int
-		Friendships func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Profile     func(childComplexity int) int
-		UID         func(childComplexity int) int
-		UpdatedAt   func(childComplexity int) int
-		WorkoutLogs func(childComplexity int) int
+		CreatedAt          func(childComplexity int) int
+		Friends            func(childComplexity int) int
+		FriendshipRequests func(childComplexity int) int
+		ID                 func(childComplexity int) int
+		Profile            func(childComplexity int) int
+		UID                func(childComplexity int) int
+		UpdatedAt          func(childComplexity int) int
+		WorkoutLogs        func(childComplexity int) int
 	}
 
 	WorkoutLog struct {
@@ -143,7 +144,8 @@ type SetLogResolver interface {
 type UserResolver interface {
 	Profile(ctx context.Context, obj *model.User) (*model.Profile, error)
 	WorkoutLogs(ctx context.Context, obj *model.User) ([]*model.WorkoutLog, error)
-	Friendships(ctx context.Context, obj *model.User) ([]*model.Friendship, error)
+	Friends(ctx context.Context, obj *model.User) ([]*model.User, error)
+	FriendshipRequests(ctx context.Context, obj *model.User) ([]*model.Friendship, error)
 }
 type WorkoutLogResolver interface {
 	SetLogs(ctx context.Context, obj *model.WorkoutLog) ([]*model.SetLog, error)
@@ -411,12 +413,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.User.CreatedAt(childComplexity), true
 
-	case "User.friendships":
-		if e.complexity.User.Friendships == nil {
+	case "User.friends":
+		if e.complexity.User.Friends == nil {
 			break
 		}
 
-		return e.complexity.User.Friendships(childComplexity), true
+		return e.complexity.User.Friends(childComplexity), true
+
+	case "User.friendshipRequests":
+		if e.complexity.User.FriendshipRequests == nil {
+			break
+		}
+
+		return e.complexity.User.FriendshipRequests(childComplexity), true
 
 	case "User.id":
 		if e.complexity.User.ID == nil {
@@ -992,8 +1001,10 @@ func (ec *executionContext) fieldContext_Friendship_requester(_ context.Context,
 				return ec.fieldContext_User_profile(ctx, field)
 			case "workoutLogs":
 				return ec.fieldContext_User_workoutLogs(ctx, field)
-			case "friendships":
-				return ec.fieldContext_User_friendships(ctx, field)
+			case "friends":
+				return ec.fieldContext_User_friends(ctx, field)
+			case "friendshipRequests":
+				return ec.fieldContext_User_friendshipRequests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1052,8 +1063,10 @@ func (ec *executionContext) fieldContext_Friendship_requestee(_ context.Context,
 				return ec.fieldContext_User_profile(ctx, field)
 			case "workoutLogs":
 				return ec.fieldContext_User_workoutLogs(ctx, field)
-			case "friendships":
-				return ec.fieldContext_User_friendships(ctx, field)
+			case "friends":
+				return ec.fieldContext_User_friends(ctx, field)
+			case "friendshipRequests":
+				return ec.fieldContext_User_friendshipRequests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1608,8 +1621,10 @@ func (ec *executionContext) fieldContext_Profile_user(_ context.Context, field g
 				return ec.fieldContext_User_profile(ctx, field)
 			case "workoutLogs":
 				return ec.fieldContext_User_workoutLogs(ctx, field)
-			case "friendships":
-				return ec.fieldContext_User_friendships(ctx, field)
+			case "friends":
+				return ec.fieldContext_User_friends(ctx, field)
+			case "friendshipRequests":
+				return ec.fieldContext_User_friendshipRequests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2046,8 +2061,10 @@ func (ec *executionContext) fieldContext_Query_users(_ context.Context, field gr
 				return ec.fieldContext_User_profile(ctx, field)
 			case "workoutLogs":
 				return ec.fieldContext_User_workoutLogs(ctx, field)
-			case "friendships":
-				return ec.fieldContext_User_friendships(ctx, field)
+			case "friends":
+				return ec.fieldContext_User_friends(ctx, field)
+			case "friendshipRequests":
+				return ec.fieldContext_User_friendshipRequests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2106,8 +2123,10 @@ func (ec *executionContext) fieldContext_Query_currentUser(_ context.Context, fi
 				return ec.fieldContext_User_profile(ctx, field)
 			case "workoutLogs":
 				return ec.fieldContext_User_workoutLogs(ctx, field)
-			case "friendships":
-				return ec.fieldContext_User_friendships(ctx, field)
+			case "friends":
+				return ec.fieldContext_User_friends(ctx, field)
+			case "friendshipRequests":
+				return ec.fieldContext_User_friendshipRequests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2823,8 +2842,8 @@ func (ec *executionContext) fieldContext_User_workoutLogs(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _User_friendships(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_friendships(ctx, field)
+func (ec *executionContext) _User_friends(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_friends(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2837,7 +2856,69 @@ func (ec *executionContext) _User_friendships(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().Friendships(rctx, obj)
+		return ec.resolvers.User().Friends(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚕᚖappᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_friends(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_User_uid(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "profile":
+				return ec.fieldContext_User_profile(ctx, field)
+			case "workoutLogs":
+				return ec.fieldContext_User_workoutLogs(ctx, field)
+			case "friends":
+				return ec.fieldContext_User_friends(ctx, field)
+			case "friendshipRequests":
+				return ec.fieldContext_User_friendshipRequests(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_friendshipRequests(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_friendshipRequests(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().FriendshipRequests(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2854,7 +2935,7 @@ func (ec *executionContext) _User_friendships(ctx context.Context, field graphql
 	return ec.marshalNFriendship2ᚕᚖappᚋgraphᚋmodelᚐFriendshipᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_User_friendships(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_friendshipRequests(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
@@ -6036,7 +6117,7 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "friendships":
+		case "friends":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -6045,7 +6126,43 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._User_friendships(ctx, field, obj)
+				res = ec._User_friends(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "friendshipRequests":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_friendshipRequests(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

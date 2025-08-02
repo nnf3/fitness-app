@@ -79,13 +79,14 @@ type UpdateProfile struct {
 }
 
 type User struct {
-	ID          string        `json:"id"`
-	UID         string        `json:"uid"`
-	CreatedAt   string        `json:"createdAt"`
-	UpdatedAt   string        `json:"updatedAt"`
-	Profile     *Profile      `json:"profile,omitempty"`
-	WorkoutLogs []*WorkoutLog `json:"workoutLogs"`
-	Friendships []*Friendship `json:"friendships"`
+	ID                 string        `json:"id"`
+	UID                string        `json:"uid"`
+	CreatedAt          string        `json:"createdAt"`
+	UpdatedAt          string        `json:"updatedAt"`
+	Profile            *Profile      `json:"profile,omitempty"`
+	WorkoutLogs        []*WorkoutLog `json:"workoutLogs"`
+	Friends            []*User       `json:"friends"`
+	FriendshipRequests []*Friendship `json:"friendshipRequests"`
 }
 
 type WorkoutLog struct {

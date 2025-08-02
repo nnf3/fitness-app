@@ -12,7 +12,8 @@ import (
 )
 
 type FriendshipService interface {
-	GetFriendships(ctx context.Context, userID string) ([]*model.Friendship, error)
+	GetFriends(ctx context.Context, userID string) ([]*model.User, error)
+	GetFriendshipRequests(ctx context.Context, userID string) ([]*model.Friendship, error)
 	GetFriendshipByID(ctx context.Context, friendshipID string) (*model.Friendship, error)
 	GetFriendshipRequesterID(ctx context.Context, friendshipID string) (string, error)
 	GetFriendshipRequesteeID(ctx context.Context, friendshipID string) (string, error)
@@ -38,19 +39,6 @@ func convertFriendship(friendship entity.Friendship) *model.Friendship {
 		ID:     fmt.Sprintf("%d", friendship.ID),
 		Status: *friendship.StatusToGraphQL(),
 	}
-}
-
-func (s *friendshipService) GetFriendships(ctx context.Context, userID string) ([]*model.Friendship, error) {
-	entities, err := s.friendshipLoader.LoadFriendships(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []*model.Friendship
-	for _, friendship := range entities {
-		result = append(result, convertFriendship(*friendship))
-	}
-	return result, nil
 }
 
 func (s *friendshipService) GetFriendshipByID(ctx context.Context, friendshipID string) (*model.Friendship, error) {
@@ -93,6 +81,32 @@ func (s *friendshipService) GetFriendshipRequesteeID(ctx context.Context, friend
 		return "", err
 	}
 	return fmt.Sprintf("%d", friendship.RequesteeID), nil
+}
+
+func (s *friendshipService) GetFriends(ctx context.Context, userID string) ([]*model.User, error) {
+	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
+	}
+	friends := currentUser.GetFriends(s.db)
+	var result []*model.User
+	for _, friend := range friends {
+		result = append(result, convertUser(friend))
+	}
+	return result, nil
+}
+
+func (s *friendshipService) GetFriendshipRequests(ctx context.Context, userID string) ([]*model.Friendship, error) {
+	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
+	}
+	requests := currentUser.GetFriendshipRequests(s.db)
+	var result []*model.Friendship
+	for _, request := range requests {
+		result = append(result, convertFriendship(request))
+	}
+	return result, nil
 }
 
 func (s *friendshipService) SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error) {
