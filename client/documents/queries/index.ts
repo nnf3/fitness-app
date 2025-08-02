@@ -1,2 +1,2 @@
 export * from './currentUser';
-export * from './profileEditCurrentUser';
+export * from './getProfile';

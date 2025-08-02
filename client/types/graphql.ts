@@ -194,10 +194,10 @@ export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, createdAt: string, updatedAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null } };
 
-export type ProfileEditCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ProfileEditCurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null, imageURL?: string | null } | null } };
+export type GetProfileQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null, imageURL?: string | null } | null } };
 
 
 export const UpdateProfileDocument = gql`
@@ -233,8 +233,8 @@ export const CurrentUserDocument = gql`
   }
 }
     `;
-export const ProfileEditCurrentUserDocument = gql`
-    query ProfileEditCurrentUser {
+export const GetProfileDocument = gql`
+    query GetProfile {
   currentUser {
     id
     uid
@@ -265,8 +265,8 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     CurrentUser(variables?: CurrentUserQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CurrentUserQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<CurrentUserQuery>({ document: CurrentUserDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CurrentUser', 'query', variables);
     },
-    ProfileEditCurrentUser(variables?: ProfileEditCurrentUserQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<ProfileEditCurrentUserQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<ProfileEditCurrentUserQuery>({ document: ProfileEditCurrentUserDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'ProfileEditCurrentUser', 'query', variables);
+    GetProfile(variables?: GetProfileQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetProfileQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetProfileQuery>({ document: GetProfileDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetProfile', 'query', variables);
     }
   };
 }

@@ -1,7 +1,7 @@
 import { gql } from 'graphql-tag';
 
-export const ProfileEditCurrentUserDocument = gql(`
-  query ProfileEditCurrentUser {
+export const GetProfileDocument = gql(`
+  query GetProfile {
     currentUser {
       id
       uid

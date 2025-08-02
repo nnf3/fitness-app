@@ -11,8 +11,8 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks';
 import { useQuery, useMutation } from '@apollo/client';
-import { ProfileEditCurrentUserDocument, UpdateProfileDocument } from '@/documents';
-import { ProfileEditCurrentUserQuery, UpdateProfileMutation } from '@/types/graphql';
+import { GetProfileDocument, UpdateProfileDocument } from '@/documents';
+import { GetProfileQuery, UpdateProfileMutation } from '@/types/graphql';
 import { FormField } from './FormField';
 import { ImagePickerComponent } from './ImagePicker';
 import { useTheme } from '../../theme';
@@ -101,7 +101,7 @@ const activityLevelOptions = [
 const useProfileEditQuery = () => {
   const router = useRouter();
   const { user } = useAuth();
-  const { data, loading: queryLoading, error: queryError } = useQuery<ProfileEditCurrentUserQuery>(ProfileEditCurrentUserDocument, {
+  const { data, loading: queryLoading, error: queryError } = useQuery<GetProfileQuery>(GetProfileDocument, {
     skip: !user,
   });
 
