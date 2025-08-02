@@ -11,6 +11,30 @@ import (
 	"fmt"
 )
 
+// Requester is the resolver for the requester field.
+func (r *friendshipResolver) Requester(ctx context.Context, obj *model.Friendship) (*model.User, error) {
+	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	requesterID, err := friendshipService.GetFriendshipRequesterID(ctx, obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	userService := services.NewUserService(r.DB)
+	return userService.GetUserByID(ctx, requesterID)
+}
+
+// Requestee is the resolver for the requestee field.
+func (r *friendshipResolver) Requestee(ctx context.Context, obj *model.Friendship) (*model.User, error) {
+	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	requesteeID, err := friendshipService.GetFriendshipRequesteeID(ctx, obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	userService := services.NewUserService(r.DB)
+	return userService.GetUserByID(ctx, requesteeID)
+}
+
 // WorkoutLog is the resolver for the workoutLog field.
 func (r *setLogResolver) WorkoutLog(ctx context.Context, obj *model.SetLog) (*model.WorkoutLog, error) {
 	panic(fmt.Errorf("not implemented: WorkoutLog - workoutLog"))
@@ -33,9 +57,10 @@ func (r *userResolver) WorkoutLogs(ctx context.Context, obj *model.User) ([]*mod
 	return workoutLogService.GetWorkoutLogs(ctx, obj.ID)
 }
 
-// User is the resolver for the user field.
-func (r *workoutLogResolver) User(ctx context.Context, obj *model.WorkoutLog) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: User - user"))
+// Friendships is the resolver for the friendships field.
+func (r *userResolver) Friendships(ctx context.Context, obj *model.User) ([]*model.Friendship, error) {
+	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	return friendshipService.GetFriendships(ctx, obj.ID)
 }
 
 // SetLogs is the resolver for the setLogs field.
@@ -47,6 +72,9 @@ func (r *workoutLogResolver) SetLogs(ctx context.Context, obj *model.WorkoutLog)
 func (r *workoutTypeResolver) SetLogs(ctx context.Context, obj *model.WorkoutType) ([]*model.SetLog, error) {
 	panic(fmt.Errorf("not implemented: SetLogs - setLogs"))
 }
+
+// Friendship returns FriendshipResolver implementation.
+func (r *Resolver) Friendship() FriendshipResolver { return &friendshipResolver{r} }
 
 // SetLog returns SetLogResolver implementation.
 func (r *Resolver) SetLog() SetLogResolver { return &setLogResolver{r} }
@@ -60,6 +88,7 @@ func (r *Resolver) WorkoutLog() WorkoutLogResolver { return &workoutLogResolver{
 // WorkoutType returns WorkoutTypeResolver implementation.
 func (r *Resolver) WorkoutType() WorkoutTypeResolver { return &workoutTypeResolver{r} }
 
+type friendshipResolver struct{ *Resolver }
 type setLogResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
 type workoutLogResolver struct{ *Resolver }

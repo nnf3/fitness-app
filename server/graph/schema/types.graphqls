@@ -8,6 +8,7 @@ type User {
   updatedAt: String!
   profile: Profile
   workoutLogs: [WorkoutLog!]!
+  friendships: [Friendship!]!
 }
 
 type Profile {
@@ -32,7 +33,6 @@ type WorkoutType {
 
 type WorkoutLog {
   id: ID!
-  user: User!
   createdAt: String!
   updatedAt: String!
   setLogs: [SetLog!]!
@@ -45,4 +45,11 @@ type SetLog {
   weight: Int!
   repCount: Int!
   setNumber: Int!
+}
+
+type Friendship {
+  id: ID!
+  requester: User!
+  requestee: User!
+  status: FriendshipStatus!
 }

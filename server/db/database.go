@@ -78,10 +78,16 @@ func ConnectDB() {
 		{
 			ID: "202507281403_add_image_url_to_profiles",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.Migrator().AddColumn(&entity.Profile{}, "image_url")
+				if !tx.Migrator().HasColumn(&entity.Profile{}, "image_url") {
+					return tx.Migrator().AddColumn(&entity.Profile{}, "image_url")
+				}
+				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropColumn(&entity.Profile{}, "image_url")
+				if tx.Migrator().HasColumn(&entity.Profile{}, "image_url") {
+					return tx.Migrator().DropColumn(&entity.Profile{}, "image_url")
+				}
+				return nil
 			},
 		},
 		{
@@ -109,6 +115,32 @@ func ConnectDB() {
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.Migrator().DropTable(&entity.SetLog{})
+			},
+		},
+		{
+			ID: "202508021400_create_friendships",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&entity.Friendship{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&entity.Friendship{})
+			},
+		},
+		{
+			ID: "202508021518_create_admin_user_2",
+			Migrate: func(tx *gorm.DB) error {
+				var count int64
+				tx.Model(&entity.User{}).Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")+"-2").Count(&count)
+				if count == 0 {
+					adminUser := &entity.User{
+						UID: os.Getenv("MOCK_ADMIN_UID") + "-2",
+					}
+					return tx.Create(adminUser).Error
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")).Delete(&entity.User{}).Error
 			},
 		},
 	})

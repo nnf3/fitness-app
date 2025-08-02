@@ -2,6 +2,10 @@
 
 package model
 
+type AcceptFriendshipRequest struct {
+	FriendshipID string `json:"friendshipID"`
+}
+
 type CreateProfile struct {
 	Name          string         `json:"name"`
 	BirthDate     string         `json:"birthDate"`
@@ -14,6 +18,13 @@ type CreateProfile struct {
 
 type DeleteUser struct {
 	ID string `json:"id"`
+}
+
+type Friendship struct {
+	ID        string           `json:"id"`
+	Requester *User            `json:"requester"`
+	Requestee *User            `json:"requestee"`
+	Status    FriendshipStatus `json:"status"`
 }
 
 type Mutation struct {
@@ -38,6 +49,14 @@ type Profile struct {
 }
 
 type Query struct {
+}
+
+type RejectFriendshipRequest struct {
+	FriendshipID string `json:"friendshipID"`
+}
+
+type SendFriendshipRequest struct {
+	RequesteeID string `json:"requesteeID"`
 }
 
 type SetLog struct {
@@ -66,11 +85,11 @@ type User struct {
 	UpdatedAt   string        `json:"updatedAt"`
 	Profile     *Profile      `json:"profile,omitempty"`
 	WorkoutLogs []*WorkoutLog `json:"workoutLogs"`
+	Friendships []*Friendship `json:"friendships"`
 }
 
 type WorkoutLog struct {
 	ID        string    `json:"id"`
-	User      *User     `json:"user"`
 	CreatedAt string    `json:"createdAt"`
 	UpdatedAt string    `json:"updatedAt"`
 	SetLogs   []*SetLog `json:"setLogs"`
