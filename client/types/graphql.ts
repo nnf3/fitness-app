@@ -183,6 +183,27 @@ export type WorkoutType = {
   setLogs: Array<SetLog>;
 };
 
+export type AcceptFriendshipRequestMutationVariables = Exact<{
+  input: AcceptFriendshipRequest;
+}>;
+
+
+export type AcceptFriendshipRequestMutation = { __typename?: 'Mutation', acceptFriendshipRequest: { __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } } };
+
+export type RejectFriendshipRequestMutationVariables = Exact<{
+  input: RejectFriendshipRequest;
+}>;
+
+
+export type RejectFriendshipRequestMutation = { __typename?: 'Mutation', rejectFriendshipRequest: { __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } } };
+
+export type SendFriendshipRequestMutationVariables = Exact<{
+  input: SendFriendshipRequest;
+}>;
+
+
+export type SendFriendshipRequestMutation = { __typename?: 'Mutation', sendFriendshipRequest: { __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } } };
+
 export type UpdateProfileMutationVariables = Exact<{
   input: UpdateProfile;
 }>;
@@ -211,6 +232,84 @@ export type GetProfileQueryVariables = Exact<{ [key: string]: never; }>;
 export type GetProfileQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null, imageURL?: string | null } | null } };
 
 
+export const AcceptFriendshipRequestDocument = gql`
+    mutation AcceptFriendshipRequest($input: AcceptFriendshipRequest!) {
+  acceptFriendshipRequest(input: $input) {
+    id
+    status
+    requester {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+    requestee {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+  }
+}
+    `;
+export const RejectFriendshipRequestDocument = gql`
+    mutation RejectFriendshipRequest($input: RejectFriendshipRequest!) {
+  rejectFriendshipRequest(input: $input) {
+    id
+    status
+    requester {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+    requestee {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+  }
+}
+    `;
+export const SendFriendshipRequestDocument = gql`
+    mutation SendFriendshipRequest($input: SendFriendshipRequest!) {
+  sendFriendshipRequest(input: $input) {
+    id
+    status
+    requester {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+    requestee {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+  }
+}
+    `;
 export const UpdateProfileDocument = gql`
     mutation UpdateProfile($input: UpdateProfile!) {
   updateProfile(input: $input) {
@@ -315,6 +414,15 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationTy
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
+    AcceptFriendshipRequest(variables: AcceptFriendshipRequestMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AcceptFriendshipRequestMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<AcceptFriendshipRequestMutation>({ document: AcceptFriendshipRequestDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AcceptFriendshipRequest', 'mutation', variables);
+    },
+    RejectFriendshipRequest(variables: RejectFriendshipRequestMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<RejectFriendshipRequestMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<RejectFriendshipRequestMutation>({ document: RejectFriendshipRequestDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'RejectFriendshipRequest', 'mutation', variables);
+    },
+    SendFriendshipRequest(variables: SendFriendshipRequestMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SendFriendshipRequestMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<SendFriendshipRequestMutation>({ document: SendFriendshipRequestDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SendFriendshipRequest', 'mutation', variables);
+    },
     UpdateProfile(variables: UpdateProfileMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateProfileMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateProfileMutation>({ document: UpdateProfileDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateProfile', 'mutation', variables);
     },

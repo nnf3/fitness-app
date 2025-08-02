@@ -5,14 +5,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  TextInput,
   Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../../theme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { GetFriends, GetFriendshipRequests } from '../../documents/queries';
+import { AcceptFriendshipRequestDocument, RejectFriendshipRequestDocument } from '../../documents/mutations';
 import { GetFriendsQuery, GetFriendsQueryVariables } from '../../types/graphql';
 
 type TabType = 'friends' | 'requests';
@@ -22,38 +22,9 @@ const createStyles = (theme: any) => StyleSheet.create({
     flex: 1,
     backgroundColor: theme.background,
   },
-  header: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.divider,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.surface,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 16,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: theme.text,
-    marginLeft: 8,
-  },
-  addButton: {
-    backgroundColor: theme.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginLeft: 8,
-  },
-  addButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
+
+
+
   section: {
     padding: 16,
   },
@@ -199,12 +170,38 @@ const createStyles = (theme: any) => StyleSheet.create({
 export function FriendsScreen() {
   const { theme } = useTheme();
   const styles = createStyles(theme);
-  const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('friends');
 
   // GraphQLクエリでフレンドデータを取得
   const { data: friendsData, loading: friendsLoading, error: friendsError } = useQuery<GetFriendsQuery, GetFriendsQueryVariables>(GetFriends);
   const { data: requestsData, loading: requestsLoading, error: requestsError } = useQuery(GetFriendshipRequests);
+
+  // GraphQLミューテーション
+  const [acceptRequest, { loading: acceptLoading }] = useMutation(AcceptFriendshipRequestDocument, {
+    refetchQueries: [
+      { query: GetFriends },
+      { query: GetFriendshipRequests }
+    ],
+    onCompleted: () => {
+      Alert.alert('成功', 'フレンドリクエストを承認しました');
+    },
+    onError: (error) => {
+      Alert.alert('エラー', `リクエストの承認に失敗しました: ${error.message}`);
+    }
+  });
+
+  const [rejectRequest, { loading: rejectLoading }] = useMutation(RejectFriendshipRequestDocument, {
+    refetchQueries: [
+      { query: GetFriends },
+      { query: GetFriendshipRequests }
+    ],
+    onCompleted: () => {
+      Alert.alert('成功', 'フレンドリクエストを拒否しました');
+    },
+    onError: (error) => {
+      Alert.alert('エラー', `リクエストの拒否に失敗しました: ${error.message}`);
+    }
+  });
 
   // フレンドデータの処理
   const friends = friendsData?.currentUser?.friends || [];
@@ -212,20 +209,61 @@ export function FriendsScreen() {
     (friendship: any) => friendship.status === 'PENDING'
   ) || [];
 
-  const handleAddFriend = () => {
-    Alert.alert('フレンド追加', 'フレンド検索画面に移動しますか？');
-  };
+
 
   const handleFriendPress = (friend: any) => {
     Alert.alert('フレンド詳細', `${friend.profile?.name || 'Unknown'}の詳細画面を開きます`);
   };
 
   const handleAcceptRequest = (requestId: string) => {
-    Alert.alert('フレンドリクエスト承認', 'このリクエストを承認しますか？');
+    Alert.alert(
+      'フレンドリクエスト承認',
+      'このリクエストを承認しますか？',
+      [
+        {
+          text: 'キャンセル',
+          style: 'cancel',
+        },
+        {
+          text: '承認',
+          onPress: () => {
+            acceptRequest({
+              variables: {
+                input: {
+                  friendshipID: requestId
+                }
+              }
+            });
+          },
+        },
+      ]
+    );
   };
 
   const handleRejectRequest = (requestId: string) => {
-    Alert.alert('フレンドリクエスト拒否', 'このリクエストを拒否しますか？');
+    Alert.alert(
+      'フレンドリクエスト拒否',
+      'このリクエストを拒否しますか？',
+      [
+        {
+          text: 'キャンセル',
+          style: 'cancel',
+        },
+        {
+          text: '拒否',
+          style: 'destructive',
+          onPress: () => {
+            rejectRequest({
+              variables: {
+                input: {
+                  friendshipID: requestId
+                }
+              }
+            });
+          },
+        },
+      ]
+    );
   };
 
   const renderFriendsTab = () => (
@@ -318,16 +356,22 @@ export function FriendsScreen() {
             </View>
             <View style={styles.requestActions}>
               <TouchableOpacity
-                style={styles.acceptButton}
+                style={[styles.acceptButton, acceptLoading && { opacity: 0.6 }]}
                 onPress={() => handleAcceptRequest(request.id)}
+                disabled={acceptLoading || rejectLoading}
               >
-                <Text style={styles.actionButtonText}>承認</Text>
+                <Text style={styles.actionButtonText}>
+                  {acceptLoading ? '承認中...' : '承認'}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.rejectButton}
+                style={[styles.rejectButton, rejectLoading && { opacity: 0.6 }]}
                 onPress={() => handleRejectRequest(request.id)}
+                disabled={acceptLoading || rejectLoading}
               >
-                <Text style={styles.actionButtonText}>拒否</Text>
+                <Text style={styles.actionButtonText}>
+                  {rejectLoading ? '拒否中...' : '拒否'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -343,24 +387,8 @@ export function FriendsScreen() {
     </View>
   );
 
-  return (
-    <View style={styles.container}>
-      {/* 検索・追加ヘッダー */}
-      <View style={styles.header}>
-        <View style={styles.searchContainer}>
-          <FontAwesome name="search" size={16} color={theme.textSecondary} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="フレンドを検索..."
-            placeholderTextColor={theme.textTertiary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <TouchableOpacity style={styles.addButton} onPress={handleAddFriend}>
-            <Text style={styles.addButtonText}>追加</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      return (
+      <View style={styles.container}>
 
       {/* タブ切り替え */}
       <View style={styles.tabContainer}>
