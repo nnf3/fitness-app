@@ -163,6 +163,7 @@ export type User = {
   friendshipRequests: Array<Friendship>;
   id: Scalars['ID']['output'];
   profile?: Maybe<Profile>;
+  recommendedUsers: Array<User>;
   uid: Scalars['String']['output'];
   updatedAt: Scalars['String']['output'];
   workoutLogs: Array<WorkoutLog>;
@@ -214,7 +215,7 @@ export type UpdateProfileMutation = { __typename?: 'Mutation', updateProfile: { 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, createdAt: string, updatedAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null } };
+export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, createdAt: string, updatedAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null, recommendedUsers: Array<{ __typename?: 'User', id: string, uid: string, createdAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null }> } };
 
 export type GetFriendsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -339,6 +340,20 @@ export const CurrentUserDocument = gql`
       height
       weight
       activityLevel
+    }
+    recommendedUsers {
+      id
+      uid
+      createdAt
+      profile {
+        id
+        name
+        birthDate
+        gender
+        height
+        weight
+        activityLevel
+      }
     }
   }
 }

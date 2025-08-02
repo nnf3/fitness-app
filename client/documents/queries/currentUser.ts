@@ -16,6 +16,20 @@ export const CurrentUserDocument = gql(`
         weight
         activityLevel
       }
+      recommendedUsers {
+        id
+        uid
+        createdAt
+        profile {
+          id
+          name
+          birthDate
+          gender
+          height
+          weight
+          activityLevel
+        }
+      }
     }
   }
 `);

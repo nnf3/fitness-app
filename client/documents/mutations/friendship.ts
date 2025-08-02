@@ -54,7 +54,7 @@ export const RejectFriendshipRequestDocument = gql`
   }
 `;
 
-export const SEND_FRIENDSHIP_REQUEST = gql`
+export const SendFriendshipRequestDocument = gql`
   mutation SendFriendshipRequest($input: SendFriendshipRequest!) {
     sendFriendshipRequest(input: $input) {
       id

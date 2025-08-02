@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-export const GetFriends = gql`
+export const GetFriendsDocument = gql`
   query GetFriends {
     currentUser {
       id
@@ -17,7 +17,7 @@ export const GetFriends = gql`
   }
 `;
 
-export const GetFriendshipRequests = gql`
+export const GetFriendshipRequestsDocument = gql`
   query GetFriendshipRequests {
     currentUser {
       id

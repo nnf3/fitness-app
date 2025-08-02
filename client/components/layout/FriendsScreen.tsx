@@ -11,9 +11,9 @@ import {
 import { useTheme } from '../../theme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useQuery, useMutation } from '@apollo/client';
-import { GetFriends, GetFriendshipRequests } from '../../documents/queries';
+import { GetFriendsDocument, GetFriendshipRequestsDocument } from '../../documents/queries';
 import { AcceptFriendshipRequestDocument, RejectFriendshipRequestDocument } from '../../documents/mutations';
-import { GetFriendsQuery, GetFriendsQueryVariables } from '../../types/graphql';
+import { GetFriendsQuery, GetFriendsQueryVariables, GetFriendshipRequestsQuery, GetFriendshipRequestsQueryVariables } from '../../types/graphql';
 
 type TabType = 'friends' | 'requests';
 
@@ -22,9 +22,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     flex: 1,
     backgroundColor: theme.background,
   },
-
-
-
   section: {
     padding: 16,
   },
@@ -173,14 +170,14 @@ export function FriendsScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('friends');
 
   // GraphQLクエリでフレンドデータを取得
-  const { data: friendsData, loading: friendsLoading, error: friendsError } = useQuery<GetFriendsQuery, GetFriendsQueryVariables>(GetFriends);
-  const { data: requestsData, loading: requestsLoading, error: requestsError } = useQuery(GetFriendshipRequests);
+  const { data: friendsData, loading: friendsLoading, error: friendsError } = useQuery<GetFriendsQuery, GetFriendsQueryVariables>(GetFriendsDocument);
+  const { data: requestsData, loading: requestsLoading, error: requestsError } = useQuery<GetFriendshipRequestsQuery, GetFriendshipRequestsQueryVariables>(GetFriendshipRequestsDocument);
 
   // GraphQLミューテーション
   const [acceptRequest, { loading: acceptLoading }] = useMutation(AcceptFriendshipRequestDocument, {
     refetchQueries: [
-      { query: GetFriends },
-      { query: GetFriendshipRequests }
+      { query: GetFriendsDocument },
+      { query: GetFriendshipRequestsDocument }
     ],
     onCompleted: () => {
       Alert.alert('成功', 'フレンドリクエストを承認しました');
@@ -192,8 +189,8 @@ export function FriendsScreen() {
 
   const [rejectRequest, { loading: rejectLoading }] = useMutation(RejectFriendshipRequestDocument, {
     refetchQueries: [
-      { query: GetFriends },
-      { query: GetFriendshipRequests }
+      { query: GetFriendsDocument },
+      { query: GetFriendshipRequestsDocument }
     ],
     onCompleted: () => {
       Alert.alert('成功', 'フレンドリクエストを拒否しました');
@@ -208,8 +205,6 @@ export function FriendsScreen() {
   const pendingRequests = requestsData?.currentUser?.friendshipRequests?.filter(
     (friendship: any) => friendship.status === 'PENDING'
   ) || [];
-
-
 
   const handleFriendPress = (friend: any) => {
     Alert.alert('フレンド詳細', `${friend.profile?.name || 'Unknown'}の詳細画面を開きます`);
