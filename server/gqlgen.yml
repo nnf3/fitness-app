@@ -195,7 +195,9 @@ models:
         resolver: true
       workoutLogs:
         resolver: true
-      friendships:
+      friends:
+        resolver: true
+      friendshipRequests:
         resolver: true
 
   WorkoutLog:

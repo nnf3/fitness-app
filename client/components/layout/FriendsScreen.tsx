@@ -7,9 +7,15 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../../theme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useQuery } from '@apollo/client';
+import { GetFriends, GetFriendshipRequests } from '../../documents/queries';
+import { GetFriendsQuery, GetFriendsQueryVariables } from '../../types/graphql';
+
+type TabType = 'friends' | 'requests';
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -126,41 +132,216 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: theme.surface,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 4,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  tabButtonActive: {
+    backgroundColor: theme.primary,
+  },
+  tabButtonInactive: {
+    backgroundColor: 'transparent',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  tabTextActive: {
+    color: '#FFFFFF',
+  },
+  tabTextInactive: {
+    color: theme.textSecondary,
+  },
+  requestItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: theme.surface,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  requestActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  acceptButton: {
+    backgroundColor: theme.success,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  rejectButton: {
+    backgroundColor: theme.error,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
 });
 
 export function FriendsScreen() {
   const { theme } = useTheme();
   const styles = createStyles(theme);
   const [searchQuery, setSearchQuery] = useState('');
-  const [friends, setFriends] = useState([
-    {
-      id: '1',
-      name: '田中太郎',
-      status: 'オンライン',
-      lastWorkout: '2時間前',
-      avatar: '田',
-    },
-    {
-      id: '2',
-      name: '佐藤花子',
-      status: 'オフライン',
-      lastWorkout: '1日前',
-      avatar: '佐',
-    },
-  ]);
-  const [pendingRequests, setPendingRequests] = useState(3);
+  const [activeTab, setActiveTab] = useState<TabType>('friends');
+
+  // GraphQLクエリでフレンドデータを取得
+  const { data: friendsData, loading: friendsLoading, error: friendsError } = useQuery<GetFriendsQuery, GetFriendsQueryVariables>(GetFriends);
+  const { data: requestsData, loading: requestsLoading, error: requestsError } = useQuery(GetFriendshipRequests);
+
+  // フレンドデータの処理
+  const friends = friendsData?.currentUser?.friends || [];
+  const pendingRequests = requestsData?.currentUser?.friendshipRequests?.filter(
+    (friendship: any) => friendship.status === 'PENDING'
+  ) || [];
 
   const handleAddFriend = () => {
     Alert.alert('フレンド追加', 'フレンド検索画面に移動しますか？');
   };
 
   const handleFriendPress = (friend: any) => {
-    Alert.alert('フレンド詳細', `${friend.name}の詳細画面を開きます`);
+    Alert.alert('フレンド詳細', `${friend.profile?.name || 'Unknown'}の詳細画面を開きます`);
   };
 
-  const handleRequestsPress = () => {
-    Alert.alert('リクエスト管理', 'フレンドリクエスト管理画面を開きます');
+  const handleAcceptRequest = (requestId: string) => {
+    Alert.alert('フレンドリクエスト承認', 'このリクエストを承認しますか？');
   };
+
+  const handleRejectRequest = (requestId: string) => {
+    Alert.alert('フレンドリクエスト拒否', 'このリクエストを拒否しますか？');
+  };
+
+  const renderFriendsTab = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>フレンド一覧</Text>
+
+      {friendsLoading ? (
+        <View style={styles.emptyState}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={styles.emptyStateText}>フレンドを読み込み中...</Text>
+        </View>
+      ) : friendsError ? (
+        <View style={styles.emptyState}>
+          <FontAwesome name="exclamation-triangle" size={48} color={theme.error} />
+          <Text style={styles.emptyStateText}>
+            エラーが発生しました{'\n'}
+            {friendsError.message}
+          </Text>
+        </View>
+      ) : friends.length > 0 ? (
+        friends.map((friend: any) => (
+          <TouchableOpacity
+            key={friend.id}
+            style={styles.friendItem}
+            onPress={() => handleFriendPress(friend)}
+          >
+            <View style={styles.friendAvatar}>
+              <Text style={styles.friendAvatarText}>
+                {friend.profile?.name?.charAt(0) || '?'}
+              </Text>
+            </View>
+            <View style={styles.friendInfo}>
+              <Text style={styles.friendName}>{friend.profile?.name || 'Unknown'}</Text>
+              <Text style={styles.friendStatus}>
+                フレンド登録日: {new Date(friend.createdAt).toLocaleDateString('ja-JP')}
+              </Text>
+            </View>
+            <View style={styles.friendActions}>
+              <TouchableOpacity style={styles.actionButton}>
+                <FontAwesome name="comment" size={16} color={theme.textSecondary} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton}>
+                <FontAwesome name="ellipsis-h" size={16} color={theme.textSecondary} />
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        ))
+      ) : (
+        <View style={styles.emptyState}>
+          <FontAwesome name="users" size={48} color={theme.textTertiary} />
+          <Text style={styles.emptyStateText}>
+            まだフレンドがいません{'\n'}
+            フレンドを追加して一緒にワークアウトしましょう！
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+
+  const renderRequestsTab = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>フレンドリクエスト</Text>
+
+      {requestsLoading ? (
+        <View style={styles.emptyState}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={styles.emptyStateText}>リクエストを読み込み中...</Text>
+        </View>
+      ) : requestsError ? (
+        <View style={styles.emptyState}>
+          <FontAwesome name="exclamation-triangle" size={48} color={theme.error} />
+          <Text style={styles.emptyStateText}>
+            エラーが発生しました{'\n'}
+            {requestsError.message}
+          </Text>
+        </View>
+      ) : pendingRequests.length > 0 ? (
+        pendingRequests.map((request: any) => (
+          <View key={request.id} style={styles.requestItem}>
+            <View style={styles.friendAvatar}>
+              <Text style={styles.friendAvatarText}>
+                {request.requester.profile?.name?.charAt(0) || '?'}
+              </Text>
+            </View>
+            <View style={styles.friendInfo}>
+              <Text style={styles.friendName}>{request.requester.profile?.name || 'Unknown'}</Text>
+              <Text style={styles.friendStatus}>
+                フレンドリクエストを送信しました
+              </Text>
+            </View>
+            <View style={styles.requestActions}>
+              <TouchableOpacity
+                style={styles.acceptButton}
+                onPress={() => handleAcceptRequest(request.id)}
+              >
+                <Text style={styles.actionButtonText}>承認</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.rejectButton}
+                onPress={() => handleRejectRequest(request.id)}
+              >
+                <Text style={styles.actionButtonText}>拒否</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))
+      ) : (
+        <View style={styles.emptyState}>
+          <FontAwesome name="user-plus" size={48} color={theme.textTertiary} />
+          <Text style={styles.emptyStateText}>
+            保留中のフレンドリクエストはありません
+          </Text>
+        </View>
+      )}
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -181,57 +362,40 @@ export function FriendsScreen() {
         </View>
       </View>
 
-      <ScrollView style={{ flex: 1 }}>
-        {/* フレンド一覧 */}
-        <View style={styles.section}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={styles.sectionTitle}>フレンド一覧</Text>
-            <TouchableOpacity onPress={handleRequestsPress} style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ color: theme.textSecondary, fontSize: 14 }}>リクエスト</Text>
-              {pendingRequests > 0 && (
-                <View style={styles.requestsBadge}>
-                  <Text style={styles.requestsBadgeText}>{pendingRequests}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
+      {/* タブ切り替え */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[
+            styles.tabButton,
+            activeTab === 'friends' ? styles.tabButtonActive : styles.tabButtonInactive
+          ]}
+          onPress={() => setActiveTab('friends')}
+        >
+          <Text style={[
+            styles.tabText,
+            activeTab === 'friends' ? styles.tabTextActive : styles.tabTextInactive
+          ]}>
+            フレンド ({friends.length})
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.tabButton,
+            activeTab === 'requests' ? styles.tabButtonActive : styles.tabButtonInactive
+          ]}
+          onPress={() => setActiveTab('requests')}
+        >
+          <Text style={[
+            styles.tabText,
+            activeTab === 'requests' ? styles.tabTextActive : styles.tabTextInactive
+          ]}>
+            リクエスト ({pendingRequests.length})
+          </Text>
+        </TouchableOpacity>
+      </View>
 
-          {friends.length > 0 ? (
-            friends.map((friend) => (
-              <TouchableOpacity
-                key={friend.id}
-                style={styles.friendItem}
-                onPress={() => handleFriendPress(friend)}
-              >
-                <View style={styles.friendAvatar}>
-                  <Text style={styles.friendAvatarText}>{friend.avatar}</Text>
-                </View>
-                <View style={styles.friendInfo}>
-                  <Text style={styles.friendName}>{friend.name}</Text>
-                  <Text style={styles.friendStatus}>
-                    最後のワークアウト: {friend.lastWorkout}
-                  </Text>
-                </View>
-                <View style={styles.friendActions}>
-                  <TouchableOpacity style={styles.actionButton}>
-                    <FontAwesome name="comment" size={16} color={theme.textSecondary} />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.actionButton}>
-                    <FontAwesome name="ellipsis-h" size={16} color={theme.textSecondary} />
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
-            ))
-          ) : (
-            <View style={styles.emptyState}>
-              <FontAwesome name="users" size={48} color={theme.textTertiary} />
-              <Text style={styles.emptyStateText}>
-                まだフレンドがいません{'\n'}
-                フレンドを追加して一緒にワークアウトしましょう！
-              </Text>
-            </View>
-          )}
-        </View>
+      <ScrollView style={{ flex: 1 }}>
+        {activeTab === 'friends' ? renderFriendsTab() : renderRequestsTab()}
       </ScrollView>
     </View>
   );

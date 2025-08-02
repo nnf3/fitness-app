@@ -159,7 +159,8 @@ export type UpdateProfile = {
 export type User = {
   __typename?: 'User';
   createdAt: Scalars['String']['output'];
-  friendships: Array<Friendship>;
+  friends: Array<User>;
+  friendshipRequests: Array<Friendship>;
   id: Scalars['ID']['output'];
   profile?: Maybe<Profile>;
   uid: Scalars['String']['output'];
@@ -193,6 +194,16 @@ export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, createdAt: string, updatedAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null } };
+
+export type GetFriendsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetFriendsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, friends: Array<{ __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }> } };
+
+export type GetFriendshipRequestsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetFriendshipRequestsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, friendshipRequests: Array<{ __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } }> } };
 
 export type GetProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -233,6 +244,51 @@ export const CurrentUserDocument = gql`
   }
 }
     `;
+export const GetFriendsDocument = gql`
+    query GetFriends {
+  currentUser {
+    id
+    friends {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+  }
+}
+    `;
+export const GetFriendshipRequestsDocument = gql`
+    query GetFriendshipRequests {
+  currentUser {
+    id
+    friendshipRequests {
+      id
+      status
+      requester {
+        id
+        uid
+        profile {
+          id
+          name
+          imageURL
+        }
+      }
+      requestee {
+        id
+        uid
+        profile {
+          id
+          name
+          imageURL
+        }
+      }
+    }
+  }
+}
+    `;
 export const GetProfileDocument = gql`
     query GetProfile {
   currentUser {
@@ -264,6 +320,12 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     CurrentUser(variables?: CurrentUserQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CurrentUserQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<CurrentUserQuery>({ document: CurrentUserDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CurrentUser', 'query', variables);
+    },
+    GetFriends(variables?: GetFriendsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetFriendsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetFriendsQuery>({ document: GetFriendsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetFriends', 'query', variables);
+    },
+    GetFriendshipRequests(variables?: GetFriendshipRequestsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetFriendshipRequestsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetFriendshipRequestsQuery>({ document: GetFriendshipRequestsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetFriendshipRequests', 'query', variables);
     },
     GetProfile(variables?: GetProfileQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetProfileQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetProfileQuery>({ document: GetProfileDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetProfile', 'query', variables);
