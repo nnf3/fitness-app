@@ -29,31 +29,31 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, input model.DeleteUse
 
 // CreateProfile is the resolver for the createProfile field.
 func (r *mutationResolver) CreateProfile(ctx context.Context, input model.CreateProfile) (*model.Profile, error) {
-	profileService := services.NewProfileService(r.DB, r.DataLoaders.ProfileLoader)
+	profileService := services.NewProfileServiceWithSeparation(r.DB, r.DataLoaders.ProfileLoaderForUser)
 	return profileService.CreateProfile(ctx, input)
 }
 
 // UpdateProfile is the resolver for the updateProfile field.
 func (r *mutationResolver) UpdateProfile(ctx context.Context, input model.UpdateProfile) (*model.Profile, error) {
-	profileService := services.NewProfileService(r.DB, r.DataLoaders.ProfileLoader)
+	profileService := services.NewProfileServiceWithSeparation(r.DB, r.DataLoaders.ProfileLoaderForUser)
 	return profileService.UpdateProfile(ctx, input)
 }
 
 // SendFriendshipRequest is the resolver for the sendFriendshipRequest field.
 func (r *mutationResolver) SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error) {
-	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
 	return friendshipService.SendFriendshipRequest(ctx, input)
 }
 
 // AcceptFriendshipRequest is the resolver for the acceptFriendshipRequest field.
 func (r *mutationResolver) AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error) {
-	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
 	return friendshipService.AcceptFriendshipRequest(ctx, input)
 }
 
 // RejectFriendshipRequest is the resolver for the rejectFriendshipRequest field.
 func (r *mutationResolver) RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error) {
-	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
 	return friendshipService.RejectFriendshipRequest(ctx, input)
 }
 
