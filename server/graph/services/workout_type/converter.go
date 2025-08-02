@@ -14,8 +14,10 @@ func NewWorkoutTypeConverter() *WorkoutTypeConverter {
 
 func (c *WorkoutTypeConverter) ToModelWorkoutType(workoutType entity.WorkoutType) *model.WorkoutType {
 	return &model.WorkoutType{
-		ID:   fmt.Sprintf("%d", workoutType.ID),
-		Name: workoutType.Name,
+		ID:          fmt.Sprintf("%d", workoutType.ID),
+		Name:        workoutType.Name,
+		Description: &workoutType.Description,
+		Category:    &workoutType.Category,
 	}
 }
 

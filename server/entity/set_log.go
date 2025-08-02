@@ -8,18 +8,18 @@ import (
 
 type SetLog struct {
 	gorm.Model
-	WorkoutLogID   uint `gorm:"not null;index"`
+	WorkoutLogID  uint `gorm:"not null;index"`
 	WorkoutTypeID uint `gorm:"not null;index"`
-	Weight         int  `gorm:"not null"`  // 何キロでやったか
-	RepCount       int  `gorm:"not null"`  // 何レップやったか
-	SetNumber      int  `gorm:"not null"`  // 何セット目か
+	Weight        int  `gorm:"not null"` // 何キロでやったか
+	RepCount      int  `gorm:"not null"` // 何レップやったか
+	SetNumber     int  `gorm:"not null"` // 何セット目か
 
-	WorkoutLog   WorkoutLog   `gorm:"constraint:OnDelete:CASCADE;foreignKey:WorkoutLogID"`
-	WorkoutType  WorkoutType  `gorm:"constraint:OnDelete:CASCADE;foreignKey:WorkoutTypeID"`
+	WorkoutLog  WorkoutLog  `gorm:"constraint:OnDelete:CASCADE;foreignKey:WorkoutLogID"`
+	WorkoutType WorkoutType `gorm:"constraint:OnDelete:CASCADE;foreignKey:WorkoutTypeID"`
 }
 
-func (s *SetLog) BeforeSave(tx *gorm.DB) error   { 
-	return s.Validate() 
+func (s *SetLog) BeforeSave(tx *gorm.DB) error {
+	return s.Validate()
 }
 
 func (s *SetLog) BeforeCreate(tx *gorm.DB) error {
@@ -30,8 +30,8 @@ func (s *SetLog) BeforeCreate(tx *gorm.DB) error {
 	return s.checkForeignKeys(tx)
 }
 
-func (s *SetLog) BeforeUpdate(tx *gorm.DB) error { 
-	return s.Validate() 
+func (s *SetLog) BeforeUpdate(tx *gorm.DB) error {
+	return s.Validate()
 }
 
 func (s *SetLog) Validate() error {

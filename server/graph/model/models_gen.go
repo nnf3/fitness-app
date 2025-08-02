@@ -98,7 +98,9 @@ type WorkoutLog struct {
 }
 
 type WorkoutType struct {
-	ID      string    `json:"id"`
-	Name    string    `json:"name"`
-	SetLogs []*SetLog `json:"setLogs"`
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description,omitempty"`
+	Category    *string   `json:"category,omitempty"`
+	SetLogs     []*SetLog `json:"setLogs"`
 }

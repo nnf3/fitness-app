@@ -118,9 +118,11 @@ type ComplexityRoot struct {
 	}
 
 	WorkoutType struct {
-		ID      func(childComplexity int) int
-		Name    func(childComplexity int) int
-		SetLogs func(childComplexity int) int
+		Category    func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Name        func(childComplexity int) int
+		SetLogs     func(childComplexity int) int
 	}
 }
 
@@ -516,6 +518,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.WorkoutLog.UpdatedAt(childComplexity), true
+
+	case "WorkoutType.category":
+		if e.complexity.WorkoutType.Category == nil {
+			break
+		}
+
+		return e.complexity.WorkoutType.Category(childComplexity), true
+
+	case "WorkoutType.description":
+		if e.complexity.WorkoutType.Description == nil {
+			break
+		}
+
+		return e.complexity.WorkoutType.Description(childComplexity), true
 
 	case "WorkoutType.id":
 		if e.complexity.WorkoutType.ID == nil {
@@ -2268,6 +2284,10 @@ func (ec *executionContext) fieldContext_Query_workoutTypes(_ context.Context, f
 				return ec.fieldContext_WorkoutType_id(ctx, field)
 			case "name":
 				return ec.fieldContext_WorkoutType_name(ctx, field)
+			case "description":
+				return ec.fieldContext_WorkoutType_description(ctx, field)
+			case "category":
+				return ec.fieldContext_WorkoutType_category(ctx, field)
 			case "setLogs":
 				return ec.fieldContext_WorkoutType_setLogs(ctx, field)
 			}
@@ -2549,6 +2569,10 @@ func (ec *executionContext) fieldContext_SetLog_workoutType(_ context.Context, f
 				return ec.fieldContext_WorkoutType_id(ctx, field)
 			case "name":
 				return ec.fieldContext_WorkoutType_name(ctx, field)
+			case "description":
+				return ec.fieldContext_WorkoutType_description(ctx, field)
+			case "category":
+				return ec.fieldContext_WorkoutType_category(ctx, field)
 			case "setLogs":
 				return ec.fieldContext_WorkoutType_setLogs(ctx, field)
 			}
@@ -3433,6 +3457,88 @@ func (ec *executionContext) _WorkoutType_name(ctx context.Context, field graphql
 }
 
 func (ec *executionContext) fieldContext_WorkoutType_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "WorkoutType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _WorkoutType_description(ctx context.Context, field graphql.CollectedField, obj *model.WorkoutType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_WorkoutType_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_WorkoutType_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "WorkoutType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _WorkoutType_category(ctx context.Context, field graphql.CollectedField, obj *model.WorkoutType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_WorkoutType_category(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Category, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_WorkoutType_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "WorkoutType",
 		Field:      field,
@@ -6592,6 +6698,10 @@ func (ec *executionContext) _WorkoutType(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "description":
+			out.Values[i] = ec._WorkoutType_description(ctx, field, obj)
+		case "category":
+			out.Values[i] = ec._WorkoutType_category(ctx, field, obj)
 		case "setLogs":
 			field := field
 

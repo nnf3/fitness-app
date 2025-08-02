@@ -8,8 +8,10 @@ import (
 
 type WorkoutType struct {
 	gorm.Model
-	Name string `gorm:"size:255;not null;unipue"`
-	
+	Name        string `gorm:"size:255;not null;unique"`
+	Description string `gorm:"size:1000"`
+	Category    string `gorm:"size:100"`
+
 	SetLogs []SetLog `gorm:"foreignKey:WorkoutTypeID;constraint:OnDelete:CASCADE"`
 }
 
@@ -37,6 +39,12 @@ func (wt *WorkoutType) Validate() error {
 	}
 	if len(wt.Name) > 255 {
 		return fmt.Errorf("種目名は255文字以内で入力してください")
+	}
+	if len(wt.Description) > 1000 {
+		return fmt.Errorf("説明は1000文字以内で入力してください")
+	}
+	if len(wt.Category) > 100 {
+		return fmt.Errorf("カテゴリは100文字以内で入力してください")
 	}
 	return nil
 }

@@ -30,6 +30,8 @@ type Profile {
 type WorkoutType {
   id: ID!
   name: String!
+  description: String
+  category: String
   setLogs: [SetLog!]!
 }
 

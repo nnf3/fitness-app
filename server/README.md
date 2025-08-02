@@ -85,6 +85,91 @@ gormigrate + gorm auto-migration を使います。
 `gorm.Model` で sturct を定義した後、`db/database.go` に Migration を追加していきます。
 詳しくは `db/database.go` を参照ください。
 
+#### マイグレーション実行
+
+**重要**: サーバー起動時には自動的にマイグレーションは実行されません。マイグレーションは手動で実行する必要があります。
+
+マイグレーションを実行する場合は、以下のコマンドを使用します：
+
+```sh
+# サーバーコンテナに入る
+docker compose exec server bash
+
+# 全てのマイグレーションを実行
+make migrate-all
+
+# 指定したマイグレーションまで実行
+make migrate-to
+
+```
+
+**初回セットアップ時**:
+```sh
+# 1. サーバーを起動（データベース接続のみ）
+docker compose up server
+
+# 2. 別のターミナルでマイグレーションを実行
+docker compose exec server make migrate-all
+
+# 3. 初期データを登録（オプション）
+docker compose exec server make seed-data
+```
+
+**開発時のワークフロー**:
+```sh
+# 新しいマイグレーションを追加した場合
+# 1. サーバーを起動
+docker compose up server
+
+# 2. マイグレーションを実行
+docker compose exec server make migrate-all
+
+# 3. 初期データを登録（必要に応じて）
+docker compose exec server make seed-data
+
+# 4. 必要に応じてロールバック
+docker compose exec server make rollback-last
+```
+
+#### ロールバック
+
+マイグレーションをロールバックする場合は、以下のコマンドを使用します：
+
+```sh
+# サーバーコンテナに入る
+docker compose exec server bash
+
+# 最後のマイグレーションをロールバック
+make rollback-last
+
+# 指定したマイグレーションまでロールバック
+make rollback-to
+
+```
+
+**注意**: ロールバックは慎重に実行してください。データが失われる可能性があります。
+
+#### 初期データ管理
+
+初期データ（筋トレ種目など）は独立したコマンドで管理します：
+
+```sh
+# サーバーコンテナに入る
+docker compose exec server bash
+
+# 初期データを登録
+make seed-data
+
+# 初期データを削除
+make remove-seed-data
+```
+
+**特徴**:
+- ✅ **独立した管理**: マイグレーションとは独立して実行
+- ✅ **柔軟性**: YAMLファイルの変更に応じて再実行可能
+- ✅ **安全な削除**: 物理削除で完全にデータを削除
+- ✅ **重複チェック**: 既存データとの重複を自動チェック
+
 ### データベース操作
 
 ```sh

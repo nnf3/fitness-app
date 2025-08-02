@@ -4,6 +4,11 @@
 *.test
 *.out
 
+# Generated binaries
+/migrate
+/rollback
+/seed
+
 # Go modules
 /vendor/
 
