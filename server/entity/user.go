@@ -81,3 +81,26 @@ func (u *User) GetFriendshipRequests(db *gorm.DB) []Friendship {
 	}
 	return requests
 }
+
+func (u *User) GetRecommendedUsers(db *gorm.DB) []User {
+	// 現在のユーザーと友達関係にあるユーザーIDを取得
+	var excludeIDs []uint
+	if err := db.Model(&Friendship{}).
+		Select("CASE WHEN requester_id = ? THEN requestee_id ELSE requester_id END", u.ID).
+		Where("requester_id = ? OR requestee_id = ?", u.ID, u.ID).
+		Scan(&excludeIDs).Error; err != nil {
+		return nil
+	}
+
+	// 現在のユーザーも除外リストに追加
+	excludeIDs = append(excludeIDs, u.ID)
+
+	var recommendedUsers []User
+	if err := db.Model(&User{}).
+		Where("id NOT IN ?", excludeIDs).
+		Find(&recommendedUsers).Error; err != nil {
+		return nil
+	}
+
+	return recommendedUsers
+}

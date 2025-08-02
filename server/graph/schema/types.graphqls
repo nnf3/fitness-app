@@ -10,6 +10,7 @@ type User {
   workoutLogs: [WorkoutLog!]!
   friends: [User!]!
   friendshipRequests: [Friendship!]!
+  recommendedUsers: [User!]!
 }
 
 type Profile {

@@ -87,6 +87,7 @@ type User struct {
 	WorkoutLogs        []*WorkoutLog `json:"workoutLogs"`
 	Friends            []*User       `json:"friends"`
 	FriendshipRequests []*Friendship `json:"friendshipRequests"`
+	RecommendedUsers   []*User       `json:"recommendedUsers"`
 }
 
 type WorkoutLog struct {

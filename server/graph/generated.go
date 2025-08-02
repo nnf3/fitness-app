@@ -102,6 +102,7 @@ type ComplexityRoot struct {
 		FriendshipRequests func(childComplexity int) int
 		ID                 func(childComplexity int) int
 		Profile            func(childComplexity int) int
+		RecommendedUsers   func(childComplexity int) int
 		UID                func(childComplexity int) int
 		UpdatedAt          func(childComplexity int) int
 		WorkoutLogs        func(childComplexity int) int
@@ -146,6 +147,7 @@ type UserResolver interface {
 	WorkoutLogs(ctx context.Context, obj *model.User) ([]*model.WorkoutLog, error)
 	Friends(ctx context.Context, obj *model.User) ([]*model.User, error)
 	FriendshipRequests(ctx context.Context, obj *model.User) ([]*model.Friendship, error)
+	RecommendedUsers(ctx context.Context, obj *model.User) ([]*model.User, error)
 }
 type WorkoutLogResolver interface {
 	SetLogs(ctx context.Context, obj *model.WorkoutLog) ([]*model.SetLog, error)
@@ -440,6 +442,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.User.Profile(childComplexity), true
+
+	case "User.recommendedUsers":
+		if e.complexity.User.RecommendedUsers == nil {
+			break
+		}
+
+		return e.complexity.User.RecommendedUsers(childComplexity), true
 
 	case "User.uid":
 		if e.complexity.User.UID == nil {
@@ -1005,6 +1014,8 @@ func (ec *executionContext) fieldContext_Friendship_requester(_ context.Context,
 				return ec.fieldContext_User_friends(ctx, field)
 			case "friendshipRequests":
 				return ec.fieldContext_User_friendshipRequests(ctx, field)
+			case "recommendedUsers":
+				return ec.fieldContext_User_recommendedUsers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1067,6 +1078,8 @@ func (ec *executionContext) fieldContext_Friendship_requestee(_ context.Context,
 				return ec.fieldContext_User_friends(ctx, field)
 			case "friendshipRequests":
 				return ec.fieldContext_User_friendshipRequests(ctx, field)
+			case "recommendedUsers":
+				return ec.fieldContext_User_recommendedUsers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1625,6 +1638,8 @@ func (ec *executionContext) fieldContext_Profile_user(_ context.Context, field g
 				return ec.fieldContext_User_friends(ctx, field)
 			case "friendshipRequests":
 				return ec.fieldContext_User_friendshipRequests(ctx, field)
+			case "recommendedUsers":
+				return ec.fieldContext_User_recommendedUsers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2065,6 +2080,8 @@ func (ec *executionContext) fieldContext_Query_users(_ context.Context, field gr
 				return ec.fieldContext_User_friends(ctx, field)
 			case "friendshipRequests":
 				return ec.fieldContext_User_friendshipRequests(ctx, field)
+			case "recommendedUsers":
+				return ec.fieldContext_User_recommendedUsers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2127,6 +2144,8 @@ func (ec *executionContext) fieldContext_Query_currentUser(_ context.Context, fi
 				return ec.fieldContext_User_friends(ctx, field)
 			case "friendshipRequests":
 				return ec.fieldContext_User_friendshipRequests(ctx, field)
+			case "recommendedUsers":
+				return ec.fieldContext_User_recommendedUsers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2897,6 +2916,8 @@ func (ec *executionContext) fieldContext_User_friends(_ context.Context, field g
 				return ec.fieldContext_User_friends(ctx, field)
 			case "friendshipRequests":
 				return ec.fieldContext_User_friendshipRequests(ctx, field)
+			case "recommendedUsers":
+				return ec.fieldContext_User_recommendedUsers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2953,6 +2974,70 @@ func (ec *executionContext) fieldContext_User_friendshipRequests(_ context.Conte
 				return ec.fieldContext_Friendship_status(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_recommendedUsers(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_recommendedUsers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().RecommendedUsers(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚕᚖappᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_recommendedUsers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_User_uid(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "profile":
+				return ec.fieldContext_User_profile(ctx, field)
+			case "workoutLogs":
+				return ec.fieldContext_User_workoutLogs(ctx, field)
+			case "friends":
+				return ec.fieldContext_User_friends(ctx, field)
+			case "friendshipRequests":
+				return ec.fieldContext_User_friendshipRequests(ctx, field)
+			case "recommendedUsers":
+				return ec.fieldContext_User_recommendedUsers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
 	return fc, nil
@@ -6163,6 +6248,42 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._User_friendshipRequests(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "recommendedUsers":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_recommendedUsers(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

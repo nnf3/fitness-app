@@ -69,6 +69,12 @@ func (r *userResolver) FriendshipRequests(ctx context.Context, obj *model.User) 
 	return friendshipService.GetFriendshipRequests(ctx, obj.ID)
 }
 
+// RecommendedUsers is the resolver for the recommendedUsers field.
+func (r *userResolver) RecommendedUsers(ctx context.Context, obj *model.User) ([]*model.User, error) {
+	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	return friendshipService.GetRecommendedUsers(ctx, obj.ID)
+}
+
 // SetLogs is the resolver for the setLogs field.
 func (r *workoutLogResolver) SetLogs(ctx context.Context, obj *model.WorkoutLog) ([]*model.SetLog, error) {
 	panic(fmt.Errorf("not implemented: SetLogs - setLogs"))

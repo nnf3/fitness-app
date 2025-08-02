@@ -14,6 +14,7 @@ import (
 type FriendshipService interface {
 	GetFriends(ctx context.Context, userID string) ([]*model.User, error)
 	GetFriendshipRequests(ctx context.Context, userID string) ([]*model.Friendship, error)
+	GetRecommendedUsers(ctx context.Context, userID string) ([]*model.User, error)
 	GetFriendshipByID(ctx context.Context, friendshipID string) (*model.Friendship, error)
 	GetFriendshipRequesterID(ctx context.Context, friendshipID string) (string, error)
 	GetFriendshipRequesteeID(ctx context.Context, friendshipID string) (string, error)
@@ -105,6 +106,19 @@ func (s *friendshipService) GetFriendshipRequests(ctx context.Context, userID st
 	var result []*model.Friendship
 	for _, request := range requests {
 		result = append(result, convertFriendship(request))
+	}
+	return result, nil
+}
+
+func (s *friendshipService) GetRecommendedUsers(ctx context.Context, userID string) ([]*model.User, error) {
+	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
+	}
+	users := currentUser.GetRecommendedUsers(s.db)
+	var result []*model.User
+	for _, user := range users {
+		result = append(result, convertUser(user))
 	}
 	return result, nil
 }
