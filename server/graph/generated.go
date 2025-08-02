@@ -91,12 +91,13 @@ type ComplexityRoot struct {
 	}
 
 	SetLog struct {
-		ID          func(childComplexity int) int
-		RepCount    func(childComplexity int) int
-		SetNumber   func(childComplexity int) int
-		Weight      func(childComplexity int) int
-		WorkoutLog  func(childComplexity int) int
-		WorkoutType func(childComplexity int) int
+		ID            func(childComplexity int) int
+		RepCount      func(childComplexity int) int
+		SetNumber     func(childComplexity int) int
+		Weight        func(childComplexity int) int
+		WorkoutLog    func(childComplexity int) int
+		WorkoutType   func(childComplexity int) int
+		WorkoutTypeID func(childComplexity int) int
 	}
 
 	User struct {
@@ -441,6 +442,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.SetLog.WorkoutType(childComplexity), true
+
+	case "SetLog.workoutTypeID":
+		if e.complexity.SetLog.WorkoutTypeID == nil {
+			break
+		}
+
+		return e.complexity.SetLog.WorkoutTypeID(childComplexity), true
 
 	case "User.createdAt":
 		if e.complexity.User.CreatedAt == nil {
@@ -1710,6 +1718,8 @@ func (ec *executionContext) fieldContext_Mutation_addSetLog(ctx context.Context,
 				return ec.fieldContext_SetLog_workoutLog(ctx, field)
 			case "workoutType":
 				return ec.fieldContext_SetLog_workoutType(ctx, field)
+			case "workoutTypeID":
+				return ec.fieldContext_SetLog_workoutTypeID(ctx, field)
 			case "weight":
 				return ec.fieldContext_SetLog_weight(ctx, field)
 			case "repCount":
@@ -2689,6 +2699,50 @@ func (ec *executionContext) fieldContext_SetLog_workoutType(_ context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _SetLog_workoutTypeID(ctx context.Context, field graphql.CollectedField, obj *model.SetLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SetLog_workoutTypeID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.WorkoutTypeID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SetLog_workoutTypeID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SetLog",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _SetLog_weight(ctx context.Context, field graphql.CollectedField, obj *model.SetLog) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SetLog_weight(ctx, field)
 	if err != nil {
@@ -3475,6 +3529,8 @@ func (ec *executionContext) fieldContext_WorkoutLog_setLogs(_ context.Context, f
 				return ec.fieldContext_SetLog_workoutLog(ctx, field)
 			case "workoutType":
 				return ec.fieldContext_SetLog_workoutType(ctx, field)
+			case "workoutTypeID":
+				return ec.fieldContext_SetLog_workoutTypeID(ctx, field)
 			case "weight":
 				return ec.fieldContext_SetLog_weight(ctx, field)
 			case "repCount":
@@ -3703,6 +3759,8 @@ func (ec *executionContext) fieldContext_WorkoutType_setLogs(_ context.Context, 
 				return ec.fieldContext_SetLog_workoutLog(ctx, field)
 			case "workoutType":
 				return ec.fieldContext_SetLog_workoutType(ctx, field)
+			case "workoutTypeID":
+				return ec.fieldContext_SetLog_workoutTypeID(ctx, field)
 			case "weight":
 				return ec.fieldContext_SetLog_weight(ctx, field)
 			case "repCount":
@@ -6492,6 +6550,11 @@ func (ec *executionContext) _SetLog(ctx context.Context, sel ast.SelectionSet, o
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "workoutTypeID":
+			out.Values[i] = ec._SetLog_workoutTypeID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "weight":
 			out.Values[i] = ec._SetLog_weight(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

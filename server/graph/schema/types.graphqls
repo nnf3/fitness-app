@@ -46,6 +46,7 @@ type SetLog {
   id: ID!
   workoutLog: WorkoutLog!
   workoutType: WorkoutType!
+  workoutTypeID: ID!
   weight: Int!
   repCount: Int!
   setNumber: Int!

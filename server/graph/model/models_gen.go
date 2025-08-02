@@ -68,12 +68,13 @@ type SendFriendshipRequest struct {
 }
 
 type SetLog struct {
-	ID          string       `json:"id"`
-	WorkoutLog  *WorkoutLog  `json:"workoutLog"`
-	WorkoutType *WorkoutType `json:"workoutType"`
-	Weight      int32        `json:"weight"`
-	RepCount    int32        `json:"repCount"`
-	SetNumber   int32        `json:"setNumber"`
+	ID            string       `json:"id"`
+	WorkoutLog    *WorkoutLog  `json:"workoutLog"`
+	WorkoutType   *WorkoutType `json:"workoutType"`
+	WorkoutTypeID string       `json:"workoutTypeID"`
+	Weight        int32        `json:"weight"`
+	RepCount      int32        `json:"repCount"`
+	SetNumber     int32        `json:"setNumber"`
 }
 
 type UpdateProfile struct {

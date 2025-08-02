@@ -3,6 +3,7 @@ package graph
 import (
 	"app/graph/model"
 	"app/graph/services"
+	"app/graph/services/workout_type"
 	"context"
 	"fmt"
 )
@@ -24,7 +25,17 @@ func (r *setLogResolver) WorkoutLog(ctx context.Context, obj *model.SetLog) (*mo
 
 // WorkoutType is the resolver for the workoutType field.
 func (r *setLogResolver) WorkoutType(ctx context.Context, obj *model.SetLog) (*model.WorkoutType, error) {
-	return nil, fmt.Errorf("not implemented: WorkoutType - workoutType")
+	workoutTypeEntity, err := r.DataLoaders.WorkoutTypeLoaderForSetLog.LoadByID(ctx, obj.WorkoutTypeID)
+	if err != nil {
+		return nil, err
+	}
+	if workoutTypeEntity == nil {
+		return nil, nil
+	}
+
+	// エンティティからモデルに変換
+	workoutTypeConverter := workout_type.NewWorkoutTypeConverter()
+	return workoutTypeConverter.ToModelWorkoutType(*workoutTypeEntity), nil
 }
 
 // ================================
