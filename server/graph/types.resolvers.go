@@ -13,64 +13,68 @@ import (
 
 // Requester is the resolver for the requester field.
 func (r *friendshipResolver) Requester(ctx context.Context, obj *model.Friendship) (*model.User, error) {
-	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.FriendshipLoader, r.DataLoaders.UserLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
 	return friendshipService.GetFriendshipRequester(ctx, obj.ID)
 }
 
 // Requestee is the resolver for the requestee field.
 func (r *friendshipResolver) Requestee(ctx context.Context, obj *model.Friendship) (*model.User, error) {
-	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.FriendshipLoader, r.DataLoaders.UserLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
 	return friendshipService.GetFriendshipRequestee(ctx, obj.ID)
 }
 
 // WorkoutLog is the resolver for the workoutLog field.
 func (r *setLogResolver) WorkoutLog(ctx context.Context, obj *model.SetLog) (*model.WorkoutLog, error) {
-	panic(fmt.Errorf("not implemented: WorkoutLog - workoutLog"))
+	// TODO: Implement WorkoutLog resolver for SetLog
+	return nil, fmt.Errorf("not implemented: WorkoutLog - workoutLog")
 }
 
 // WorkoutType is the resolver for the workoutType field.
 func (r *setLogResolver) WorkoutType(ctx context.Context, obj *model.SetLog) (*model.WorkoutType, error) {
-	panic(fmt.Errorf("not implemented: WorkoutType - workoutType"))
+	// TODO: Implement WorkoutType resolver for SetLog
+	return nil, fmt.Errorf("not implemented: WorkoutType - workoutType")
 }
 
 // Profile is the resolver for the profile field.
 func (r *userResolver) Profile(ctx context.Context, obj *model.User) (*model.Profile, error) {
-	profileService := services.NewProfileServiceWithSeparation(r.DB, r.DataLoaders.ProfileLoader)
+	profileService := services.NewProfileServiceWithSeparation(r.DB, r.DataLoaders.ProfileLoaderForUser)
 	return profileService.GetProfileByUserID(ctx, obj.ID)
 }
 
 // WorkoutLogs is the resolver for the workoutLogs field.
 func (r *userResolver) WorkoutLogs(ctx context.Context, obj *model.User) ([]*model.WorkoutLog, error) {
-	workoutLogService := services.NewWorkoutLogServiceWithSeparation(r.DB, r.DataLoaders.WorkoutLogLoader)
+	workoutLogService := services.NewWorkoutLogServiceWithSeparation(r.DB, r.DataLoaders.SetLogsLoaderForWorkoutLog)
 	return workoutLogService.GetWorkoutLogs(ctx, obj.ID)
 }
 
 // Friends is the resolver for the friends field.
 func (r *userResolver) Friends(ctx context.Context, obj *model.User) ([]*model.User, error) {
-	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.FriendshipLoader, r.DataLoaders.UserLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
 	return friendshipService.GetFriends(ctx, obj.ID)
 }
 
 // FriendshipRequests is the resolver for the friendshipRequests field.
 func (r *userResolver) FriendshipRequests(ctx context.Context, obj *model.User) ([]*model.Friendship, error) {
-	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.FriendshipLoader, r.DataLoaders.UserLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
 	return friendshipService.GetFriendshipRequests(ctx, obj.ID)
 }
 
 // RecommendedUsers is the resolver for the recommendedUsers field.
 func (r *userResolver) RecommendedUsers(ctx context.Context, obj *model.User) ([]*model.User, error) {
-	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.FriendshipLoader, r.DataLoaders.UserLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
 	return friendshipService.GetRecommendedUsers(ctx, obj.ID)
 }
 
 // SetLogs is the resolver for the setLogs field.
 func (r *workoutLogResolver) SetLogs(ctx context.Context, obj *model.WorkoutLog) ([]*model.SetLog, error) {
-	panic(fmt.Errorf("not implemented: SetLogs - setLogs"))
+	setLogService := services.NewSetLogServiceWithSeparation(r.DB)
+	return setLogService.GetSetLogs(ctx, obj.ID)
 }
 
 // SetLogs is the resolver for the setLogs field.
 func (r *workoutTypeResolver) SetLogs(ctx context.Context, obj *model.WorkoutType) ([]*model.SetLog, error) {
-	panic(fmt.Errorf("not implemented: SetLogs - setLogs"))
+	// TODO: Implement SetLogs resolver for WorkoutType
+	return nil, fmt.Errorf("not implemented: SetLogs - setLogs")
 }
 
 // Friendship returns FriendshipResolver implementation.

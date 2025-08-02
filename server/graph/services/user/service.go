@@ -2,8 +2,8 @@ package user
 
 import (
 	"app/entity"
-	"app/graph/dataloader"
 	"app/graph/model"
+	"app/graph/services/friendship/loaders"
 	"app/middleware"
 	"context"
 	"fmt"
@@ -20,7 +20,7 @@ type UserService interface {
 type userService struct {
 	repo       UserRepository
 	converter  *UserConverter
-	userLoader dataloader.UserLoaderInterface
+	userLoader loaders.UserLoaderInterface
 }
 
 func NewUserService(repo UserRepository, converter *UserConverter) UserService {
@@ -30,7 +30,7 @@ func NewUserService(repo UserRepository, converter *UserConverter) UserService {
 	}
 }
 
-func NewUserServiceWithDataLoader(repo UserRepository, converter *UserConverter, userLoader dataloader.UserLoaderInterface) UserService {
+func NewUserServiceWithDataLoader(repo UserRepository, converter *UserConverter, userLoader loaders.UserLoaderInterface) UserService {
 	return &userService{
 		repo:       repo,
 		converter:  converter,
@@ -80,7 +80,7 @@ func (s *userService) GetUserByUID(ctx context.Context) (*model.User, error) {
 func (s *userService) GetUserByID(ctx context.Context, userID string) (*model.User, error) {
 	// DataLoaderが利用可能な場合はそれを使用
 	if s.userLoader != nil {
-		user, err := s.userLoader.LoadUser(ctx, userID)
+		user, err := s.userLoader.LoadByID(ctx, userID)
 		if err != nil {
 			return nil, err
 		}

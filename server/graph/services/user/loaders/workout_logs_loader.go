@@ -1,23 +1,23 @@
-package dataloader
+package loaders
 
 import (
 	"app/entity"
-	"app/graph/dataloader/base"
+	"app/graph/services/common/base"
 	"context"
 
 	"gorm.io/gorm"
 )
 
-type WorkoutLogLoaderInterface interface {
-	LoadWorkoutLogs(ctx context.Context, userID string) ([]*entity.WorkoutLog, error)
+type WorkoutLogsLoaderInterface interface {
+	LoadByUserID(ctx context.Context, userID string) ([]*entity.WorkoutLog, error)
 }
 
-type WorkoutLogLoader struct {
+type WorkoutLogsLoader struct {
 	*base.BaseArrayLoader[entity.WorkoutLog]
 }
 
-func NewWorkoutLogLoader(db *gorm.DB) WorkoutLogLoaderInterface {
-	loader := &WorkoutLogLoader{}
+func NewWorkoutLogsLoader(db *gorm.DB) WorkoutLogsLoaderInterface {
+	loader := &WorkoutLogsLoader{}
 	loader.BaseArrayLoader = base.NewBaseArrayLoader(
 		db,
 		loader.fetchWorkoutLogsFromDB,
@@ -27,7 +27,7 @@ func NewWorkoutLogLoader(db *gorm.DB) WorkoutLogLoaderInterface {
 	return loader
 }
 
-func (l *WorkoutLogLoader) fetchWorkoutLogsFromDB(userIDs []uint) ([]*entity.WorkoutLog, error) {
+func (l *WorkoutLogsLoader) fetchWorkoutLogsFromDB(userIDs []uint) ([]*entity.WorkoutLog, error) {
 	var logs []entity.WorkoutLog
 	err := l.DB().Where("user_id IN ?", userIDs).Find(&logs).Error
 	if err != nil {
@@ -42,7 +42,7 @@ func (l *WorkoutLogLoader) fetchWorkoutLogsFromDB(userIDs []uint) ([]*entity.Wor
 	return result, nil
 }
 
-func (l *WorkoutLogLoader) createWorkoutLogMap(logs []*entity.WorkoutLog) map[uint][]*entity.WorkoutLog {
+func (l *WorkoutLogsLoader) createWorkoutLogMap(logs []*entity.WorkoutLog) map[uint][]*entity.WorkoutLog {
 	workoutLogMap := make(map[uint][]*entity.WorkoutLog)
 	for _, log := range logs {
 		workoutLogMap[log.UserID] = append(workoutLogMap[log.UserID], log)
@@ -50,6 +50,6 @@ func (l *WorkoutLogLoader) createWorkoutLogMap(logs []*entity.WorkoutLog) map[ui
 	return workoutLogMap
 }
 
-func (l *WorkoutLogLoader) LoadWorkoutLogs(ctx context.Context, userID string) ([]*entity.WorkoutLog, error) {
+func (l *WorkoutLogsLoader) LoadByUserID(ctx context.Context, userID string) ([]*entity.WorkoutLog, error) {
 	return l.Load(ctx, userID)
 }

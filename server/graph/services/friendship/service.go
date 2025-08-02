@@ -2,9 +2,9 @@ package friendship
 
 import (
 	"app/entity"
-	"app/graph/dataloader"
 	"app/graph/model"
 	"app/graph/services/common"
+	"app/graph/services/friendship/loaders"
 	"app/graph/services/user"
 	"context"
 	"fmt"
@@ -27,26 +27,23 @@ type friendshipService struct {
 	repo       FriendshipRepository
 	userRepo   user.UserRepository
 	converter  *FriendshipConverter
-	loader     dataloader.FriendshipLoaderInterface
-	userLoader dataloader.UserLoaderInterface
+	userLoader loaders.UserLoaderInterface
 	common     common.CommonRepository
 }
 
-func NewFriendshipService(repo FriendshipRepository, converter *FriendshipConverter, loader dataloader.FriendshipLoaderInterface) FriendshipService {
+func NewFriendshipService(repo FriendshipRepository, converter *FriendshipConverter) FriendshipService {
 	return &friendshipService{
 		repo:      repo,
 		converter: converter,
-		loader:    loader,
 		common:    common.NewCommonRepository(repo.GetDB()),
 	}
 }
 
-func NewFriendshipServiceWithUserLoader(repo FriendshipRepository, userRepo user.UserRepository, converter *FriendshipConverter, loader dataloader.FriendshipLoaderInterface, userLoader dataloader.UserLoaderInterface) FriendshipService {
+func NewFriendshipServiceWithUserLoader(repo FriendshipRepository, userRepo user.UserRepository, converter *FriendshipConverter, userLoader loaders.UserLoaderInterface) FriendshipService {
 	return &friendshipService{
 		repo:       repo,
 		userRepo:   userRepo,
 		converter:  converter,
-		loader:     loader,
 		userLoader: userLoader,
 		common:     common.NewCommonRepository(repo.GetDB()),
 	}
@@ -178,7 +175,7 @@ func (s *friendshipService) GetFriendshipRequester(ctx context.Context, friendsh
 
 	// UserLoaderが利用可能な場合はそれを使用
 	if s.userLoader != nil {
-		userEntity, err := s.userLoader.LoadUser(ctx, requesterID)
+		userEntity, err := s.userLoader.LoadByID(ctx, requesterID)
 		if err != nil {
 			return nil, err
 		}
@@ -202,7 +199,7 @@ func (s *friendshipService) GetFriendshipRequestee(ctx context.Context, friendsh
 
 	// UserLoaderが利用可能な場合はそれを使用
 	if s.userLoader != nil {
-		userEntity, err := s.userLoader.LoadUser(ctx, requesteeID)
+		userEntity, err := s.userLoader.LoadByID(ctx, requesteeID)
 		if err != nil {
 			return nil, err
 		}

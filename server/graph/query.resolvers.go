@@ -13,7 +13,7 @@ import (
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	userService := services.NewUserServiceWithSeparation(r.DB, r.DataLoaders.UserLoader)
+	userService := services.NewUserServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForUser)
 	currentUser, err := userService.GetCurrentUser(ctx)
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 
 // CurrentUser is the resolver for the currentUser field.
 func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
-	userService := services.NewUserServiceWithSeparation(r.DB, r.DataLoaders.UserLoader)
+	userService := services.NewUserServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForUser)
 	return userService.GetOrCreateUserByUID(ctx)
 }
 

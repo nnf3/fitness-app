@@ -1,15 +1,15 @@
-package dataloader
+package loaders
 
 import (
 	"app/entity"
-	"app/graph/dataloader/base"
+	"app/graph/services/common/base"
 	"context"
 
 	"gorm.io/gorm"
 )
 
 type WorkoutTypeLoaderInterface interface {
-	LoadWorkoutType(ctx context.Context, id string) (*entity.WorkoutType, error)
+	LoadByID(ctx context.Context, id string) (*entity.WorkoutType, error)
 }
 
 type WorkoutTypeLoader struct {
@@ -41,6 +41,6 @@ func (l *WorkoutTypeLoader) createWorkoutTypeMap(types []*entity.WorkoutType) ma
 	return mapped
 }
 
-func (l *WorkoutTypeLoader) LoadWorkoutType(ctx context.Context, id string) (*entity.WorkoutType, error) {
+func (l *WorkoutTypeLoader) LoadByID(ctx context.Context, id string) (*entity.WorkoutType, error) {
 	return l.Load(ctx, id)
 }

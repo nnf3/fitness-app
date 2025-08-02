@@ -1,15 +1,15 @@
-package dataloader
+package loaders
 
 import (
 	"app/entity"
-	"app/graph/dataloader/base"
+	"app/graph/services/common/base"
 	"context"
 
 	"gorm.io/gorm"
 )
 
 type ProfileLoaderInterface interface {
-	LoadProfile(ctx context.Context, userID string) (*entity.Profile, error)
+	LoadByUserID(ctx context.Context, userID string) (*entity.Profile, error)
 }
 
 type ProfileLoader struct {
@@ -51,6 +51,6 @@ func (l *ProfileLoader) createProfileMap(profiles []*entity.Profile) map[uint]*e
 }
 
 // ユーザーIDでプロファイルをロード
-func (l *ProfileLoader) LoadProfile(ctx context.Context, userID string) (*entity.Profile, error) {
+func (l *ProfileLoader) LoadByUserID(ctx context.Context, userID string) (*entity.Profile, error) {
 	return l.Load(ctx, userID)
 }

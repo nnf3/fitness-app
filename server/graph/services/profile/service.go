@@ -2,9 +2,9 @@ package profile
 
 import (
 	"app/entity"
-	"app/graph/dataloader"
 	"app/graph/model"
 	"app/graph/services/common"
+	"app/graph/services/user/loaders"
 	"context"
 	"fmt"
 	"time"
@@ -19,11 +19,11 @@ type ProfileService interface {
 type profileService struct {
 	repo      ProfileRepository
 	converter *ProfileConverter
-	loader    dataloader.ProfileLoaderInterface
+	loader    loaders.ProfileLoaderInterface
 	common    common.CommonRepository
 }
 
-func NewProfileService(repo ProfileRepository, converter *ProfileConverter, loader dataloader.ProfileLoaderInterface) ProfileService {
+func NewProfileService(repo ProfileRepository, converter *ProfileConverter, loader loaders.ProfileLoaderInterface) ProfileService {
 	return &profileService{
 		repo:      repo,
 		converter: converter,
@@ -33,7 +33,7 @@ func NewProfileService(repo ProfileRepository, converter *ProfileConverter, load
 }
 
 func (s *profileService) GetProfileByUserID(ctx context.Context, userID string) (*model.Profile, error) {
-	profile, err := s.loader.LoadProfile(ctx, userID)
+	profile, err := s.loader.LoadByUserID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load profile: %w", err)
 	}

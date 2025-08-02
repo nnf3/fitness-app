@@ -1,15 +1,15 @@
-package dataloader
+package loaders
 
 import (
 	"app/entity"
-	"app/graph/dataloader/base"
+	"app/graph/services/common/base"
 	"context"
 
 	"gorm.io/gorm"
 )
 
 type UserLoaderInterface interface {
-	LoadUser(ctx context.Context, userID string) (*entity.User, error)
+	LoadByID(ctx context.Context, userID string) (*entity.User, error)
 }
 
 type UserLoader struct {
@@ -51,6 +51,6 @@ func (l *UserLoader) createUserMap(users []*entity.User) map[uint]*entity.User {
 }
 
 // ユーザーIDでユーザーをロード
-func (l *UserLoader) LoadUser(ctx context.Context, userID string) (*entity.User, error) {
+func (l *UserLoader) LoadByID(ctx context.Context, userID string) (*entity.User, error) {
 	return l.Load(ctx, userID)
 }
