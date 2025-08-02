@@ -4,7 +4,12 @@ import (
 	"app/graph/model"
 	"app/graph/services"
 	"context"
+	"fmt"
 )
+
+// ================================
+// Model
+// ================================
 
 // User returns UserResolver implementation.
 func (r *Resolver) User() UserResolver { return &userResolver{r} }
@@ -39,4 +44,28 @@ func (r *userResolver) FriendshipRequests(ctx context.Context, obj *model.User) 
 func (r *userResolver) RecommendedUsers(ctx context.Context, obj *model.User) ([]*model.User, error) {
 	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
 	return friendshipService.GetRecommendedUsers(ctx, obj.ID)
+}
+
+// ================================
+// Query
+// ================================
+
+// Users is the resolver for the users field.
+func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+	userService := services.NewUserServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForUser)
+	currentUser, err := userService.GetCurrentUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !currentUser.IsAdmin() {
+		return nil, fmt.Errorf("unauthorized")
+	}
+
+	return userService.GetUsers(ctx)
+}
+
+// CurrentUser is the resolver for the currentUser field.
+func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
+	userService := services.NewUserServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForUser)
+	return userService.GetOrCreateUserByUID(ctx)
 }

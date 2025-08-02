@@ -8,6 +8,7 @@ import (
 )
 
 type WorkoutTypeService interface {
+	GetWorkoutTypes(ctx context.Context) ([]*model.WorkoutType, error)
 	GetWorkoutType(ctx context.Context, id string) (*model.WorkoutType, error)
 }
 
@@ -30,6 +31,14 @@ func NewWorkoutTypeServiceWithLoader(repo WorkoutTypeRepository, converter *Work
 		converter: converter,
 		loader:    loader,
 	}
+}
+
+func (s *workoutTypeService) GetWorkoutTypes(ctx context.Context) ([]*model.WorkoutType, error) {
+	workoutTypes, err := s.repo.GetWorkoutTypes(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workout types: %w", err)
+	}
+	return s.converter.ToModelWorkoutTypes(workoutTypes), nil
 }
 
 func (s *workoutTypeService) GetWorkoutType(ctx context.Context, id string) (*model.WorkoutType, error) {

@@ -10,6 +10,7 @@ import (
 )
 
 type WorkoutTypeRepository interface {
+	GetWorkoutTypes(ctx context.Context) ([]entity.WorkoutType, error)
 	GetWorkoutTypeByID(ctx context.Context, id string) (*entity.WorkoutType, error)
 }
 
@@ -19,6 +20,14 @@ type workoutTypeRepository struct {
 
 func NewWorkoutTypeRepository(db *gorm.DB) WorkoutTypeRepository {
 	return &workoutTypeRepository{db: db}
+}
+
+func (r *workoutTypeRepository) GetWorkoutTypes(ctx context.Context) ([]entity.WorkoutType, error) {
+	var workoutTypes []entity.WorkoutType
+	if err := r.db.Find(&workoutTypes).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch workout types: %w", err)
+	}
+	return workoutTypes, nil
 }
 
 func (r *workoutTypeRepository) GetWorkoutTypeByID(ctx context.Context, id string) (*entity.WorkoutType, error) {
