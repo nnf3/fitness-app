@@ -125,7 +125,9 @@ func (p *profileService) UpdateProfile(ctx context.Context, input model.UpdatePr
 
 	var profile entity.Profile
 	if err := p.db.Where("user_id = ?", currentUser.ID).First(&profile).Error; err != nil {
-		return nil, fmt.Errorf("failed to get current user: %w", err)
+		profile = entity.Profile{
+			UserID: currentUser.ID,
+		}
 	}
 
 	if input.Name != nil {

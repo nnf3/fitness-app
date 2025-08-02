@@ -17,6 +17,10 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export type AcceptFriendshipRequest = {
+  friendshipID: Scalars['ID']['input'];
+};
+
 export enum ActivityLevel {
   ExtremelyActive = 'EXTREMELY_ACTIVE',
   LightlyActive = 'LIGHTLY_ACTIVE',
@@ -39,6 +43,20 @@ export type DeleteUser = {
   id: Scalars['ID']['input'];
 };
 
+export type Friendship = {
+  __typename?: 'Friendship';
+  id: Scalars['ID']['output'];
+  requestee: User;
+  requester: User;
+  status: FriendshipStatus;
+};
+
+export enum FriendshipStatus {
+  Accepted = 'ACCEPTED',
+  Pending = 'PENDING',
+  Rejected = 'REJECTED'
+}
+
 export enum Gender {
   Female = 'FEMALE',
   Male = 'MALE',
@@ -47,9 +65,17 @@ export enum Gender {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  acceptFriendshipRequest: Friendship;
   createProfile: Profile;
   deleteUser: Scalars['Boolean']['output'];
+  rejectFriendshipRequest: Friendship;
+  sendFriendshipRequest: Friendship;
   updateProfile: Profile;
+};
+
+
+export type MutationAcceptFriendshipRequestArgs = {
+  input: AcceptFriendshipRequest;
 };
 
 
@@ -60,6 +86,16 @@ export type MutationCreateProfileArgs = {
 
 export type MutationDeleteUserArgs = {
   input: DeleteUser;
+};
+
+
+export type MutationRejectFriendshipRequestArgs = {
+  input: RejectFriendshipRequest;
+};
+
+
+export type MutationSendFriendshipRequestArgs = {
+  input: SendFriendshipRequest;
 };
 
 
@@ -92,6 +128,24 @@ export type Query = {
   users: Array<User>;
 };
 
+export type RejectFriendshipRequest = {
+  friendshipID: Scalars['ID']['input'];
+};
+
+export type SendFriendshipRequest = {
+  requesteeID: Scalars['ID']['input'];
+};
+
+export type SetLog = {
+  __typename?: 'SetLog';
+  id: Scalars['ID']['output'];
+  repCount: Scalars['Int']['output'];
+  setNumber: Scalars['Int']['output'];
+  weight: Scalars['Int']['output'];
+  workoutLog: WorkoutLog;
+  workoutType: WorkoutType;
+};
+
 export type UpdateProfile = {
   activityLevel?: InputMaybe<ActivityLevel>;
   birthDate?: InputMaybe<Scalars['String']['input']>;
@@ -105,10 +159,27 @@ export type UpdateProfile = {
 export type User = {
   __typename?: 'User';
   createdAt: Scalars['String']['output'];
+  friendships: Array<Friendship>;
   id: Scalars['ID']['output'];
   profile?: Maybe<Profile>;
   uid: Scalars['String']['output'];
   updatedAt: Scalars['String']['output'];
+  workoutLogs: Array<WorkoutLog>;
+};
+
+export type WorkoutLog = {
+  __typename?: 'WorkoutLog';
+  createdAt: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  setLogs: Array<SetLog>;
+  updatedAt: Scalars['String']['output'];
+};
+
+export type WorkoutType = {
+  __typename?: 'WorkoutType';
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  setLogs: Array<SetLog>;
 };
 
 export type UpdateProfileMutationVariables = Exact<{

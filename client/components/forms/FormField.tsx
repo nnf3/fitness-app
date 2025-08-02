@@ -71,9 +71,18 @@ export function FormField({
             items={pickerOptions}
             style={{
               inputIOS: styles.picker,
+              inputIOSContainer: {
+                pointerEvents: 'none',
+              },
               inputAndroid: styles.picker,
+              inputAndroidContainer: {
+                pointerEvents: 'none',
+              },
             }}
             placeholder={{ label: placeholder || '選択してください', value: '' }}
+            pickerProps={{
+              itemStyle: { color: '#000000' },
+            }}
           />
         </View>
       </View>

@@ -288,6 +288,7 @@ export const ProfileEditForm = () => {
           label="生年月日"
           value={formData.birthDate}
           onChangeText={(text) => setFormData({ ...formData, birthDate: text })}
+          type="date"
           placeholder="YYYY-MM-DD"
           required
         />
