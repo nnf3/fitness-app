@@ -5,6 +5,7 @@ import (
 	"app/graph/dataloader"
 	"app/graph/model"
 	"app/graph/services/common"
+	"app/graph/services/user"
 	"context"
 	"fmt"
 	"strconv"
@@ -15,18 +16,20 @@ type FriendshipService interface {
 	GetFriendshipRequests(ctx context.Context, userID string) ([]*model.Friendship, error)
 	GetRecommendedUsers(ctx context.Context, userID string) ([]*model.User, error)
 	GetFriendshipByID(ctx context.Context, friendshipID string) (*model.Friendship, error)
-	GetFriendshipRequesterID(ctx context.Context, friendshipID string) (string, error)
-	GetFriendshipRequesteeID(ctx context.Context, friendshipID string) (string, error)
+	GetFriendshipRequester(ctx context.Context, friendshipID string) (*model.User, error)
+	GetFriendshipRequestee(ctx context.Context, friendshipID string) (*model.User, error)
 	SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error)
 	AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error)
 	RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error)
 }
 
 type friendshipService struct {
-	repo      FriendshipRepository
-	converter *FriendshipConverter
-	loader    dataloader.FriendshipLoaderInterface
-	common    common.CommonRepository
+	repo       FriendshipRepository
+	userRepo   user.UserRepository
+	converter  *FriendshipConverter
+	loader     dataloader.FriendshipLoaderInterface
+	userLoader dataloader.UserLoaderInterface
+	common     common.CommonRepository
 }
 
 func NewFriendshipService(repo FriendshipRepository, converter *FriendshipConverter, loader dataloader.FriendshipLoaderInterface) FriendshipService {
@@ -35,6 +38,17 @@ func NewFriendshipService(repo FriendshipRepository, converter *FriendshipConver
 		converter: converter,
 		loader:    loader,
 		common:    common.NewCommonRepository(repo.GetDB()),
+	}
+}
+
+func NewFriendshipServiceWithUserLoader(repo FriendshipRepository, userRepo user.UserRepository, converter *FriendshipConverter, loader dataloader.FriendshipLoaderInterface, userLoader dataloader.UserLoaderInterface) FriendshipService {
+	return &friendshipService{
+		repo:       repo,
+		userRepo:   userRepo,
+		converter:  converter,
+		loader:     loader,
+		userLoader: userLoader,
+		common:     common.NewCommonRepository(repo.GetDB()),
 	}
 }
 
@@ -153,6 +167,54 @@ func (s *friendshipService) RejectFriendshipRequest(ctx context.Context, input m
 	}
 
 	return s.converter.ToModelFriendship(*friendRequest), nil
+}
+
+func (s *friendshipService) GetFriendshipRequester(ctx context.Context, friendshipID string) (*model.User, error) {
+	// まずFriendshipのRequesterIDを取得
+	requesterID, err := s.GetFriendshipRequesterID(ctx, friendshipID)
+	if err != nil {
+		return nil, err
+	}
+
+	// UserLoaderが利用可能な場合はそれを使用
+	if s.userLoader != nil {
+		userEntity, err := s.userLoader.LoadUser(ctx, requesterID)
+		if err != nil {
+			return nil, err
+		}
+		return s.converter.ToModelUser(*userEntity), nil
+	}
+
+	// フォールバック: UserRepositoryから取得
+	user, err := s.userRepo.GetUserByID(ctx, requesterID)
+	if err != nil {
+		return nil, err
+	}
+	return s.converter.ToModelUser(*user), nil
+}
+
+func (s *friendshipService) GetFriendshipRequestee(ctx context.Context, friendshipID string) (*model.User, error) {
+	// まずFriendshipのRequesteeIDを取得
+	requesteeID, err := s.GetFriendshipRequesteeID(ctx, friendshipID)
+	if err != nil {
+		return nil, err
+	}
+
+	// UserLoaderが利用可能な場合はそれを使用
+	if s.userLoader != nil {
+		userEntity, err := s.userLoader.LoadUser(ctx, requesteeID)
+		if err != nil {
+			return nil, err
+		}
+		return s.converter.ToModelUser(*userEntity), nil
+	}
+
+	// フォールバック: UserRepositoryから取得
+	user, err := s.userRepo.GetUserByID(ctx, requesteeID)
+	if err != nil {
+		return nil, err
+	}
+	return s.converter.ToModelUser(*user), nil
 }
 
 // ヘルパー関数

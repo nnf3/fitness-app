@@ -2,6 +2,7 @@ package user
 
 import (
 	"app/entity"
+	"app/graph/dataloader"
 	"app/graph/model"
 	"app/middleware"
 	"context"
@@ -17,14 +18,23 @@ type UserService interface {
 }
 
 type userService struct {
-	repo      UserRepository
-	converter *UserConverter
+	repo       UserRepository
+	converter  *UserConverter
+	userLoader dataloader.UserLoaderInterface
 }
 
 func NewUserService(repo UserRepository, converter *UserConverter) UserService {
 	return &userService{
 		repo:      repo,
 		converter: converter,
+	}
+}
+
+func NewUserServiceWithDataLoader(repo UserRepository, converter *UserConverter, userLoader dataloader.UserLoaderInterface) UserService {
+	return &userService{
+		repo:       repo,
+		converter:  converter,
+		userLoader: userLoader,
 	}
 }
 
@@ -68,6 +78,16 @@ func (s *userService) GetUserByUID(ctx context.Context) (*model.User, error) {
 }
 
 func (s *userService) GetUserByID(ctx context.Context, userID string) (*model.User, error) {
+	// DataLoaderが利用可能な場合はそれを使用
+	if s.userLoader != nil {
+		user, err := s.userLoader.LoadUser(ctx, userID)
+		if err != nil {
+			return nil, err
+		}
+		return s.converter.ToModelUser(*user), nil
+	}
+
+	// フォールバック: 直接リポジトリから取得
 	user, err := s.repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err

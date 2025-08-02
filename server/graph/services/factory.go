@@ -16,17 +16,18 @@ import (
 // 新しい分離されたサービス構造のファクトリー関数
 
 // NewFriendshipServiceWithSeparation は分離されたFriendshipServiceを作成します
-func NewFriendshipServiceWithSeparation(db *gorm.DB, loader dataloader.FriendshipLoaderInterface) friendship.FriendshipService {
+func NewFriendshipServiceWithSeparation(db *gorm.DB, loader dataloader.FriendshipLoaderInterface, userLoader dataloader.UserLoaderInterface) friendship.FriendshipService {
 	repo := friendship.NewFriendshipRepository(db)
+	userRepo := user.NewUserRepository(db)
 	converter := friendship.NewFriendshipConverter()
-	return friendship.NewFriendshipService(repo, converter, loader)
+	return friendship.NewFriendshipServiceWithUserLoader(repo, userRepo, converter, loader, userLoader)
 }
 
 // NewUserServiceWithSeparation は分離されたUserServiceを作成します
-func NewUserServiceWithSeparation(db *gorm.DB) user.UserService {
+func NewUserServiceWithSeparation(db *gorm.DB, loader dataloader.UserLoaderInterface) user.UserService {
 	repo := user.NewUserRepository(db)
 	converter := user.NewUserConverter()
-	return user.NewUserService(repo, converter)
+	return user.NewUserServiceWithDataLoader(repo, converter, loader)
 }
 
 // NewProfileServiceWithSeparation は分離されたProfileServiceを作成します
