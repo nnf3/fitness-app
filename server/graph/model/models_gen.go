@@ -6,6 +6,14 @@ type AcceptFriendshipRequest struct {
 	FriendshipID string `json:"friendshipID"`
 }
 
+type AddSetLog struct {
+	WorkoutLogID  string   `json:"workoutLogID"`
+	WorkoutTypeID string   `json:"workoutTypeID"`
+	Weight        *float64 `json:"weight,omitempty"`
+	RepCount      *int32   `json:"repCount,omitempty"`
+	SetNumber     *int32   `json:"setNumber,omitempty"`
+}
+
 type CreateProfile struct {
 	Name          string         `json:"name"`
 	BirthDate     string         `json:"birthDate"`
@@ -21,10 +29,12 @@ type DeleteUser struct {
 }
 
 type Friendship struct {
-	ID        string           `json:"id"`
-	Requester *User            `json:"requester"`
-	Requestee *User            `json:"requestee"`
-	Status    FriendshipStatus `json:"status"`
+	ID          string           `json:"id"`
+	Requester   *User            `json:"requester"`
+	Requestee   *User            `json:"requestee"`
+	RequesterID string           `json:"requesterID"`
+	RequesteeID string           `json:"requesteeID"`
+	Status      FriendshipStatus `json:"status"`
 }
 
 type Mutation struct {
@@ -60,12 +70,13 @@ type SendFriendshipRequest struct {
 }
 
 type SetLog struct {
-	ID          string       `json:"id"`
-	WorkoutLog  *WorkoutLog  `json:"workoutLog"`
-	WorkoutType *WorkoutType `json:"workoutType"`
-	Weight      int32        `json:"weight"`
-	RepCount    int32        `json:"repCount"`
-	SetNumber   int32        `json:"setNumber"`
+	ID            string       `json:"id"`
+	WorkoutLog    *WorkoutLog  `json:"workoutLog"`
+	WorkoutType   *WorkoutType `json:"workoutType"`
+	WorkoutTypeID string       `json:"workoutTypeID"`
+	Weight        int32        `json:"weight"`
+	RepCount      int32        `json:"repCount"`
+	SetNumber     int32        `json:"setNumber"`
 }
 
 type UpdateProfile struct {
@@ -98,7 +109,9 @@ type WorkoutLog struct {
 }
 
 type WorkoutType struct {
-	ID      string    `json:"id"`
-	Name    string    `json:"name"`
-	SetLogs []*SetLog `json:"setLogs"`
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description,omitempty"`
+	Category    *string   `json:"category,omitempty"`
+	SetLogs     []*SetLog `json:"setLogs"`
 }

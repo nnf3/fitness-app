@@ -11,6 +11,7 @@ import (
 
 type WorkoutLogRepository interface {
 	GetWorkoutLogsByUserID(ctx context.Context, userID string) ([]*entity.WorkoutLog, error)
+	CreateWorkoutLog(ctx context.Context, workoutLog *entity.WorkoutLog) error
 }
 
 type workoutLogRepository struct {
@@ -39,4 +40,8 @@ func (r *workoutLogRepository) GetWorkoutLogsByUserID(ctx context.Context, userI
 	}
 
 	return result, nil
+}
+
+func (r *workoutLogRepository) CreateWorkoutLog(ctx context.Context, workoutLog *entity.WorkoutLog) error {
+	return r.db.Create(workoutLog).Error
 }

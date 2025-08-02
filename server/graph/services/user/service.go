@@ -15,6 +15,7 @@ type UserService interface {
 	GetUserByUID(ctx context.Context) (user *model.User, err error)
 	GetUserByID(ctx context.Context, userID string) (*model.User, error)
 	GetUsers(ctx context.Context) ([]*model.User, error)
+	DeleteUser(ctx context.Context, input model.DeleteUser) (bool, error)
 }
 
 type userService struct {
@@ -103,4 +104,13 @@ func (s *userService) GetUsers(ctx context.Context) ([]*model.User, error) {
 	}
 
 	return s.converter.ToModelUsers(users), nil
+}
+
+func (s *userService) DeleteUser(ctx context.Context, input model.DeleteUser) (bool, error) {
+	id := input.ID
+	if err := s.repo.DeleteUser(ctx, id); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

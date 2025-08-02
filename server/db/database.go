@@ -38,8 +38,75 @@ func ConnectDB() {
 
 	DB = db
 	log.Printf("✅ データベース接続が成功しました")
+}
 
-	m := gormigrate.New(db, gormigrate.DefaultOptions, []*gormigrate.Migration{
+// RollbackTo 指定したマイグレーションIDまでロールバックする
+func RollbackTo(migrationID string) error {
+	if DB == nil {
+		return fmt.Errorf("データベースが接続されていません")
+	}
+
+	m := gormigrate.New(DB, gormigrate.DefaultOptions, getMigrations())
+
+	if err := m.RollbackTo(migrationID); err != nil {
+		return fmt.Errorf("ロールバックに失敗しました: %w", err)
+	}
+
+	log.Printf("✅ マイグレーション '%s' までロールバックしました", migrationID)
+	return nil
+}
+
+// RollbackLast 最後のマイグレーションをロールバックする
+func RollbackLast() error {
+	if DB == nil {
+		return fmt.Errorf("データベースが接続されていません")
+	}
+
+	m := gormigrate.New(DB, gormigrate.DefaultOptions, getMigrations())
+
+	if err := m.RollbackLast(); err != nil {
+		return fmt.Errorf("最後のマイグレーションのロールバックに失敗しました: %w", err)
+	}
+
+	log.Printf("✅ 最後のマイグレーションをロールバックしました")
+	return nil
+}
+
+// MigrateTo 指定したマイグレーションIDまでマイグレーションを実行する
+func MigrateTo(migrationID string) error {
+	if DB == nil {
+		return fmt.Errorf("データベースが接続されていません")
+	}
+
+	m := gormigrate.New(DB, gormigrate.DefaultOptions, getMigrations())
+
+	if err := m.MigrateTo(migrationID); err != nil {
+		return fmt.Errorf("マイグレーションに失敗しました: %w", err)
+	}
+
+	log.Printf("✅ マイグレーション '%s' まで実行しました", migrationID)
+	return nil
+}
+
+// RunMigrations マイグレーションを実行する（サーバー起動時には呼ばれない）
+func RunMigrations() error {
+	if DB == nil {
+		return fmt.Errorf("データベースが接続されていません")
+	}
+
+	m := gormigrate.New(DB, gormigrate.DefaultOptions, getMigrations())
+
+	if err := m.Migrate(); err != nil {
+		return fmt.Errorf("マイグレーションに失敗しました: %w", err)
+	}
+
+	log.Printf("✅ マイグレーションが正常に実行されました")
+	return nil
+}
+
+// getMigrations マイグレーションの定義を取得する
+func getMigrations() []*gormigrate.Migration {
+	return []*gormigrate.Migration{
 		{
 			ID: "202507281400_create_users",
 			Migrate: func(tx *gorm.DB) error {
@@ -72,7 +139,7 @@ func ConnectDB() {
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")).Delete(&entity.User{}).Error
+				return tx.Unscoped().Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")).Delete(&entity.User{}).Error
 			},
 		},
 		{
@@ -97,6 +164,35 @@ func ConnectDB() {
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.Migrator().DropTable(&entity.WorkoutType{})
+			},
+		},
+		{
+			ID: "202508021520_add_description_category_to_workout_types",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&entity.WorkoutType{}, "description") {
+					if err := tx.Migrator().AddColumn(&entity.WorkoutType{}, "description"); err != nil {
+						return err
+					}
+				}
+				if !tx.Migrator().HasColumn(&entity.WorkoutType{}, "category") {
+					if err := tx.Migrator().AddColumn(&entity.WorkoutType{}, "category"); err != nil {
+						return err
+					}
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&entity.WorkoutType{}, "description") {
+					if err := tx.Migrator().DropColumn(&entity.WorkoutType{}, "description"); err != nil {
+						return err
+					}
+				}
+				if tx.Migrator().HasColumn(&entity.WorkoutType{}, "category") {
+					if err := tx.Migrator().DropColumn(&entity.WorkoutType{}, "category"); err != nil {
+						return err
+					}
+				}
+				return nil
 			},
 		},
 		{
@@ -140,14 +236,8 @@ func ConnectDB() {
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")).Delete(&entity.User{}).Error
+				return tx.Unscoped().Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")).Delete(&entity.User{}).Error
 			},
 		},
-	})
-
-	if err := m.Migrate(); err != nil {
-		panic("Could not migrate: " + err.Error())
 	}
-
-	log.Printf("Migration did run successfully")
 }

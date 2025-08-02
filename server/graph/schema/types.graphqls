@@ -30,6 +30,8 @@ type Profile {
 type WorkoutType {
   id: ID!
   name: String!
+  description: String
+  category: String
   setLogs: [SetLog!]!
 }
 
@@ -44,6 +46,7 @@ type SetLog {
   id: ID!
   workoutLog: WorkoutLog!
   workoutType: WorkoutType!
+  workoutTypeID: ID!
   weight: Int!
   repCount: Int!
   setNumber: Int!
@@ -53,5 +56,7 @@ type Friendship {
   id: ID!
   requester: User!
   requestee: User!
+  requesterID: ID!
+  requesteeID: ID!
   status: FriendshipStatus!
 }

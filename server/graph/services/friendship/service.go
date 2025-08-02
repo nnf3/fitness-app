@@ -16,8 +16,6 @@ type FriendshipService interface {
 	GetFriendshipRequests(ctx context.Context, userID string) ([]*model.Friendship, error)
 	GetRecommendedUsers(ctx context.Context, userID string) ([]*model.User, error)
 	GetFriendshipByID(ctx context.Context, friendshipID string) (*model.Friendship, error)
-	GetFriendshipRequester(ctx context.Context, friendshipID string) (*model.User, error)
-	GetFriendshipRequestee(ctx context.Context, friendshipID string) (*model.User, error)
 	SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error)
 	AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error)
 	RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error)
@@ -164,54 +162,6 @@ func (s *friendshipService) RejectFriendshipRequest(ctx context.Context, input m
 	}
 
 	return s.converter.ToModelFriendship(*friendRequest), nil
-}
-
-func (s *friendshipService) GetFriendshipRequester(ctx context.Context, friendshipID string) (*model.User, error) {
-	// まずFriendshipのRequesterIDを取得
-	requesterID, err := s.GetFriendshipRequesterID(ctx, friendshipID)
-	if err != nil {
-		return nil, err
-	}
-
-	// UserLoaderが利用可能な場合はそれを使用
-	if s.userLoader != nil {
-		userEntity, err := s.userLoader.LoadByID(ctx, requesterID)
-		if err != nil {
-			return nil, err
-		}
-		return s.converter.ToModelUser(*userEntity), nil
-	}
-
-	// フォールバック: UserRepositoryから取得
-	user, err := s.userRepo.GetUserByID(ctx, requesterID)
-	if err != nil {
-		return nil, err
-	}
-	return s.converter.ToModelUser(*user), nil
-}
-
-func (s *friendshipService) GetFriendshipRequestee(ctx context.Context, friendshipID string) (*model.User, error) {
-	// まずFriendshipのRequesteeIDを取得
-	requesteeID, err := s.GetFriendshipRequesteeID(ctx, friendshipID)
-	if err != nil {
-		return nil, err
-	}
-
-	// UserLoaderが利用可能な場合はそれを使用
-	if s.userLoader != nil {
-		userEntity, err := s.userLoader.LoadByID(ctx, requesteeID)
-		if err != nil {
-			return nil, err
-		}
-		return s.converter.ToModelUser(*userEntity), nil
-	}
-
-	// フォールバック: UserRepositoryから取得
-	user, err := s.userRepo.GetUserByID(ctx, requesteeID)
-	if err != nil {
-		return nil, err
-	}
-	return s.converter.ToModelUser(*user), nil
 }
 
 // ヘルパー関数
