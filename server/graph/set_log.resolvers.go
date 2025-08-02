@@ -2,9 +2,14 @@ package graph
 
 import (
 	"app/graph/model"
+	"app/graph/services"
 	"context"
 	"fmt"
 )
+
+// ================================
+// Model
+// ================================
 
 // SetLog returns SetLogResolver implementation.
 func (r *Resolver) SetLog() SetLogResolver { return &setLogResolver{r} }
@@ -19,6 +24,15 @@ func (r *setLogResolver) WorkoutLog(ctx context.Context, obj *model.SetLog) (*mo
 
 // WorkoutType is the resolver for the workoutType field.
 func (r *setLogResolver) WorkoutType(ctx context.Context, obj *model.SetLog) (*model.WorkoutType, error) {
-	// TODO: Implement WorkoutType resolver for SetLog
 	return nil, fmt.Errorf("not implemented: WorkoutType - workoutType")
+}
+
+// ================================
+// Mutation
+// ================================
+
+// AddSetLog is the resolver for the addSetLog field.
+func (r *mutationResolver) AddSetLog(ctx context.Context, input model.AddSetLog) (*model.SetLog, error) {
+	setLogService := services.NewSetLogServiceWithSeparation(r.DB)
+	return setLogService.AddSetLog(ctx, input)
 }

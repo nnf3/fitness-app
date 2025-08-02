@@ -6,6 +6,14 @@ type AcceptFriendshipRequest struct {
 	FriendshipID string `json:"friendshipID"`
 }
 
+type AddSetLog struct {
+	WorkoutLogID  string   `json:"workoutLogID"`
+	WorkoutTypeID string   `json:"workoutTypeID"`
+	Weight        *float64 `json:"weight,omitempty"`
+	RepCount      *int32   `json:"repCount,omitempty"`
+	SetNumber     *int32   `json:"setNumber,omitempty"`
+}
+
 type CreateProfile struct {
 	Name          string         `json:"name"`
 	BirthDate     string         `json:"birthDate"`

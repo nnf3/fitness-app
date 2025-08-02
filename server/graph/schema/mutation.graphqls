@@ -41,6 +41,14 @@ input RejectFriendshipRequest {
   friendshipID: ID!
 }
 
+input AddSetLog {
+  workoutLogID: ID!
+  workoutTypeID: ID!
+  weight: Float
+  repCount: Int
+  setNumber: Int
+}
+
 type Mutation {
   deleteUser(input: DeleteUser!): Boolean!
 
@@ -52,4 +60,6 @@ type Mutation {
   rejectFriendshipRequest(input: RejectFriendshipRequest!): Friendship!
 
   startWorkout: WorkoutLog!
+
+  addSetLog(input: AddSetLog!): SetLog!
 }

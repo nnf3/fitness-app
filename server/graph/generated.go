@@ -61,6 +61,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AcceptFriendshipRequest func(childComplexity int, input model.AcceptFriendshipRequest) int
+		AddSetLog               func(childComplexity int, input model.AddSetLog) int
 		CreateProfile           func(childComplexity int, input model.CreateProfile) int
 		DeleteUser              func(childComplexity int, input model.DeleteUser) int
 		RejectFriendshipRequest func(childComplexity int, input model.RejectFriendshipRequest) int
@@ -138,6 +139,7 @@ type MutationResolver interface {
 	AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error)
 	RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error)
 	StartWorkout(ctx context.Context) (*model.WorkoutLog, error)
+	AddSetLog(ctx context.Context, input model.AddSetLog) (*model.SetLog, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
@@ -220,6 +222,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.AcceptFriendshipRequest(childComplexity, args["input"].(model.AcceptFriendshipRequest)), true
+
+	case "Mutation.addSetLog":
+		if e.complexity.Mutation.AddSetLog == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addSetLog_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddSetLog(childComplexity, args["input"].(model.AddSetLog)), true
 
 	case "Mutation.createProfile":
 		if e.complexity.Mutation.CreateProfile == nil {
@@ -563,6 +577,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAcceptFriendshipRequest,
+		ec.unmarshalInputAddSetLog,
 		ec.unmarshalInputCreateProfile,
 		ec.unmarshalInputDeleteUser,
 		ec.unmarshalInputNewUser,
@@ -708,6 +723,29 @@ func (ec *executionContext) field_Mutation_acceptFriendshipRequest_argsInput(
 	}
 
 	var zeroVal model.AcceptFriendshipRequest
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_addSetLog_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_addSetLog_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_addSetLog_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.AddSetLog, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNAddSetLog2appᚋgraphᚋmodelᚐAddSetLog(ctx, tmp)
+	}
+
+	var zeroVal model.AddSetLog
 	return zeroVal, nil
 }
 
@@ -1623,6 +1661,75 @@ func (ec *executionContext) fieldContext_Mutation_startWorkout(_ context.Context
 			}
 			return nil, fmt.Errorf("no field named %q was found under type WorkoutLog", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addSetLog(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addSetLog(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddSetLog(rctx, fc.Args["input"].(model.AddSetLog))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.SetLog)
+	fc.Result = res
+	return ec.marshalNSetLog2ᚖappᚋgraphᚋmodelᚐSetLog(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addSetLog(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_SetLog_id(ctx, field)
+			case "workoutLog":
+				return ec.fieldContext_SetLog_workoutLog(ctx, field)
+			case "workoutType":
+				return ec.fieldContext_SetLog_workoutType(ctx, field)
+			case "weight":
+				return ec.fieldContext_SetLog_weight(ctx, field)
+			case "repCount":
+				return ec.fieldContext_SetLog_repCount(ctx, field)
+			case "setNumber":
+				return ec.fieldContext_SetLog_setNumber(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SetLog", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addSetLog_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -5587,6 +5694,61 @@ func (ec *executionContext) unmarshalInputAcceptFriendshipRequest(ctx context.Co
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputAddSetLog(ctx context.Context, obj any) (model.AddSetLog, error) {
+	var it model.AddSetLog
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"workoutLogID", "workoutTypeID", "weight", "repCount", "setNumber"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "workoutLogID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("workoutLogID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WorkoutLogID = data
+		case "workoutTypeID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("workoutTypeID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WorkoutTypeID = data
+		case "weight":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weight"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Weight = data
+		case "repCount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("repCount"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RepCount = data
+		case "setNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("setNumber"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SetNumber = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateProfile(ctx context.Context, obj any) (model.CreateProfile, error) {
 	var it model.CreateProfile
 	asMap := map[string]any{}
@@ -6021,6 +6183,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "startWorkout":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_startWorkout(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "addSetLog":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addSetLog(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -7101,6 +7270,11 @@ func (ec *executionContext) unmarshalNAcceptFriendshipRequest2appᚋgraphᚋmode
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNAddSetLog2appᚋgraphᚋmodelᚐAddSetLog(ctx context.Context, v any) (model.AddSetLog, error) {
+	res, err := ec.unmarshalInputAddSetLog(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7299,6 +7473,10 @@ func (ec *executionContext) unmarshalNRejectFriendshipRequest2appᚋgraphᚋmode
 func (ec *executionContext) unmarshalNSendFriendshipRequest2appᚋgraphᚋmodelᚐSendFriendshipRequest(ctx context.Context, v any) (model.SendFriendshipRequest, error) {
 	res, err := ec.unmarshalInputSendFriendshipRequest(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSetLog2appᚋgraphᚋmodelᚐSetLog(ctx context.Context, sel ast.SelectionSet, v model.SetLog) graphql.Marshaler {
+	return ec._SetLog(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNSetLog2ᚕᚖappᚋgraphᚋmodelᚐSetLogᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.SetLog) graphql.Marshaler {
@@ -7917,6 +8095,24 @@ var (
 		model.GenderOther:  "OTHER",
 	}
 )
+
+func (ec *executionContext) unmarshalOInt2ᚖint32(ctx context.Context, v any) (*int32, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt32(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.SelectionSet, v *int32) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalInt32(*v)
+	return res
+}
 
 func (ec *executionContext) marshalOProfile2ᚖappᚋgraphᚋmodelᚐProfile(ctx context.Context, sel ast.SelectionSet, v *model.Profile) graphql.Marshaler {
 	if v == nil {
