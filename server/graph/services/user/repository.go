@@ -16,6 +16,7 @@ type UserRepository interface {
 	GetUserByID(ctx context.Context, userID string) (*entity.User, error)
 	GetUsers(ctx context.Context) ([]entity.User, error)
 	CreateUser(ctx context.Context, user *entity.User) error
+	DeleteUser(ctx context.Context, id string) error
 }
 
 type userRepository struct {
@@ -74,4 +75,13 @@ func (r *userRepository) GetUsers(ctx context.Context) ([]entity.User, error) {
 
 func (r *userRepository) CreateUser(ctx context.Context, user *entity.User) error {
 	return r.db.Create(user).Error
+}
+
+func (r *userRepository) DeleteUser(ctx context.Context, id string) error {
+	user := entity.User{}
+	if err := r.db.First(&user, id).Error; err != nil {
+		return fmt.Errorf("failed to fetch user: %w", err)
+	}
+
+	return r.db.Delete(&user).Error
 }

@@ -69,3 +69,13 @@ func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
 	userService := services.NewUserServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForUser)
 	return userService.GetOrCreateUserByUID(ctx)
 }
+
+// ================================
+// Mutation
+// ================================
+
+// DeleteUser is the resolver for the deleteUser field.
+func (r *mutationResolver) DeleteUser(ctx context.Context, input model.DeleteUser) (bool, error) {
+	userService := services.NewUserServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForUser)
+	return userService.DeleteUser(ctx, input)
+}
