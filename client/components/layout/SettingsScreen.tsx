@@ -173,10 +173,6 @@ export function SettingsScreen() {
           <Text style={styles.settingText}>プロフィール編集</Text>
           <FontAwesome name="chevron-right" size={16} color={theme.textTertiary} />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.settingItem, styles.settingItemLast]}>
-          <Text style={styles.settingText}>パスワード変更</Text>
-          <FontAwesome name="chevron-right" size={16} color={theme.textTertiary} />
-        </TouchableOpacity>
       </View>
 
       {/* ログアウトボタン */}
