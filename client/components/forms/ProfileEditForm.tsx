@@ -11,15 +11,16 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks';
 import { useQuery, useMutation } from '@apollo/client';
-import { ProfileEditCurrentUserDocument, UpdateProfileDocument } from '@/documents';
-import { ProfileEditCurrentUserQuery, UpdateProfileMutation } from '@/types/graphql';
+import { GetProfileDocument, UpdateProfileDocument } from '@/documents';
+import { GetProfileQuery, UpdateProfileMutation } from '@/types/graphql';
 import { FormField } from './FormField';
 import { ImagePickerComponent } from './ImagePicker';
+import { useTheme } from '../../theme';
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1B4332',
+    backgroundColor: theme.background,
   },
   scrollView: {
     flex: 1,
@@ -34,24 +35,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 40,
-    color: '#FFFFFF',
+    color: theme.textSecondary,
     opacity: 0.8,
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: theme.success,
     paddingVertical: 18,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 30,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
   },
   saveButtonDisabled: {
-    backgroundColor: '#2D5A3D',
+    backgroundColor: theme.surfaceVariant,
     opacity: 0.6,
   },
   saveButtonText: {
@@ -63,10 +64,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1B4332',
+    backgroundColor: theme.background,
   },
   errorText: {
-    color: '#FF6B6B',
+    color: theme.error,
     textAlign: 'center',
     fontSize: 16,
     marginTop: 20,
@@ -100,7 +101,7 @@ const activityLevelOptions = [
 const useProfileEditQuery = () => {
   const router = useRouter();
   const { user } = useAuth();
-  const { data, loading: queryLoading, error: queryError } = useQuery<ProfileEditCurrentUserQuery>(ProfileEditCurrentUserDocument, {
+  const { data, loading: queryLoading, error: queryError } = useQuery<GetProfileQuery>(GetProfileDocument, {
     skip: !user,
   });
 
@@ -178,6 +179,9 @@ export const ProfileEditForm = () => {
     setFormData,
     handleImageSelect,
   } = useProfileEditForm();
+
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
 
   useEffect(() => {
     if (data?.currentUser?.profile) {
@@ -266,8 +270,6 @@ export const ProfileEditForm = () => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.subtitle}>プロフィールを編集</Text>
-
         <ImagePickerComponent
           selectedImage={selectedImage}
           onImageSelect={handleImageSelect}
@@ -288,6 +290,7 @@ export const ProfileEditForm = () => {
           label="生年月日"
           value={formData.birthDate}
           onChangeText={(text) => setFormData({ ...formData, birthDate: text })}
+          type="date"
           placeholder="YYYY-MM-DD"
           required
         />

@@ -17,6 +17,10 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export type AcceptFriendshipRequest = {
+  friendshipID: Scalars['ID']['input'];
+};
+
 export enum ActivityLevel {
   ExtremelyActive = 'EXTREMELY_ACTIVE',
   LightlyActive = 'LIGHTLY_ACTIVE',
@@ -39,6 +43,20 @@ export type DeleteUser = {
   id: Scalars['ID']['input'];
 };
 
+export type Friendship = {
+  __typename?: 'Friendship';
+  id: Scalars['ID']['output'];
+  requestee: User;
+  requester: User;
+  status: FriendshipStatus;
+};
+
+export enum FriendshipStatus {
+  Accepted = 'ACCEPTED',
+  Pending = 'PENDING',
+  Rejected = 'REJECTED'
+}
+
 export enum Gender {
   Female = 'FEMALE',
   Male = 'MALE',
@@ -47,9 +65,17 @@ export enum Gender {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  acceptFriendshipRequest: Friendship;
   createProfile: Profile;
   deleteUser: Scalars['Boolean']['output'];
+  rejectFriendshipRequest: Friendship;
+  sendFriendshipRequest: Friendship;
   updateProfile: Profile;
+};
+
+
+export type MutationAcceptFriendshipRequestArgs = {
+  input: AcceptFriendshipRequest;
 };
 
 
@@ -60,6 +86,16 @@ export type MutationCreateProfileArgs = {
 
 export type MutationDeleteUserArgs = {
   input: DeleteUser;
+};
+
+
+export type MutationRejectFriendshipRequestArgs = {
+  input: RejectFriendshipRequest;
+};
+
+
+export type MutationSendFriendshipRequestArgs = {
+  input: SendFriendshipRequest;
 };
 
 
@@ -92,6 +128,24 @@ export type Query = {
   users: Array<User>;
 };
 
+export type RejectFriendshipRequest = {
+  friendshipID: Scalars['ID']['input'];
+};
+
+export type SendFriendshipRequest = {
+  requesteeID: Scalars['ID']['input'];
+};
+
+export type SetLog = {
+  __typename?: 'SetLog';
+  id: Scalars['ID']['output'];
+  repCount: Scalars['Int']['output'];
+  setNumber: Scalars['Int']['output'];
+  weight: Scalars['Int']['output'];
+  workoutLog: WorkoutLog;
+  workoutType: WorkoutType;
+};
+
 export type UpdateProfile = {
   activityLevel?: InputMaybe<ActivityLevel>;
   birthDate?: InputMaybe<Scalars['String']['input']>;
@@ -105,11 +159,51 @@ export type UpdateProfile = {
 export type User = {
   __typename?: 'User';
   createdAt: Scalars['String']['output'];
+  friends: Array<User>;
+  friendshipRequests: Array<Friendship>;
   id: Scalars['ID']['output'];
   profile?: Maybe<Profile>;
+  recommendedUsers: Array<User>;
   uid: Scalars['String']['output'];
   updatedAt: Scalars['String']['output'];
+  workoutLogs: Array<WorkoutLog>;
 };
+
+export type WorkoutLog = {
+  __typename?: 'WorkoutLog';
+  createdAt: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  setLogs: Array<SetLog>;
+  updatedAt: Scalars['String']['output'];
+};
+
+export type WorkoutType = {
+  __typename?: 'WorkoutType';
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  setLogs: Array<SetLog>;
+};
+
+export type AcceptFriendshipRequestMutationVariables = Exact<{
+  input: AcceptFriendshipRequest;
+}>;
+
+
+export type AcceptFriendshipRequestMutation = { __typename?: 'Mutation', acceptFriendshipRequest: { __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } } };
+
+export type RejectFriendshipRequestMutationVariables = Exact<{
+  input: RejectFriendshipRequest;
+}>;
+
+
+export type RejectFriendshipRequestMutation = { __typename?: 'Mutation', rejectFriendshipRequest: { __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } } };
+
+export type SendFriendshipRequestMutationVariables = Exact<{
+  input: SendFriendshipRequest;
+}>;
+
+
+export type SendFriendshipRequestMutation = { __typename?: 'Mutation', sendFriendshipRequest: { __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } } };
 
 export type UpdateProfileMutationVariables = Exact<{
   input: UpdateProfile;
@@ -121,14 +215,102 @@ export type UpdateProfileMutation = { __typename?: 'Mutation', updateProfile: { 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, createdAt: string, updatedAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null } };
+export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, createdAt: string, updatedAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null, recommendedUsers: Array<{ __typename?: 'User', id: string, uid: string, createdAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null }> } };
 
-export type ProfileEditCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type ProfileEditCurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null, imageURL?: string | null } | null } };
+export type GetFriendsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
+export type GetFriendsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, friends: Array<{ __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }> } };
+
+export type GetFriendshipRequestsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetFriendshipRequestsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, friendshipRequests: Array<{ __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } }> } };
+
+export type GetProfileQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetProfileQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null, imageURL?: string | null } | null } };
+
+
+export const AcceptFriendshipRequestDocument = gql`
+    mutation AcceptFriendshipRequest($input: AcceptFriendshipRequest!) {
+  acceptFriendshipRequest(input: $input) {
+    id
+    status
+    requester {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+    requestee {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+  }
+}
+    `;
+export const RejectFriendshipRequestDocument = gql`
+    mutation RejectFriendshipRequest($input: RejectFriendshipRequest!) {
+  rejectFriendshipRequest(input: $input) {
+    id
+    status
+    requester {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+    requestee {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+  }
+}
+    `;
+export const SendFriendshipRequestDocument = gql`
+    mutation SendFriendshipRequest($input: SendFriendshipRequest!) {
+  sendFriendshipRequest(input: $input) {
+    id
+    status
+    requester {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+    requestee {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+  }
+}
+    `;
 export const UpdateProfileDocument = gql`
     mutation UpdateProfile($input: UpdateProfile!) {
   updateProfile(input: $input) {
@@ -159,11 +341,70 @@ export const CurrentUserDocument = gql`
       weight
       activityLevel
     }
+    recommendedUsers {
+      id
+      uid
+      createdAt
+      profile {
+        id
+        name
+        birthDate
+        gender
+        height
+        weight
+        activityLevel
+      }
+    }
   }
 }
     `;
-export const ProfileEditCurrentUserDocument = gql`
-    query ProfileEditCurrentUser {
+export const GetFriendsDocument = gql`
+    query GetFriends {
+  currentUser {
+    id
+    friends {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+  }
+}
+    `;
+export const GetFriendshipRequestsDocument = gql`
+    query GetFriendshipRequests {
+  currentUser {
+    id
+    friendshipRequests {
+      id
+      status
+      requester {
+        id
+        uid
+        profile {
+          id
+          name
+          imageURL
+        }
+      }
+      requestee {
+        id
+        uid
+        profile {
+          id
+          name
+          imageURL
+        }
+      }
+    }
+  }
+}
+    `;
+export const GetProfileDocument = gql`
+    query GetProfile {
   currentUser {
     id
     uid
@@ -188,14 +429,29 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationTy
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
+    AcceptFriendshipRequest(variables: AcceptFriendshipRequestMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AcceptFriendshipRequestMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<AcceptFriendshipRequestMutation>({ document: AcceptFriendshipRequestDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AcceptFriendshipRequest', 'mutation', variables);
+    },
+    RejectFriendshipRequest(variables: RejectFriendshipRequestMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<RejectFriendshipRequestMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<RejectFriendshipRequestMutation>({ document: RejectFriendshipRequestDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'RejectFriendshipRequest', 'mutation', variables);
+    },
+    SendFriendshipRequest(variables: SendFriendshipRequestMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SendFriendshipRequestMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<SendFriendshipRequestMutation>({ document: SendFriendshipRequestDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SendFriendshipRequest', 'mutation', variables);
+    },
     UpdateProfile(variables: UpdateProfileMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateProfileMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateProfileMutation>({ document: UpdateProfileDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateProfile', 'mutation', variables);
     },
     CurrentUser(variables?: CurrentUserQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CurrentUserQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<CurrentUserQuery>({ document: CurrentUserDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CurrentUser', 'query', variables);
     },
-    ProfileEditCurrentUser(variables?: ProfileEditCurrentUserQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<ProfileEditCurrentUserQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<ProfileEditCurrentUserQuery>({ document: ProfileEditCurrentUserDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'ProfileEditCurrentUser', 'query', variables);
+    GetFriends(variables?: GetFriendsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetFriendsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetFriendsQuery>({ document: GetFriendsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetFriends', 'query', variables);
+    },
+    GetFriendshipRequests(variables?: GetFriendshipRequestsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetFriendshipRequestsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetFriendshipRequestsQuery>({ document: GetFriendshipRequestsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetFriendshipRequests', 'query', variables);
+    },
+    GetProfile(variables?: GetProfileQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetProfileQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetProfileQuery>({ document: GetProfileDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetProfile', 'query', variables);
     }
   };
 }

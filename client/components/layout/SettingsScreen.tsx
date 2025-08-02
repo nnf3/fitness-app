@@ -3,14 +3,15 @@ import { useAuth } from "../../hooks";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useTheme } from "../../theme";
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1B4332',
+    backgroundColor: theme.background,
   },
   section: {
-    backgroundColor: '#2D5A3D',
+    backgroundColor: theme.surface,
     marginVertical: 8,
     borderTopWidth: 0,
     borderBottomWidth: 0,
@@ -20,7 +21,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: theme.textSecondary,
     marginHorizontal: 16,
     marginVertical: 8,
     opacity: 0.8,
@@ -33,23 +34,23 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: 'transparent',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: theme.divider,
   },
   settingItemLast: {
     borderBottomWidth: 0,
   },
   settingText: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: theme.text,
   },
   settingValue: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: theme.textSecondary,
     opacity: 0.7,
   },
   userInfo: {
     padding: 16,
-    backgroundColor: '#2D5A3D',
+    backgroundColor: theme.surface,
     marginVertical: 8,
     marginHorizontal: 16,
     borderTopWidth: 0,
@@ -58,17 +59,17 @@ const styles = StyleSheet.create({
   },
   userEmail: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: theme.text,
     fontWeight: '500',
   },
   logoutButton: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: theme.error,
     marginHorizontal: 16,
     marginVertical: 8,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -90,8 +91,10 @@ const styles = StyleSheet.create({
 export function SettingsScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const { theme, isDarkMode, setThemeMode } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+
+  const styles = createStyles(theme);
 
   const handleLogout = () => {
     Alert.alert(
@@ -132,7 +135,7 @@ export function SettingsScreen() {
           <Switch
             value={notificationsEnabled}
             onValueChange={setNotificationsEnabled}
-            trackColor={{ false: '#E5E5EA', true: '#007AFF' }}
+            trackColor={{ false: theme.divider, true: theme.secondary }}
             thumbColor={notificationsEnabled ? '#FFFFFF' : '#FFFFFF'}
           />
         </View>
@@ -144,19 +147,19 @@ export function SettingsScreen() {
         <View style={styles.settingItem}>
           <Text style={styles.settingText}>ダークモード</Text>
           <Switch
-            value={darkModeEnabled}
-            onValueChange={setDarkModeEnabled}
-            trackColor={{ false: '#E5E5EA', true: '#007AFF' }}
-            thumbColor={darkModeEnabled ? '#FFFFFF' : '#FFFFFF'}
+            value={isDarkMode}
+            onValueChange={setThemeMode}
+            trackColor={{ false: theme.divider, true: theme.secondary }}
+            thumbColor={isDarkMode ? '#FFFFFF' : '#FFFFFF'}
           />
         </View>
         <TouchableOpacity style={styles.settingItem}>
           <Text style={styles.settingText}>プライバシーポリシー</Text>
-          <FontAwesome name="chevron-right" size={16} color="#8E8E93" />
+          <FontAwesome name="chevron-right" size={16} color={theme.textTertiary} />
         </TouchableOpacity>
         <TouchableOpacity style={[styles.settingItem, styles.settingItemLast]}>
           <Text style={styles.settingText}>利用規約</Text>
-          <FontAwesome name="chevron-right" size={16} color="#8E8E93" />
+          <FontAwesome name="chevron-right" size={16} color={theme.textTertiary} />
         </TouchableOpacity>
       </View>
 
@@ -168,11 +171,7 @@ export function SettingsScreen() {
           onPress={() => router.push('/profile-edit')}
         >
           <Text style={styles.settingText}>プロフィール編集</Text>
-          <FontAwesome name="chevron-right" size={16} color="#8E8E93" />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.settingItem, styles.settingItemLast]}>
-          <Text style={styles.settingText}>パスワード変更</Text>
-          <FontAwesome name="chevron-right" size={16} color="#8E8E93" />
+          <FontAwesome name="chevron-right" size={16} color={theme.textTertiary} />
         </TouchableOpacity>
       </View>
 

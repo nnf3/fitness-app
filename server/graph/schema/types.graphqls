@@ -8,7 +8,9 @@ type User {
   updatedAt: String!
   profile: Profile
   workoutLogs: [WorkoutLog!]!
-  friendships: [Friendship!]!
+  friends: [User!]!
+  friendshipRequests: [Friendship!]!
+  recommendedUsers: [User!]!
 }
 
 type Profile {
