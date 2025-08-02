@@ -45,7 +45,7 @@ func NewProfileServiceWithSeparation(db *gorm.DB, loader userLoaders.ProfileLoad
 func NewWorkoutLogServiceWithSeparation(db *gorm.DB, loader workoutLogLoaders.SetLogsLoaderForWorkoutLogInterface) workout_log.WorkoutLogService {
 	repo := workout_log.NewWorkoutLogRepository(db)
 	converter := workout_log.NewWorkoutLogConverter()
-	return workout_log.NewWorkoutLogService(repo, converter)
+	return workout_log.NewWorkoutLogServiceWithLoader(repo, converter, loader)
 }
 
 // NewSetLogServiceWithSeparation は分離されたSetLogServiceを作成します
@@ -59,7 +59,7 @@ func NewSetLogServiceWithSeparation(db *gorm.DB) set_log.SetLogService {
 func NewWorkoutTypeServiceWithSeparation(db *gorm.DB, loader workoutTypeLoaders.SetLogsLoaderForWorkoutTypeInterface) workout_type.WorkoutTypeService {
 	repo := workout_type.NewWorkoutTypeRepository(db)
 	converter := workout_type.NewWorkoutTypeConverter()
-	return workout_type.NewWorkoutTypeService(repo, converter)
+	return workout_type.NewWorkoutTypeServiceWithLoader(repo, converter, loader)
 }
 
 // 共通のConverterを取得する関数

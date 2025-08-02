@@ -25,7 +25,7 @@ func NewSetLogService(repo SetLogRepository, converter *SetLogConverter) SetLogS
 func (s *setLogService) GetSetLogs(ctx context.Context, workoutLogID string) ([]*model.SetLog, error) {
 	setLogs, err := s.repo.GetSetLogsByWorkoutLogID(ctx, workoutLogID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get set logs: %w", err)
+		return nil, fmt.Errorf("failed to get set logs for workout log %s: %w", workoutLogID, err)
 	}
 
 	return s.converter.ToModelSetLogsFromPointers(setLogs), nil
