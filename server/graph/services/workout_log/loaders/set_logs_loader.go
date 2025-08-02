@@ -8,16 +8,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type SetLogsLoaderForWorkoutLogInterface interface {
+type SetLogsLoaderInterface interface {
 	LoadByWorkoutLogID(ctx context.Context, workoutLogID string) ([]*entity.SetLog, error)
 }
 
-type SetLogsLoaderForWorkoutLog struct {
+type SetLogsLoader struct {
 	*base.BaseArrayLoader[entity.SetLog]
 }
 
-func NewSetLogsLoaderForWorkoutLog(db *gorm.DB) SetLogsLoaderForWorkoutLogInterface {
-	loader := &SetLogsLoaderForWorkoutLog{}
+func NewSetLogsLoader(db *gorm.DB) SetLogsLoaderInterface {
+	loader := &SetLogsLoader{}
 	loader.BaseArrayLoader = base.NewBaseArrayLoader(
 		db,
 		loader.fetchSetLogsFromDB,
@@ -27,7 +27,7 @@ func NewSetLogsLoaderForWorkoutLog(db *gorm.DB) SetLogsLoaderForWorkoutLogInterf
 	return loader
 }
 
-func (l *SetLogsLoaderForWorkoutLog) fetchSetLogsFromDB(workoutLogIDs []uint) ([]*entity.SetLog, error) {
+func (l *SetLogsLoader) fetchSetLogsFromDB(workoutLogIDs []uint) ([]*entity.SetLog, error) {
 	var logs []entity.SetLog
 	err := l.DB().Where("workout_log_id IN ?", workoutLogIDs).Find(&logs).Error
 	if err != nil {
@@ -42,7 +42,7 @@ func (l *SetLogsLoaderForWorkoutLog) fetchSetLogsFromDB(workoutLogIDs []uint) ([
 	return result, nil
 }
 
-func (l *SetLogsLoaderForWorkoutLog) createSetLogMap(logs []*entity.SetLog) map[uint][]*entity.SetLog {
+func (l *SetLogsLoader) createSetLogMap(logs []*entity.SetLog) map[uint][]*entity.SetLog {
 	setLogMap := make(map[uint][]*entity.SetLog)
 	for _, log := range logs {
 		setLogMap[log.WorkoutLogID] = append(setLogMap[log.WorkoutLogID], log)
@@ -50,6 +50,6 @@ func (l *SetLogsLoaderForWorkoutLog) createSetLogMap(logs []*entity.SetLog) map[
 	return setLogMap
 }
 
-func (l *SetLogsLoaderForWorkoutLog) LoadByWorkoutLogID(ctx context.Context, workoutLogID string) ([]*entity.SetLog, error) {
+func (l *SetLogsLoader) LoadByWorkoutLogID(ctx context.Context, workoutLogID string) ([]*entity.SetLog, error) {
 	return l.Load(ctx, workoutLogID)
 }

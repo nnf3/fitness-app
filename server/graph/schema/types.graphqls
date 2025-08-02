@@ -56,5 +56,7 @@ type Friendship {
   id: ID!
   requester: User!
   requestee: User!
+  requesterID: ID!
+  requesteeID: ID!
   status: FriendshipStatus!
 }

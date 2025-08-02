@@ -42,10 +42,10 @@ func NewProfileServiceWithSeparation(db *gorm.DB, loader userLoaders.ProfileLoad
 }
 
 // NewWorkoutLogServiceWithSeparation は分離されたWorkoutLogServiceを作成します
-func NewWorkoutLogServiceWithSeparation(db *gorm.DB, loader workoutLogLoaders.SetLogsLoaderForWorkoutLogInterface) workout_log.WorkoutLogService {
+func NewWorkoutLogServiceWithSeparation(db *gorm.DB, loader workoutLogLoaders.SetLogsLoaderInterface) workout_log.WorkoutLogService {
 	repo := workout_log.NewWorkoutLogRepository(db)
 	converter := workout_log.NewWorkoutLogConverter()
-	return workout_log.NewWorkoutLogServiceWithLoader(repo, converter, loader)
+	return workout_log.NewWorkoutLogService(repo, converter)
 }
 
 // NewSetLogServiceWithSeparation は分離されたSetLogServiceを作成します

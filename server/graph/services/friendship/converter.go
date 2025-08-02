@@ -19,8 +19,10 @@ func NewFriendshipConverter() *FriendshipConverter {
 
 func (c *FriendshipConverter) ToModelFriendship(friendship entity.Friendship) *model.Friendship {
 	return &model.Friendship{
-		ID:     fmt.Sprintf("%d", friendship.ID),
-		Status: *friendship.StatusToGraphQL(),
+		ID:          fmt.Sprintf("%d", friendship.ID),
+		RequesterID: fmt.Sprintf("%d", friendship.RequesterID),
+		RequesteeID: fmt.Sprintf("%d", friendship.RequesteeID),
+		Status:      *friendship.StatusToGraphQL(),
 	}
 }
 

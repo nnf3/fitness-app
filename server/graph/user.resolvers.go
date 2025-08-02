@@ -3,6 +3,8 @@ package graph
 import (
 	"app/graph/model"
 	"app/graph/services"
+	"app/graph/services/profile"
+	"app/graph/services/workout_log"
 	"context"
 	"fmt"
 )
@@ -18,14 +20,29 @@ type userResolver struct{ *Resolver }
 
 // Profile is the resolver for the profile field.
 func (r *userResolver) Profile(ctx context.Context, obj *model.User) (*model.Profile, error) {
-	profileService := services.NewProfileServiceWithSeparation(r.DB, r.DataLoaders.ProfileLoaderForUser)
-	return profileService.GetProfileByUserID(ctx, obj.ID)
+	profileEntity, err := r.DataLoaders.ProfileLoaderForUserDirect.LoadByUserID(ctx, obj.ID)
+	if err != nil {
+		return nil, err
+	}
+	if profileEntity == nil {
+		return nil, nil
+	}
+
+	// エンティティからモデルに変換
+	profileConverter := profile.NewProfileConverter()
+	return profileConverter.ToModelProfile(*profileEntity), nil
 }
 
 // WorkoutLogs is the resolver for the workoutLogs field.
 func (r *userResolver) WorkoutLogs(ctx context.Context, obj *model.User) ([]*model.WorkoutLog, error) {
-	workoutLogService := services.NewWorkoutLogServiceWithSeparation(r.DB, r.DataLoaders.SetLogsLoaderForWorkoutLog)
-	return workoutLogService.GetWorkoutLogs(ctx, obj.ID)
+	workoutLogsEntities, err := r.DataLoaders.WorkoutLogsLoaderForUserDirect.LoadByUserID(ctx, obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// エンティティからモデルに変換
+	workoutLogConverter := workout_log.NewWorkoutLogConverter()
+	return workoutLogConverter.ToModelWorkoutLogsFromPointers(workoutLogsEntities), nil
 }
 
 // Friends is the resolver for the friends field.

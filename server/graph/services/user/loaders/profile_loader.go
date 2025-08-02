@@ -29,15 +29,13 @@ func NewProfileLoader(db *gorm.DB) ProfileLoaderInterface {
 
 func (l *ProfileLoader) fetchProfilesFromDB(userIDs []uint) ([]*entity.Profile, error) {
 	var profiles []entity.Profile
-	err := l.DB().Where("user_id IN ?", userIDs).Find(&profiles).Error
-	if err != nil {
+	if err := l.DB().Where("user_id IN ?", userIDs).Find(&profiles).Error; err != nil {
 		return nil, err
 	}
 
-	// entity.Profileのスライスを*entity.Profileのスライスに変換
 	result := make([]*entity.Profile, len(profiles))
-	for i := range profiles {
-		result[i] = &profiles[i]
+	for i, profile := range profiles {
+		result[i] = &profile
 	}
 	return result, nil
 }
@@ -50,7 +48,6 @@ func (l *ProfileLoader) createProfileMap(profiles []*entity.Profile) map[uint]*e
 	return profileMap
 }
 
-// ユーザーIDでプロファイルをロード
 func (l *ProfileLoader) LoadByUserID(ctx context.Context, userID string) (*entity.Profile, error) {
 	return l.Load(ctx, userID)
 }

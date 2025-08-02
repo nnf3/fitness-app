@@ -3,6 +3,7 @@ package graph
 import (
 	"app/graph/model"
 	"app/graph/services"
+	"app/graph/services/user"
 	"context"
 )
 
@@ -17,14 +18,32 @@ type friendshipResolver struct{ *Resolver }
 
 // Requester is the resolver for the requester field.
 func (r *friendshipResolver) Requester(ctx context.Context, obj *model.Friendship) (*model.User, error) {
-	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
-	return friendshipService.GetFriendshipRequester(ctx, obj.ID)
+	userEntity, err := r.DataLoaders.UserLoaderForFriendship.LoadByID(ctx, obj.RequesterID)
+	if err != nil {
+		return nil, err
+	}
+	if userEntity == nil {
+		return nil, nil
+	}
+
+	// エンティティからモデルに変換
+	userConverter := user.NewUserConverter()
+	return userConverter.ToModelUser(*userEntity), nil
 }
 
 // Requestee is the resolver for the requestee field.
 func (r *friendshipResolver) Requestee(ctx context.Context, obj *model.Friendship) (*model.User, error) {
-	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
-	return friendshipService.GetFriendshipRequestee(ctx, obj.ID)
+	userEntity, err := r.DataLoaders.UserLoaderForFriendship.LoadByID(ctx, obj.RequesteeID)
+	if err != nil {
+		return nil, err
+	}
+	if userEntity == nil {
+		return nil, nil
+	}
+
+	// エンティティからモデルに変換
+	userConverter := user.NewUserConverter()
+	return userConverter.ToModelUser(*userEntity), nil
 }
 
 // ================================

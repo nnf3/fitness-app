@@ -29,10 +29,12 @@ type DeleteUser struct {
 }
 
 type Friendship struct {
-	ID        string           `json:"id"`
-	Requester *User            `json:"requester"`
-	Requestee *User            `json:"requestee"`
-	Status    FriendshipStatus `json:"status"`
+	ID          string           `json:"id"`
+	Requester   *User            `json:"requester"`
+	Requestee   *User            `json:"requestee"`
+	RequesterID string           `json:"requesterID"`
+	RequesteeID string           `json:"requesteeID"`
+	Status      FriendshipStatus `json:"status"`
 }
 
 type Mutation struct {

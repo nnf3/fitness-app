@@ -53,10 +53,12 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Friendship struct {
-		ID        func(childComplexity int) int
-		Requestee func(childComplexity int) int
-		Requester func(childComplexity int) int
-		Status    func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Requestee   func(childComplexity int) int
+		RequesteeID func(childComplexity int) int
+		Requester   func(childComplexity int) int
+		RequesterID func(childComplexity int) int
+		Status      func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -198,12 +200,26 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Friendship.Requestee(childComplexity), true
 
+	case "Friendship.requesteeID":
+		if e.complexity.Friendship.RequesteeID == nil {
+			break
+		}
+
+		return e.complexity.Friendship.RequesteeID(childComplexity), true
+
 	case "Friendship.requester":
 		if e.complexity.Friendship.Requester == nil {
 			break
 		}
 
 		return e.complexity.Friendship.Requester(childComplexity), true
+
+	case "Friendship.requesterID":
+		if e.complexity.Friendship.RequesterID == nil {
+			break
+		}
+
+		return e.complexity.Friendship.RequesterID(childComplexity), true
 
 	case "Friendship.status":
 		if e.complexity.Friendship.Status == nil {
@@ -1167,6 +1183,94 @@ func (ec *executionContext) fieldContext_Friendship_requestee(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Friendship_requesterID(ctx context.Context, field graphql.CollectedField, obj *model.Friendship) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Friendship_requesterID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RequesterID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Friendship_requesterID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Friendship",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Friendship_requesteeID(ctx context.Context, field graphql.CollectedField, obj *model.Friendship) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Friendship_requesteeID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RequesteeID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Friendship_requesteeID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Friendship",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Friendship_status(ctx context.Context, field graphql.CollectedField, obj *model.Friendship) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Friendship_status(ctx, field)
 	if err != nil {
@@ -1469,6 +1573,10 @@ func (ec *executionContext) fieldContext_Mutation_sendFriendshipRequest(ctx cont
 				return ec.fieldContext_Friendship_requester(ctx, field)
 			case "requestee":
 				return ec.fieldContext_Friendship_requestee(ctx, field)
+			case "requesterID":
+				return ec.fieldContext_Friendship_requesterID(ctx, field)
+			case "requesteeID":
+				return ec.fieldContext_Friendship_requesteeID(ctx, field)
 			case "status":
 				return ec.fieldContext_Friendship_status(ctx, field)
 			}
@@ -1534,6 +1642,10 @@ func (ec *executionContext) fieldContext_Mutation_acceptFriendshipRequest(ctx co
 				return ec.fieldContext_Friendship_requester(ctx, field)
 			case "requestee":
 				return ec.fieldContext_Friendship_requestee(ctx, field)
+			case "requesterID":
+				return ec.fieldContext_Friendship_requesterID(ctx, field)
+			case "requesteeID":
+				return ec.fieldContext_Friendship_requesteeID(ctx, field)
 			case "status":
 				return ec.fieldContext_Friendship_status(ctx, field)
 			}
@@ -1599,6 +1711,10 @@ func (ec *executionContext) fieldContext_Mutation_rejectFriendshipRequest(ctx co
 				return ec.fieldContext_Friendship_requester(ctx, field)
 			case "requestee":
 				return ec.fieldContext_Friendship_requestee(ctx, field)
+			case "requesterID":
+				return ec.fieldContext_Friendship_requesterID(ctx, field)
+			case "requesteeID":
+				return ec.fieldContext_Friendship_requesteeID(ctx, field)
 			case "status":
 				return ec.fieldContext_Friendship_status(ctx, field)
 			}
@@ -3279,6 +3395,10 @@ func (ec *executionContext) fieldContext_User_friendshipRequests(_ context.Conte
 				return ec.fieldContext_Friendship_requester(ctx, field)
 			case "requestee":
 				return ec.fieldContext_Friendship_requestee(ctx, field)
+			case "requesterID":
+				return ec.fieldContext_Friendship_requesterID(ctx, field)
+			case "requesteeID":
+				return ec.fieldContext_Friendship_requesteeID(ctx, field)
 			case "status":
 				return ec.fieldContext_Friendship_status(ctx, field)
 			}
@@ -6149,6 +6269,16 @@ func (ec *executionContext) _Friendship(ctx context.Context, sel ast.SelectionSe
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "requesterID":
+			out.Values[i] = ec._Friendship_requesterID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "requesteeID":
+			out.Values[i] = ec._Friendship_requesteeID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "status":
 			out.Values[i] = ec._Friendship_status(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

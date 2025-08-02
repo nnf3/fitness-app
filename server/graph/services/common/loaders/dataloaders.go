@@ -26,13 +26,22 @@ type DataLoaders struct {
 	UserLoaderForFriendship friendshipLoaders.UserLoaderInterface
 
 	// WorkoutLog関連
-	SetLogsLoaderForWorkoutLog workoutLogLoaders.SetLogsLoaderForWorkoutLogInterface
+	SetLogsLoaderForWorkoutLog workoutLogLoaders.SetLogsLoaderInterface
 
 	// WorkoutType関連
 	SetLogsLoaderForWorkoutType workoutTypeLoaders.SetLogsLoaderForWorkoutTypeInterface
 
 	// SetLog関連
 	WorkoutTypeLoaderForSetLog setLogLoaders.WorkoutTypeLoaderInterface
+
+	// Profile関連
+	ProfileLoaderForUserDirect userLoaders.ProfileLoaderInterface
+
+	// WorkoutLogs関連
+	WorkoutLogsLoaderForUserDirect userLoaders.WorkoutLogsLoaderInterface
+
+	// SetLogs関連
+	SetLogsLoaderForWorkoutLogDirect workoutLogLoaders.SetLogsLoaderInterface
 }
 
 func NewDataLoaders(db *gorm.DB) *DataLoaders {
@@ -48,13 +57,22 @@ func NewDataLoaders(db *gorm.DB) *DataLoaders {
 		UserLoaderForFriendship: friendshipLoaders.NewUserLoader(db),
 
 		// WorkoutLog関連
-		SetLogsLoaderForWorkoutLog: workoutLogLoaders.NewSetLogsLoaderForWorkoutLog(db),
+		SetLogsLoaderForWorkoutLog: workoutLogLoaders.NewSetLogsLoader(db),
 
 		// WorkoutType関連
 		SetLogsLoaderForWorkoutType: workoutTypeLoaders.NewSetLogsLoaderForWorkoutType(db),
 
 		// SetLog関連
 		WorkoutTypeLoaderForSetLog: setLogLoaders.NewWorkoutTypeLoader(db),
+
+		// Profile関連
+		ProfileLoaderForUserDirect: userLoaders.NewProfileLoader(db),
+
+		// WorkoutLogs関連
+		WorkoutLogsLoaderForUserDirect: userLoaders.NewWorkoutLogsLoader(db),
+
+		// SetLogs関連
+		SetLogsLoaderForWorkoutLogDirect: workoutLogLoaders.NewSetLogsLoader(db),
 	}
 }
 

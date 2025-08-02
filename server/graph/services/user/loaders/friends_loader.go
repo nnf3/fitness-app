@@ -72,7 +72,6 @@ func (l *FriendsLoader) fetchFriendsFromDB(userIDs []uint) ([]*entity.User, erro
 }
 
 func (l *FriendsLoader) createFriendsMap(friends []*entity.User) map[uint][]*entity.User {
-	// この実装は簡略化しています。実際には各ユーザーに対して友達リストをマッピングする必要があります
 	friendsMap := make(map[uint][]*entity.User)
 	for _, friend := range friends {
 		// 実際の実装では、各ユーザーの友達リストを適切にマッピングする必要があります
