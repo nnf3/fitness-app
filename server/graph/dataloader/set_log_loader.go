@@ -2,11 +2,9 @@ package dataloader
 
 import (
 	"app/entity"
+	"app/graph/dataloader/base"
 	"context"
-	"fmt"
-	"strconv"
 
-	"github.com/graph-gophers/dataloader/v7"
 	"gorm.io/gorm"
 )
 
@@ -15,48 +13,43 @@ type SetLogLoaderInterface interface {
 }
 
 type SetLogLoader struct {
-	db     *gorm.DB
-	loader *dataloader.Loader[StringKey, []*entity.SetLog]
+	*base.BaseArrayLoader[entity.SetLog]
 }
 
 func NewSetLogLoader(db *gorm.DB) SetLogLoaderInterface {
-	loader := &SetLogLoader{db: db}
-	loader.loader = dataloader.NewBatchedLoader(loader.batchLoad)
+	loader := &SetLogLoader{}
+	loader.BaseArrayLoader = base.NewBaseArrayLoader(
+		db,
+		loader.fetchSetLogsFromDB,
+		loader.createSetLogMap,
+		base.ParseUintKey,
+	)
 	return loader
 }
 
-func (l *SetLogLoader) fetchSetLogsFromDB(workoutLogIDs []uint) ([]entity.SetLog, error) {
+func (l *SetLogLoader) fetchSetLogsFromDB(workoutLogIDs []uint) ([]*entity.SetLog, error) {
 	var logs []entity.SetLog
-	err := l.db.Where("workout_log_id IN ?", workoutLogIDs).Find(&logs).Error
-	return logs, err
+	err := l.DB().Where("workout_log_id IN ?", workoutLogIDs).Find(&logs).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// entity.SetLogのスライスを*entity.SetLogのスライスに変換
+	result := make([]*entity.SetLog, len(logs))
+	for i := range logs {
+		result[i] = &logs[i]
+	}
+	return result, nil
 }
 
-func (l *SetLogLoader) createResults(keyStrings []string, logs []entity.SetLog) []*dataloader.Result[[]*entity.SetLog] {
+func (l *SetLogLoader) createSetLogMap(logs []*entity.SetLog) map[uint][]*entity.SetLog {
 	grouped := make(map[uint][]*entity.SetLog)
 	for _, log := range logs {
-		grouped[log.WorkoutLogID] = append(grouped[log.WorkoutLogID], &log)
+		grouped[log.WorkoutLogID] = append(grouped[log.WorkoutLogID], log)
 	}
-
-	return CreateResultsFromMapArray[entity.SetLog](keyStrings, grouped, func(key string) (uint, error) {
-		id, err := strconv.ParseUint(key, 10, 32)
-		return uint(id), err
-	})
-}
-
-func (l *SetLogLoader) batchLoad(ctx context.Context, keys []StringKey) []*dataloader.Result[[]*entity.SetLog] {
-	ids, errs := (&BaseLoader{}).ParseUintKeys(convertKeysToStrings(keys))
-	if len(errs) > 0 {
-		return CreateErrorResults[[]*entity.SetLog](convertKeysToStrings(keys), fmt.Errorf("invalid workout log IDs"))
-	}
-
-	logs, err := l.fetchSetLogsFromDB(ids)
-	if err != nil {
-		return CreateErrorResults[[]*entity.SetLog](convertKeysToStrings(keys), err)
-	}
-
-	return l.createResults(convertKeysToStrings(keys), logs)
+	return grouped
 }
 
 func (l *SetLogLoader) LoadSetLogs(ctx context.Context, workoutLogID string) ([]*entity.SetLog, error) {
-	return LoadGeneric(ctx, l.loader, StringKey(workoutLogID))
+	return l.Load(ctx, workoutLogID)
 }

@@ -13,20 +13,20 @@ import (
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	currentUser, err := services.NewUserService(r.DB).GetCurrentUser(ctx)
+	currentUser, err := services.NewUserServiceWithSeparation(r.DB).GetCurrentUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 	if !currentUser.IsAdmin() {
 		return nil, fmt.Errorf("unauthorized")
 	}
-	userService := services.NewUserService(r.DB)
+	userService := services.NewUserServiceWithSeparation(r.DB)
 	return userService.GetUsers(ctx)
 }
 
 // CurrentUser is the resolver for the currentUser field.
 func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
-	userService := services.NewUserService(r.DB)
+	userService := services.NewUserServiceWithSeparation(r.DB)
 	return userService.GetOrCreateUserByUID(ctx)
 }
 

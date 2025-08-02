@@ -2,11 +2,9 @@ package dataloader
 
 import (
 	"app/entity"
+	"app/graph/dataloader/base"
 	"context"
-	"fmt"
-	"strconv"
 
-	"github.com/graph-gophers/dataloader/v7"
 	"gorm.io/gorm"
 )
 
@@ -15,38 +13,34 @@ type WorkoutTypeLoaderInterface interface {
 }
 
 type WorkoutTypeLoader struct {
-	db     *gorm.DB
-	loader *dataloader.Loader[StringKey, *entity.WorkoutType]
+	*base.BaseLoader[*entity.WorkoutType]
 }
 
 func NewWorkoutTypeLoader(db *gorm.DB) WorkoutTypeLoaderInterface {
-	loader := &WorkoutTypeLoader{db: db}
-	loader.loader = dataloader.NewBatchedLoader(loader.batchLoad)
+	loader := &WorkoutTypeLoader{}
+	loader.BaseLoader = base.NewBaseLoader(
+		db,
+		loader.fetchWorkoutTypesFromDB,
+		loader.createWorkoutTypeMap,
+		base.ParseUintKey,
+	)
 	return loader
 }
 
-func (l *WorkoutTypeLoader) batchLoad(ctx context.Context, keys []StringKey) []*dataloader.Result[*entity.WorkoutType] {
-	ids, errs := (&BaseLoader{}).ParseUintKeys(convertKeysToStrings(keys))
-	if len(errs) > 0 {
-		return CreateErrorResults[*entity.WorkoutType](convertKeysToStrings(keys), fmt.Errorf("invalid workout type IDs"))
-	}
-
+func (l *WorkoutTypeLoader) fetchWorkoutTypesFromDB(ids []uint) ([]*entity.WorkoutType, error) {
 	var types []*entity.WorkoutType
-	if err := l.db.Find(&types, ids).Error; err != nil {
-		return CreateErrorResults[*entity.WorkoutType](convertKeysToStrings(keys), err)
-	}
+	err := l.DB().Find(&types, ids).Error
+	return types, err
+}
 
+func (l *WorkoutTypeLoader) createWorkoutTypeMap(types []*entity.WorkoutType) map[uint]*entity.WorkoutType {
 	mapped := make(map[uint]*entity.WorkoutType)
 	for _, t := range types {
 		mapped[t.ID] = t
 	}
-
-	return CreateResultsFromMap(convertKeysToStrings(keys), mapped, func(key string) (uint, error) {
-		id, err := strconv.ParseUint(key, 10, 32)
-		return uint(id), err
-	})
+	return mapped
 }
 
 func (l *WorkoutTypeLoader) LoadWorkoutType(ctx context.Context, id string) (*entity.WorkoutType, error) {
-	return LoadGeneric(ctx, l.loader, StringKey(id))
+	return l.Load(ctx, id)
 }

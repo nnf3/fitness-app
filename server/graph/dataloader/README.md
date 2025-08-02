@@ -2,20 +2,57 @@
 
 このディレクトリには、GraphQL DataLoaderの実装が含まれています。DataLoader v7の機能を活用して、N+1問題を解決し、パフォーマンスを最適化しています。
 
+## アーキテクチャ
+
+### 共通化されたベースローダー
+
+DataLoaderの実装を共通化し、重複コードを削減しました：
+
+#### BaseLoader[T]
+単一のエンティティを返すDataLoader用の共通実装です。
+
+```go
+type BaseLoader[T any] struct {
+    db     *gorm.DB
+    loader *dataloader.Loader[StringKey, T]
+
+    // バッチ処理用の関数
+    fetchFunc func([]uint) ([]T, error)
+    createMapFunc func([]T) map[uint]T
+    parseKeyFunc func(string) (uint, error)
+}
+```
+
+#### BaseArrayLoader[T]
+配列のエンティティを返すDataLoader用の共通実装です。
+
+```go
+type BaseArrayLoader[T any] struct {
+    db     *gorm.DB
+    loader *dataloader.Loader[StringKey, []*T]
+
+    // バッチ処理用の関数
+    fetchFunc func([]uint) ([]*T, error)
+    createMapFunc func([]*T) map[uint][]*T
+    parseKeyFunc func(string) (uint, error)
+}
+```
+
 ## 機能
 
-### 1. ベースローダー (`base.go`)
-- **`ParseUintKeys`**: 文字列キーを数値IDに変換
+### 1. ベースローダー (`base/`)
+- **`ParseUintKey`**: 文字列キーを数値IDに変換
 - **`CreateErrorResults`**: エラー時の結果生成
-- **`CreateResultsFromMap`**: マップから結果を生成（キー順を保持）
 - **`LoadGeneric`**: 汎用的なローダー関数
-- **`LoadManyGeneric`**: 複数アイテムの汎用ローダー関数
+- **`ConvertToStringKeys`**: 文字列スライスをStringKeyスライスに変換
 
-### 2. プロファイルローダー (`profile.go`)
-- **`NewProfileLoader`**: 基本的なプロファイルローダー作成
-- **`NewProfileLoaderWithOptions`**: カスタムオプション付きプロファイルローダー作成
-- **`LoadProfile`**: 単一プロファイルのロード
-- **`LoadProfiles`**: 複数プロファイルのロード
+### 2. エンティティ別ローダー
+- **`UserLoader`**: ユーザー情報のロード
+- **`ProfileLoader`**: プロファイル情報のロード
+- **`FriendshipLoader`**: 友達関係のロード
+- **`WorkoutLogLoader`**: ワークアウトログのロード
+- **`WorkoutTypeLoader`**: ワークアウトタイプのロード
+- **`SetLogLoader`**: セットログのロード
 
 ## 使用方法
 
@@ -23,90 +60,113 @@
 
 ```go
 // ローダーの作成
-loader := NewProfileLoader(db)
+loader := NewUserLoader(db)
 
-// 単一プロファイルのロード
-profile, err := LoadProfile(ctx, loader, "123")
+// 単一ユーザーのロード
+user, err := loader.LoadUser(ctx, "123")
 if err != nil {
     // エラーハンドリング
 }
-
-// 複数プロファイルのロード
-profiles, errors := LoadProfiles(ctx, loader, []string{"123", "456", "789"})
 ```
 
-### カスタムオプション付きローダー
+### 配列エンティティのロード
 
 ```go
-// カスタムキャッシュ設定
-loader := NewProfileLoaderWithOptions(db,
-    dataloader.WithCache(dataloader.NewCache[ProfileLoaderKey, *entity.Profile]()),
-    dataloader.WithBatchCapacity(100),
-    dataloader.WithWait(16*time.Millisecond),
-)
-
-// キャッシュなしのローダー
-loader := NewProfileLoaderWithOptions(db,
-    dataloader.WithCache(&dataloader.NoCache[ProfileLoaderKey, *entity.Profile]{}),
-)
+// ワークアウトログのロード
+workoutLogLoader := NewWorkoutLogLoader(db)
+logs, err := workoutLogLoader.LoadWorkoutLogs(ctx, "123")
+if err != nil {
+    // エラーハンドリング
+}
 ```
 
 ### 新しいローダーの作成
 
+#### 単一エンティティ用
+
 ```go
-// 新しいエンティティ用のローダー
-type UserLoaderKey string
-
-func (k UserLoaderKey) String() string { return string(k) }
-func (k UserLoaderKey) Raw() interface{} { return string(k) }
-
 type UserLoader struct {
-    db *gorm.DB
+    *base.BaseLoader[*entity.User]
 }
 
-func (l *UserLoader) batchLoad(ctx context.Context, keys []UserLoaderKey) []*dataloader.Result[*entity.User] {
-    // ベースローダーの機能を活用
-    keyStrings := make([]string, len(keys))
-    for i, key := range keys {
-        keyStrings[i] = string(key)
-    }
+func NewUserLoader(db *gorm.DB) UserLoaderInterface {
+    loader := &UserLoader{}
+    loader.BaseLoader = base.NewBaseLoader(
+        db,
+        loader.fetchUsersFromDB,
+        loader.createUserMap,
+        base.ParseUintKey,
+    )
+    return loader
+}
 
-    baseLoader := &BaseLoader{}
-    userIDs, parseErrors := baseLoader.ParseUintKeys(keyStrings)
-    if len(parseErrors) > 0 {
-        return CreateErrorResults[*entity.User](keyStrings, fmt.Errorf("failed to parse user IDs"))
-    }
-
-    // データベース取得ロジック
+func (l *UserLoader) fetchUsersFromDB(userIDs []uint) ([]*entity.User, error) {
     var users []entity.User
-    if err := l.db.Where("id IN ?", userIDs).Find(&users).Error; err != nil {
-        return CreateErrorResults[*entity.User](keyStrings, fmt.Errorf("failed to load users: %w", err))
+    err := l.DB().Where("id IN ?", userIDs).Find(&users).Error
+    if err != nil {
+        return nil, err
     }
 
-    // 結果マッピング
-    userMap := make(map[uint]*entity.User)
+    result := make([]*entity.User, len(users))
     for i := range users {
-        userMap[users[i].ID] = &users[i]
+        result[i] = &users[i]
     }
-
-    return CreateResultsFromMap(keyStrings, userMap, func(key string) (uint, error) {
-        if id, err := strconv.ParseUint(key, 10, 32); err == nil {
-            return uint(id), nil
-        }
-        return 0, fmt.Errorf("invalid user ID: %s", key)
-    })
+    return result, nil
 }
 
-func NewUserLoader(db *gorm.DB) *dataloader.Loader[UserLoaderKey, *entity.User] {
-    loader := &UserLoader{db: db}
-    return dataloader.NewBatchedLoader(loader.batchLoad)
+func (l *UserLoader) createUserMap(users []*entity.User) map[uint]*entity.User {
+    userMap := make(map[uint]*entity.User)
+    for _, user := range users {
+        userMap[user.ID] = user
+    }
+    return userMap
+}
+```
+
+#### 配列エンティティ用
+
+```go
+type WorkoutLogLoader struct {
+    *base.BaseArrayLoader[entity.WorkoutLog]
+}
+
+func NewWorkoutLogLoader(db *gorm.DB) WorkoutLogLoaderInterface {
+    loader := &WorkoutLogLoader{}
+    loader.BaseArrayLoader = base.NewBaseArrayLoader(
+        db,
+        loader.fetchWorkoutLogsFromDB,
+        loader.createWorkoutLogMap,
+        base.ParseUintKey,
+    )
+    return loader
+}
+
+func (l *WorkoutLogLoader) fetchWorkoutLogsFromDB(userIDs []uint) ([]*entity.WorkoutLog, error) {
+    var logs []entity.WorkoutLog
+    err := l.DB().Where("user_id IN ?", userIDs).Find(&logs).Error
+    if err != nil {
+        return nil, err
+    }
+
+    result := make([]*entity.WorkoutLog, len(logs))
+    for i := range logs {
+        result[i] = &logs[i]
+    }
+    return result, nil
+}
+
+func (l *WorkoutLogLoader) createWorkoutLogMap(logs []*entity.WorkoutLog) map[uint][]*entity.WorkoutLog {
+    workoutLogMap := make(map[uint][]*entity.WorkoutLog)
+    for _, log := range logs {
+        workoutLogMap[log.UserID] = append(workoutLogMap[log.UserID], log)
+    }
+    return workoutLogMap
 }
 ```
 
 ## DataLoader v7の主な機能
 
 - **`Load`**: 単一キーのロード
-- **`LoadMany`**: 複数キーのロード
 - **`Prime`**: キャッシュへの事前データ投入
 - **`Clear`**: 特定キーのキャッシュクリア
 - **`ClearAll`**: 全キャッシュクリア

@@ -13,25 +13,25 @@ import (
 
 // Requester is the resolver for the requester field.
 func (r *friendshipResolver) Requester(ctx context.Context, obj *model.Friendship) (*model.User, error) {
-	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.FriendshipLoader)
 	requesterID, err := friendshipService.GetFriendshipRequesterID(ctx, obj.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	userService := services.NewUserService(r.DB)
+	userService := services.NewUserServiceWithSeparation(r.DB)
 	return userService.GetUserByID(ctx, requesterID)
 }
 
 // Requestee is the resolver for the requestee field.
 func (r *friendshipResolver) Requestee(ctx context.Context, obj *model.Friendship) (*model.User, error) {
-	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.FriendshipLoader)
 	requesteeID, err := friendshipService.GetFriendshipRequesteeID(ctx, obj.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	userService := services.NewUserService(r.DB)
+	userService := services.NewUserServiceWithSeparation(r.DB)
 	return userService.GetUserByID(ctx, requesteeID)
 }
 
@@ -47,31 +47,31 @@ func (r *setLogResolver) WorkoutType(ctx context.Context, obj *model.SetLog) (*m
 
 // Profile is the resolver for the profile field.
 func (r *userResolver) Profile(ctx context.Context, obj *model.User) (*model.Profile, error) {
-	profileService := services.NewProfileService(r.DB, r.DataLoaders.ProfileLoader)
+	profileService := services.NewProfileServiceWithSeparation(r.DB, r.DataLoaders.ProfileLoader)
 	return profileService.GetProfileByUserID(ctx, obj.ID)
 }
 
 // WorkoutLogs is the resolver for the workoutLogs field.
 func (r *userResolver) WorkoutLogs(ctx context.Context, obj *model.User) ([]*model.WorkoutLog, error) {
-	workoutLogService := services.NewWorkoutLogsService(r.DataLoaders.WorkoutLogLoader)
+	workoutLogService := services.NewWorkoutLogServiceWithSeparation(r.DB, r.DataLoaders.WorkoutLogLoader)
 	return workoutLogService.GetWorkoutLogs(ctx, obj.ID)
 }
 
 // Friends is the resolver for the friends field.
 func (r *userResolver) Friends(ctx context.Context, obj *model.User) ([]*model.User, error) {
-	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.FriendshipLoader)
 	return friendshipService.GetFriends(ctx, obj.ID)
 }
 
 // FriendshipRequests is the resolver for the friendshipRequests field.
 func (r *userResolver) FriendshipRequests(ctx context.Context, obj *model.User) ([]*model.Friendship, error) {
-	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.FriendshipLoader)
 	return friendshipService.GetFriendshipRequests(ctx, obj.ID)
 }
 
 // RecommendedUsers is the resolver for the recommendedUsers field.
 func (r *userResolver) RecommendedUsers(ctx context.Context, obj *model.User) ([]*model.User, error) {
-	friendshipService := services.NewFriendshipService(r.DB, r.DataLoaders.FriendshipLoader)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.FriendshipLoader)
 	return friendshipService.GetRecommendedUsers(ctx, obj.ID)
 }
 

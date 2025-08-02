@@ -1,14 +1,13 @@
-package services
+package friendship
 
 import (
 	"app/entity"
 	"app/graph/dataloader"
 	"app/graph/model"
+	"app/graph/services/common"
 	"context"
 	"fmt"
 	"strconv"
-
-	"gorm.io/gorm"
 )
 
 type FriendshipService interface {
@@ -24,60 +23,39 @@ type FriendshipService interface {
 }
 
 type friendshipService struct {
-	db               *gorm.DB
-	friendshipLoader dataloader.FriendshipLoaderInterface
+	repo      FriendshipRepository
+	converter *FriendshipConverter
+	loader    dataloader.FriendshipLoaderInterface
+	common    common.CommonRepository
 }
 
-func NewFriendshipService(db *gorm.DB, loader dataloader.FriendshipLoaderInterface) FriendshipService {
+func NewFriendshipService(repo FriendshipRepository, converter *FriendshipConverter, loader dataloader.FriendshipLoaderInterface) FriendshipService {
 	return &friendshipService{
-		db:               db,
-		friendshipLoader: loader,
-	}
-}
-
-func convertFriendship(friendship entity.Friendship) *model.Friendship {
-	return &model.Friendship{
-		ID:     fmt.Sprintf("%d", friendship.ID),
-		Status: *friendship.StatusToGraphQL(),
+		repo:      repo,
+		converter: converter,
+		loader:    loader,
+		common:    common.NewCommonRepository(repo.GetDB()),
 	}
 }
 
 func (s *friendshipService) GetFriendshipByID(ctx context.Context, friendshipID string) (*model.Friendship, error) {
-	friendship, err := s.GetFriendshipByIDFromEntity(ctx, friendshipID)
+	friendship, err := s.repo.GetFriendshipByID(ctx, friendshipID)
 	if err != nil {
 		return nil, err
 	}
-	return convertFriendship(*friendship), nil
+	return s.converter.ToModelFriendship(*friendship), nil
 }
 
-// GetFriendshipByIDFromEntity はエンティティからFriendshipを取得します
-func (s *friendshipService) GetFriendshipByIDFromEntity(ctx context.Context, friendshipID string) (*entity.Friendship, error) {
-	id, err := strconv.ParseUint(friendshipID, 10, 32)
-	if err != nil {
-		return nil, fmt.Errorf("invalid friendship ID: %s", friendshipID)
-	}
-
-	// データベースから直接取得
-	var friendship entity.Friendship
-	if err := s.db.Where("id = ?", uint(id)).First(&friendship).Error; err != nil {
-		return nil, fmt.Errorf("failed to fetch friendship: %w", err)
-	}
-
-	return &friendship, nil
-}
-
-// GetFriendshipRequesterID はFriendshipのRequesterIDを取得します
 func (s *friendshipService) GetFriendshipRequesterID(ctx context.Context, friendshipID string) (string, error) {
-	friendship, err := s.GetFriendshipByIDFromEntity(ctx, friendshipID)
+	friendship, err := s.repo.GetFriendshipByID(ctx, friendshipID)
 	if err != nil {
 		return "", err
 	}
 	return fmt.Sprintf("%d", friendship.RequesterID), nil
 }
 
-// GetFriendshipRequesteeID はFriendshipのRequesteeIDを取得します
 func (s *friendshipService) GetFriendshipRequesteeID(ctx context.Context, friendshipID string) (string, error) {
-	friendship, err := s.GetFriendshipByIDFromEntity(ctx, friendshipID)
+	friendship, err := s.repo.GetFriendshipByID(ctx, friendshipID)
 	if err != nil {
 		return "", err
 	}
@@ -85,46 +63,32 @@ func (s *friendshipService) GetFriendshipRequesteeID(ctx context.Context, friend
 }
 
 func (s *friendshipService) GetFriends(ctx context.Context, userID string) ([]*model.User, error) {
-	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	friends, err := s.repo.GetFriendsByUserID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get current user: %w", err)
+		return nil, err
 	}
-	friends := currentUser.GetFriends(s.db)
-	var result []*model.User
-	for _, friend := range friends {
-		result = append(result, convertUser(friend))
-	}
-	return result, nil
+	return s.converter.ToModelUsersFromPointers(friends), nil
 }
 
 func (s *friendshipService) GetFriendshipRequests(ctx context.Context, userID string) ([]*model.Friendship, error) {
-	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	requests, err := s.repo.GetFriendshipRequestsByUserID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get current user: %w", err)
+		return nil, err
 	}
-	requests := currentUser.GetFriendshipRequests(s.db)
-	var result []*model.Friendship
-	for _, request := range requests {
-		result = append(result, convertFriendship(request))
-	}
-	return result, nil
+	return s.converter.ToModelFriendshipsFromPointers(requests), nil
 }
 
 func (s *friendshipService) GetRecommendedUsers(ctx context.Context, userID string) ([]*model.User, error) {
-	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	users, err := s.repo.GetRecommendedUsersByUserID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get current user: %w", err)
+		return nil, err
 	}
-	users := currentUser.GetRecommendedUsers(s.db)
-	var result []*model.User
-	for _, user := range users {
-		result = append(result, convertUser(user))
-	}
-	return result, nil
+	return s.converter.ToModelUsersFromPointers(users), nil
 }
 
 func (s *friendshipService) SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error) {
-	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	// 現在のユーザーを取得
+	currentUser, err := s.common.GetCurrentUser(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get current user: %w", err)
 	}
@@ -140,49 +104,62 @@ func (s *friendshipService) SendFriendshipRequest(ctx context.Context, input mod
 		Status:      string(entity.Pending),
 	}
 
-	if err := s.db.Create(&friendship).Error; err != nil {
+	if err := s.repo.CreateFriendship(ctx, &friendship); err != nil {
 		return nil, fmt.Errorf("failed to create friendship: %w", err)
 	}
 
-	return convertFriendship(friendship), nil
+	return s.converter.ToModelFriendship(friendship), nil
 }
 
 func (s *friendshipService) AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error) {
-	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	// 現在のユーザーを取得
+	currentUser, err := s.common.GetCurrentUser(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get current user: %w", err)
 	}
 
-	friendRequest := currentUser.GetFriendshipRequest(s.db, input.FriendshipID)
-	if friendRequest == nil {
-		return nil, fmt.Errorf("friendship request not found")
+	// 友達リクエストを取得
+	friendRequest, err := s.getFriendshipRequest(ctx, currentUser, input.FriendshipID)
+	if err != nil {
+		return nil, err
 	}
 
 	// ステータスをAcceptedに更新
 	friendRequest.Status = string(entity.Accepted)
-	if err := s.db.Save(&friendRequest).Error; err != nil {
+	if err := s.repo.UpdateFriendship(ctx, friendRequest); err != nil {
 		return nil, fmt.Errorf("failed to update friendship: %w", err)
 	}
 
-	return convertFriendship(*friendRequest), nil
+	return s.converter.ToModelFriendship(*friendRequest), nil
 }
 
 func (s *friendshipService) RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error) {
-	currentUser, err := NewUserService(s.db).GetCurrentUser(ctx)
+	// 現在のユーザーを取得
+	currentUser, err := s.common.GetCurrentUser(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get current user: %w", err)
 	}
 
-	friendRequest := currentUser.GetFriendshipRequest(s.db, input.FriendshipID)
-	if friendRequest == nil {
-		return nil, fmt.Errorf("friendship request not found")
+	// 友達リクエストを取得
+	friendRequest, err := s.getFriendshipRequest(ctx, currentUser, input.FriendshipID)
+	if err != nil {
+		return nil, err
 	}
 
 	// ステータスをRejectedに更新
 	friendRequest.Status = string(entity.Rejected)
-	if err := s.db.Save(&friendRequest).Error; err != nil {
+	if err := s.repo.UpdateFriendship(ctx, friendRequest); err != nil {
 		return nil, fmt.Errorf("failed to update friendship: %w", err)
 	}
 
-	return convertFriendship(*friendRequest), nil
+	return s.converter.ToModelFriendship(*friendRequest), nil
+}
+
+// ヘルパー関数
+func (s *friendshipService) getFriendshipRequest(ctx context.Context, currentUser *entity.User, friendshipID string) (*entity.Friendship, error) {
+	request := currentUser.GetFriendshipRequest(s.repo.GetDB(), friendshipID)
+	if request == nil {
+		return nil, fmt.Errorf("friendship request not found")
+	}
+	return request, nil
 }
