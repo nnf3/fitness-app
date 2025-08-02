@@ -139,7 +139,7 @@ func getMigrations() []*gormigrate.Migration {
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")).Delete(&entity.User{}).Error
+				return tx.Unscoped().Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")).Delete(&entity.User{}).Error
 			},
 		},
 		{
@@ -236,7 +236,7 @@ func getMigrations() []*gormigrate.Migration {
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")).Delete(&entity.User{}).Error
+				return tx.Unscoped().Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")).Delete(&entity.User{}).Error
 			},
 		},
 	}
