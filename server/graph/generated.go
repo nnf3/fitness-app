@@ -65,6 +65,7 @@ type ComplexityRoot struct {
 		DeleteUser              func(childComplexity int, input model.DeleteUser) int
 		RejectFriendshipRequest func(childComplexity int, input model.RejectFriendshipRequest) int
 		SendFriendshipRequest   func(childComplexity int, input model.SendFriendshipRequest) int
+		StartWorkout            func(childComplexity int) int
 		UpdateProfile           func(childComplexity int, input model.UpdateProfile) int
 	}
 
@@ -134,6 +135,7 @@ type MutationResolver interface {
 	SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error)
 	AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error)
 	RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error)
+	StartWorkout(ctx context.Context) (*model.WorkoutLog, error)
 }
 type QueryResolver interface {
 	Users(ctx context.Context) ([]*model.User, error)
@@ -264,6 +266,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.SendFriendshipRequest(childComplexity, args["input"].(model.SendFriendshipRequest)), true
+
+	case "Mutation.startWorkout":
+		if e.complexity.Mutation.StartWorkout == nil {
+			break
+		}
+
+		return e.complexity.Mutation.StartWorkout(childComplexity), true
 
 	case "Mutation.updateProfile":
 		if e.complexity.Mutation.UpdateProfile == nil {
@@ -1544,6 +1553,60 @@ func (ec *executionContext) fieldContext_Mutation_rejectFriendshipRequest(ctx co
 	if fc.Args, err = ec.field_Mutation_rejectFriendshipRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_startWorkout(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_startWorkout(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().StartWorkout(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.WorkoutLog)
+	fc.Result = res
+	return ec.marshalNWorkoutLog2ᚖappᚋgraphᚋmodelᚐWorkoutLog(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_startWorkout(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_WorkoutLog_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_WorkoutLog_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_WorkoutLog_updatedAt(ctx, field)
+			case "setLogs":
+				return ec.fieldContext_WorkoutLog_setLogs(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type WorkoutLog", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -5845,6 +5908,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "rejectFriendshipRequest":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_rejectFriendshipRequest(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "startWorkout":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_startWorkout(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
