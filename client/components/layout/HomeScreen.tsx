@@ -1,4 +1,4 @@
-import { Text, View, Button, StyleSheet, ScrollView } from "react-native";
+import { Text, View, StyleSheet, ScrollView } from "react-native";
 import { useAuth } from "../../hooks";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
