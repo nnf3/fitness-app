@@ -3,26 +3,27 @@ import { useAuth } from "../../hooks";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { GoogleIcon } from "../ui";
+import { useTheme } from "../../theme";
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: '#1B4332',
+    backgroundColor: theme.background,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
-    color: '#FFFFFF',
+    color: theme.text,
   },
   subtitle: {
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 40,
-    color: '#FFFFFF',
+    color: theme.textSecondary,
     opacity: 0.8,
     lineHeight: 24,
   },
@@ -36,7 +37,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -56,7 +57,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   error: {
-    color: '#FF6B6B',
+    color: theme.error,
     marginTop: 16,
     textAlign: 'center',
     fontSize: 14,
@@ -71,6 +72,7 @@ const styles = StyleSheet.create({
 export function LoginForm() {
   const { user, error, signInWithGoogle, loading } = useAuth();
   const router = useRouter();
+  const { theme } = useTheme();
 
   // ログイン成功時にホーム画面に遷移
   useEffect(() => {
@@ -78,6 +80,8 @@ export function LoginForm() {
       router.replace("/(tabs)");
     }
   }, [user, router]);
+
+  const styles = createStyles(theme);
 
   const handleGoogleSignIn = async () => {
     try {

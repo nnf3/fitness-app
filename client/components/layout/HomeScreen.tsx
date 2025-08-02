@@ -5,37 +5,38 @@ import React, { useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { CurrentUserDocument } from "@/documents";
 import { CurrentUserQuery } from "@/types/graphql";
+import { useTheme } from "../../theme";
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: '#1B4332',
+    backgroundColor: theme.background,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
-    color: '#FFFFFF',
+    color: theme.text,
   },
   subtitle: {
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 40,
-    color: '#FFFFFF',
+    color: theme.textSecondary,
     opacity: 0.8,
   },
   buttonContainer: {
     marginVertical: 8,
   },
   userInfo: {
-    backgroundColor: '#2D5A3D',
+    backgroundColor: theme.surface,
     padding: 20,
     borderRadius: 12,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -46,20 +47,20 @@ const styles = StyleSheet.create({
   },
   userEmail: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: theme.textSecondary,
     textAlign: 'center',
     opacity: 0.8,
   },
   userName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: theme.text,
     textAlign: 'center',
     marginBottom: 8,
   },
   userDetails: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: theme.textSecondary,
     textAlign: 'center',
     marginTop: 8,
     opacity: 0.7,
@@ -67,14 +68,14 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     textAlign: 'center',
-    color: '#FFFFFF',
+    color: theme.textSecondary,
     marginBottom: 20,
     opacity: 0.8,
   },
   errorText: {
     fontSize: 16,
     textAlign: 'center',
-    color: '#FF6B6B',
+    color: theme.error,
     marginBottom: 20,
   },
 });
@@ -82,10 +83,13 @@ const styles = StyleSheet.create({
 export function HomeScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const { theme } = useTheme();
 
   const { data, loading, error } = useQuery<CurrentUserQuery>(CurrentUserDocument, {
     skip: !user, // ユーザーがログインしていない場合はスキップ
   });
+
+  const styles = createStyles(theme);
 
   // ログアウト時にログイン画面に遷移
   useEffect(() => {

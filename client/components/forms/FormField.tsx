@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
+import { useTheme } from '../../theme';
 
 interface FormFieldProps {
   label: string;
@@ -12,28 +13,28 @@ interface FormFieldProps {
   required?: boolean;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   formGroup: {
     marginBottom: 20,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: theme.text,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#2D5A3D',
+    backgroundColor: theme.surface,
     borderWidth: 0,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: theme.text,
     minHeight: 50,
   },
   pickerContainer: {
-    backgroundColor: '#2D5A3D',
+    backgroundColor: theme.surface,
     borderWidth: 0,
     borderRadius: 12,
     overflow: 'hidden',
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   picker: {
-    color: '#FFFFFF',
+    color: theme.text,
     fontSize: 16,
     paddingHorizontal: 16,
     paddingVertical: 16,
@@ -58,6 +59,8 @@ export function FormField({
   pickerOptions = [],
   required = false,
 }: FormFieldProps) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const labelText = required ? `${label} *` : label;
 
   if (type === 'picker') {
@@ -81,7 +84,7 @@ export function FormField({
             }}
             placeholder={{ label: placeholder || '選択してください', value: '' }}
             pickerProps={{
-              itemStyle: { color: '#000000' },
+              itemStyle: { color: theme.text },
             }}
           />
         </View>
@@ -97,7 +100,7 @@ export function FormField({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#FFFFFF"
+        placeholderTextColor={theme.textSecondary}
         keyboardType={type === 'number' ? 'numeric' : 'default'}
       />
     </View>

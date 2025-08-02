@@ -1,45 +1,56 @@
 import { Stack } from "expo-router";
 import { AuthProvider } from "../hooks";
 import { ApolloWrapper } from "../lib";
+import { ThemeProvider, useTheme } from "../theme";
+
+function StackNavigator() {
+  const { theme } = useTheme();
+
+  return (
+    <Stack>
+      <Stack.Screen
+        name="login"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="(tabs)"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="profile-edit"
+        options={{
+          headerShown: true,
+          title: "プロフィール編集",
+          headerBackTitle: "設定",
+          gestureEnabled: true,
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTitleStyle: {
+            color: theme.text,
+            fontWeight: 'bold',
+          },
+          headerTintColor: theme.text,
+        }}
+      />
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <ApolloWrapper>
-        <Stack>
-          <Stack.Screen
-            name="login"
-            options={{
-              headerShown: false,
-              gestureEnabled: false,
-            }}
-          />
-          <Stack.Screen
-            name="(tabs)"
-            options={{
-              headerShown: false,
-              gestureEnabled: false,
-            }}
-          />
-          <Stack.Screen
-            name="profile-edit"
-            options={{
-              headerShown: true,
-              title: "設定",
-              headerBackTitle: "設定",
-              gestureEnabled: true,
-              headerStyle: {
-                backgroundColor: '#1B4332',
-              },
-              headerTitleStyle: {
-                color: '#FFFFFF',
-                fontWeight: 'bold',
-              },
-              headerTintColor: '#FFFFFF',
-            }}
-          />
-        </Stack>
-      </ApolloWrapper>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ApolloWrapper>
+          <StackNavigator />
+        </ApolloWrapper>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
