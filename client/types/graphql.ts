@@ -29,6 +29,14 @@ export enum ActivityLevel {
   VeryActive = 'VERY_ACTIVE'
 }
 
+export type AddSetLog = {
+  repCount?: InputMaybe<Scalars['Int']['input']>;
+  setNumber?: InputMaybe<Scalars['Int']['input']>;
+  weight?: InputMaybe<Scalars['Float']['input']>;
+  workoutLogID: Scalars['ID']['input'];
+  workoutTypeID: Scalars['ID']['input'];
+};
+
 export type CreateProfile = {
   activityLevel?: InputMaybe<ActivityLevel>;
   birthDate: Scalars['String']['input'];
@@ -47,7 +55,9 @@ export type Friendship = {
   __typename?: 'Friendship';
   id: Scalars['ID']['output'];
   requestee: User;
+  requesteeID: Scalars['ID']['output'];
   requester: User;
+  requesterID: Scalars['ID']['output'];
   status: FriendshipStatus;
 };
 
@@ -66,16 +76,23 @@ export enum Gender {
 export type Mutation = {
   __typename?: 'Mutation';
   acceptFriendshipRequest: Friendship;
+  addSetLog: SetLog;
   createProfile: Profile;
   deleteUser: Scalars['Boolean']['output'];
   rejectFriendshipRequest: Friendship;
   sendFriendshipRequest: Friendship;
+  startWorkout: WorkoutLog;
   updateProfile: Profile;
 };
 
 
 export type MutationAcceptFriendshipRequestArgs = {
   input: AcceptFriendshipRequest;
+};
+
+
+export type MutationAddSetLogArgs = {
+  input: AddSetLog;
 };
 
 
@@ -126,6 +143,7 @@ export type Query = {
   __typename?: 'Query';
   currentUser: User;
   users: Array<User>;
+  workoutTypes: Array<WorkoutType>;
 };
 
 export type RejectFriendshipRequest = {
@@ -144,6 +162,7 @@ export type SetLog = {
   weight: Scalars['Int']['output'];
   workoutLog: WorkoutLog;
   workoutType: WorkoutType;
+  workoutTypeID: Scalars['ID']['output'];
 };
 
 export type UpdateProfile = {
@@ -179,6 +198,8 @@ export type WorkoutLog = {
 
 export type WorkoutType = {
   __typename?: 'WorkoutType';
+  category?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   setLogs: Array<SetLog>;
@@ -212,6 +233,18 @@ export type UpdateProfileMutationVariables = Exact<{
 
 export type UpdateProfileMutation = { __typename?: 'Mutation', updateProfile: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null, imageURL?: string | null } };
 
+export type StartWorkoutMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type StartWorkoutMutation = { __typename?: 'Mutation', startWorkout: { __typename?: 'WorkoutLog', id: string, createdAt: string, updatedAt: string } };
+
+export type AddSetLogMutationVariables = Exact<{
+  input: AddSetLog;
+}>;
+
+
+export type AddSetLogMutation = { __typename?: 'Mutation', addSetLog: { __typename?: 'SetLog', id: string, workoutTypeID: string, weight: number, repCount: number, setNumber: number, workoutType: { __typename?: 'WorkoutType', id: string, name: string, description?: string | null, category?: string | null } } };
+
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -231,6 +264,16 @@ export type GetProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetProfileQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null, imageURL?: string | null } | null } };
+
+export type WorkoutLogsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type WorkoutLogsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, workoutLogs: Array<{ __typename?: 'WorkoutLog', id: string, createdAt: string, updatedAt: string, setLogs: Array<{ __typename?: 'SetLog', id: string, workoutTypeID: string, weight: number, repCount: number, setNumber: number, workoutType: { __typename?: 'WorkoutType', id: string, name: string, description?: string | null, category?: string | null } }> }> } };
+
+export type WorkoutTypesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type WorkoutTypesQuery = { __typename?: 'Query', workoutTypes: Array<{ __typename?: 'WorkoutType', id: string, name: string, description?: string | null, category?: string | null }> };
 
 
 export const AcceptFriendshipRequestDocument = gql`
@@ -322,6 +365,32 @@ export const UpdateProfileDocument = gql`
     weight
     activityLevel
     imageURL
+  }
+}
+    `;
+export const StartWorkoutDocument = gql`
+    mutation StartWorkout {
+  startWorkout {
+    id
+    createdAt
+    updatedAt
+  }
+}
+    `;
+export const AddSetLogDocument = gql`
+    mutation AddSetLog($input: AddSetLog!) {
+  addSetLog(input: $input) {
+    id
+    workoutTypeID
+    weight
+    repCount
+    setNumber
+    workoutType {
+      id
+      name
+      description
+      category
+    }
   }
 }
     `;
@@ -421,6 +490,41 @@ export const GetProfileDocument = gql`
   }
 }
     `;
+export const WorkoutLogsDocument = gql`
+    query WorkoutLogs {
+  currentUser {
+    id
+    workoutLogs {
+      id
+      createdAt
+      updatedAt
+      setLogs {
+        id
+        workoutTypeID
+        weight
+        repCount
+        setNumber
+        workoutType {
+          id
+          name
+          description
+          category
+        }
+      }
+    }
+  }
+}
+    `;
+export const WorkoutTypesDocument = gql`
+    query WorkoutTypes {
+  workoutTypes {
+    id
+    name
+    description
+    category
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -441,6 +545,12 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     UpdateProfile(variables: UpdateProfileMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateProfileMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateProfileMutation>({ document: UpdateProfileDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateProfile', 'mutation', variables);
     },
+    StartWorkout(variables?: StartWorkoutMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<StartWorkoutMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<StartWorkoutMutation>({ document: StartWorkoutDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'StartWorkout', 'mutation', variables);
+    },
+    AddSetLog(variables: AddSetLogMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddSetLogMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<AddSetLogMutation>({ document: AddSetLogDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddSetLog', 'mutation', variables);
+    },
     CurrentUser(variables?: CurrentUserQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CurrentUserQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<CurrentUserQuery>({ document: CurrentUserDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CurrentUser', 'query', variables);
     },
@@ -452,6 +562,12 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     GetProfile(variables?: GetProfileQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetProfileQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetProfileQuery>({ document: GetProfileDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetProfile', 'query', variables);
+    },
+    WorkoutLogs(variables?: WorkoutLogsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<WorkoutLogsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<WorkoutLogsQuery>({ document: WorkoutLogsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'WorkoutLogs', 'query', variables);
+    },
+    WorkoutTypes(variables?: WorkoutTypesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<WorkoutTypesQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<WorkoutTypesQuery>({ document: WorkoutTypesDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'WorkoutTypes', 'query', variables);
     }
   };
 }

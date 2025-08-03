@@ -1,3 +1,4 @@
 export * from './HomeScreen';
-export * from './SettingsScreen';
 export * from './FriendsScreen';
+export * from './SettingsScreen';
+export * from './WorkoutScreen';

@@ -30,6 +30,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="workout"
+        options={{
+          title: '筋トレ',
+          tabBarIcon: ({ color }) => <FontAwesome size={24} name="headphones" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="friends"
         options={{
           title: 'フレンド',

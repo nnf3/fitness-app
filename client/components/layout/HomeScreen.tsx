@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, ScrollView } from "react-native";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useAuth } from "../../hooks";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
@@ -7,6 +7,7 @@ import { CurrentUserDocument } from "@/documents";
 import { CurrentUserQuery } from "@/types/graphql";
 import { useTheme } from "../../theme";
 import { FriendshipRequestButton } from "@/components/ui";
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -273,6 +274,25 @@ export function HomeScreen() {
             )}
           </>
         )}
+      </View>
+
+      {/* クイックアクションセクション */}
+      <View style={styles.quickActionsSection}>
+        <Text style={styles.quickActionsTitle}>クイックアクション</Text>
+        <TouchableOpacity
+          style={styles.quickActionButton}
+          onPress={() => router.push("/(tabs)/workout")}
+        >
+          <FontAwesome name="headphones" size={16} color={theme.text} />
+          <Text style={styles.quickActionButtonText}>筋トレ記録を見る</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.quickActionButton}
+          onPress={() => router.push("/workout-form")}
+        >
+          <FontAwesome name="plus" size={16} color={theme.text} />
+          <Text style={styles.quickActionButtonText}>新しい筋トレを記録</Text>
+        </TouchableOpacity>
       </View>
 
       {/* おすすめユーザーセクション */}
