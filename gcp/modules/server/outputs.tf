@@ -10,9 +10,8 @@ output "google_service_account" {
   }
 }
 
-output "google_cloud_scheduler_job" {
+output "google_cloud_run_v2_job" {
   value = {
-    stop_service = google_cloud_scheduler_job.stop_service
-    start_service = google_cloud_scheduler_job.start_service
+    migrate = google_cloud_run_v2_job.migrate
   }
 }

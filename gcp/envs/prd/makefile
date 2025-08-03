@@ -14,5 +14,6 @@ init:
 	gcloud auth login
 	gcloud services enable serviceusage.googleapis.com
 	gcloud services enable firebase.googleapis.com
+	gcloud services enable cloudbuild.googleapis.com
 
 	echo "Done!"

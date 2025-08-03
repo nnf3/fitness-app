@@ -42,8 +42,6 @@ func NewFirebaseApp(ctx context.Context) (*firebase.App, error) {
 	if config.ServiceAccount != "" {
 		// サービスアカウントキーをJSON文字列として読み込み
 		opts = append(opts, option.WithCredentialsJSON([]byte(config.ServiceAccount)))
-	} else {
-		return nil, fmt.Errorf("FIREBASE_SERVICE_ACCOUNT_PATH environment variable is required")
 	}
 
 	app, err := firebase.NewApp(ctx, &firebase.Config{
