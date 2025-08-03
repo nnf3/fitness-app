@@ -1,13 +1,10 @@
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity, Alert, TextInput } from "react-native";
-import { useAuth } from "../../hooks";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { useAuth, useWorkout } from "../../hooks";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { useQuery, useMutation } from "@apollo/client";
-import { WorkoutLogsDocument, StartWorkoutDocument, WorkoutTypesDocument, AddSetLogDocument } from "@/documents";
-import { WorkoutLogsQuery, StartWorkoutMutation, WorkoutTypesQuery, AddSetLogMutation } from "@/types/graphql";
+import React, { useEffect } from "react";
 import { useTheme } from "../../theme";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { FormField } from "@/components/forms";
+import { WorkoutForm } from "@/components/forms";
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -124,169 +121,26 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.error,
     marginBottom: 20,
   },
-  // フォーム用のスタイル
-
-  formTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: theme.text,
-    marginBottom: 12,
-  },
-
-  addButton: {
-    backgroundColor: theme.primary,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  addButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  setLogItemForm: {
-    backgroundColor: theme.surfaceVariant,
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 6,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  setLogTextForm: {
-    fontSize: 12,
-    color: theme.text,
-    flex: 1,
-  },
-  deleteButton: {
-    backgroundColor: theme.error,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 3,
-  },
-  deleteButtonText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  submitButton: {
-    backgroundColor: theme.secondary,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  rowContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  halfWidth: {
-    flex: 1,
-  },
 });
-
-interface ExpandedWorkout {
-  id: string;
-  isExpanded: boolean;
-  selectedWorkoutType: string;
-  weight: string;
-  repCount: string;
-}
 
 export function WorkoutScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const { theme } = useTheme();
-  const [expandedWorkouts, setExpandedWorkouts] = useState<ExpandedWorkout[]>([]);
 
-  const { data, loading, error } = useQuery<WorkoutLogsQuery>(WorkoutLogsDocument, {
-    skip: !user,
-  });
-
-  // workoutLogsのIDリストをメモ化
-  const workoutLogIds = useMemo(() => {
-    return data?.currentUser?.workoutLogs?.map(log => log.id) || [];
-  }, [data?.currentUser?.workoutLogs]);
-
-  // 既存の筋トレログをexpandedWorkoutsに初期化
-  useEffect(() => {
-    if (data?.currentUser?.workoutLogs) {
-      setExpandedWorkouts(prev => {
-        // 既存のexpandedWorkoutsのIDを取得
-        const existingIds = new Set(prev.map(w => w.id));
-
-        // 新しいworkoutLogsのみをフィルタリング
-        const newWorkouts = data.currentUser.workoutLogs
-          .filter(workoutLog => !existingIds.has(workoutLog.id))
-          .map(workoutLog => ({
-            id: workoutLog.id,
-            isExpanded: false,
-            selectedWorkoutType: '',
-            weight: '',
-            repCount: '',
-          }));
-
-        // 新しいworkoutLogsがある場合のみ更新
-        return newWorkouts.length > 0 ? [...prev, ...newWorkouts] : prev;
-      });
-    }
-  }, [data?.currentUser?.workoutLogs]);
-
-  const { data: workoutTypesData, loading: loadingWorkoutTypes } = useQuery<WorkoutTypesQuery>(WorkoutTypesDocument);
-
-  const [startWorkout, { loading: startingWorkout }] = useMutation<StartWorkoutMutation>(StartWorkoutDocument, {
-    refetchQueries: [
-      { query: WorkoutLogsDocument },
-    ],
-    onCompleted: (data) => {
-      if (data?.startWorkout) {
-        // 新しいワークアウトを展開状態で追加
-        const newWorkout: ExpandedWorkout = {
-          id: data.startWorkout.id,
-          isExpanded: true,
-          selectedWorkoutType: '',
-          weight: '',
-          repCount: '',
-        };
-        setExpandedWorkouts(prev => [newWorkout, ...prev]);
-        Alert.alert("筋トレ開始", "新しい筋トレセッションを開始しました！");
-      }
-    },
-    onError: (error) => {
-      Alert.alert("エラー", `筋トレの開始に失敗しました: ${error.message}`);
-    },
-  });
-
-  const [addSetLog, { loading: addingSetLog }] = useMutation<AddSetLogMutation>(AddSetLogDocument, {
-    refetchQueries: [
-      { query: WorkoutLogsDocument },
-    ],
-    onCompleted: (data) => {
-      if (data?.addSetLog) {
-        // フォームをクリア
-        setExpandedWorkouts(prev =>
-          prev.map(w => ({
-            ...w,
-            selectedWorkoutType: '',
-            weight: '',
-            repCount: '',
-          }))
-        );
-      }
-    },
-    onError: (error) => {
-      Alert.alert('エラー', `セット記録の追加に失敗しました: ${error.message}`);
-    },
-  });
+  const {
+    data,
+    loading,
+    error,
+    workoutTypesData,
+    startingWorkout,
+    addingSetLog,
+    handleStartWorkout,
+    toggleWorkoutExpansion,
+    handleAddSetLog,
+    updateWorkoutForm,
+    getExpandedWorkout,
+  } = useWorkout(user);
 
   const styles = createStyles(theme);
 
@@ -296,61 +150,6 @@ export function WorkoutScreen() {
       router.replace("/login");
     }
   }, [user, router]);
-
-  const handleStartWorkout = () => {
-    startWorkout();
-  };
-
-  const toggleWorkoutExpansion = useCallback((workoutId: string) => {
-    setExpandedWorkouts(prev =>
-      prev.map(workout =>
-        workout.id === workoutId
-          ? { ...workout, isExpanded: !workout.isExpanded }
-          : workout
-      )
-    );
-  }, []);
-
-  const handleAddSetLog = async (workoutId: string) => {
-    const workout = expandedWorkouts.find(w => w.id === workoutId);
-    if (!workout) return;
-
-    if (!workout.selectedWorkoutType || !workout.weight || !workout.repCount) {
-      Alert.alert('エラー', 'すべての項目を入力してください。');
-      return;
-    }
-
-    const workoutType = workoutTypesData?.workoutTypes.find(wt => wt.id === workout.selectedWorkoutType);
-    if (!workoutType) {
-      Alert.alert('エラー', '選択された筋トレ種目が見つかりません。');
-      return;
-    }
-
-    try {
-      await addSetLog({
-        variables: {
-          input: {
-            workoutLogID: workoutId,
-            workoutTypeID: workout.selectedWorkoutType,
-            weight: parseFloat(workout.weight),
-            repCount: parseInt(workout.repCount),
-          },
-        },
-      });
-    } catch (error) {
-      Alert.alert('エラー', `セット記録の追加に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  };
-
-  const updateWorkoutForm = useCallback((workoutId: string, field: keyof ExpandedWorkout, value: string) => {
-    setExpandedWorkouts(prev =>
-      prev.map(w =>
-        w.id === workoutId
-          ? { ...w, [field]: value }
-          : w
-      )
-    );
-  }, []);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
@@ -401,13 +200,7 @@ export function WorkoutScreen() {
 
         {data?.currentUser?.workoutLogs && data.currentUser.workoutLogs.length > 0 ? (
           data.currentUser.workoutLogs.map((workoutLog) => {
-            const expandedWorkout = expandedWorkouts.find(w => w.id === workoutLog.id) || {
-              id: workoutLog.id,
-              isExpanded: false,
-              selectedWorkoutType: '',
-              weight: '',
-              repCount: '',
-            };
+            const expandedWorkout = getExpandedWorkout(workoutLog.id);
 
             return (
               <View key={workoutLog.id} style={styles.workoutCard}>
@@ -428,7 +221,7 @@ export function WorkoutScreen() {
                 </View>
 
                 {/* 既存のセット記録（サーバーデータ） */}
-                {workoutLog.setLogs.map((setLog) => (
+                {workoutLog.setLogs.slice(0, expandedWorkout.isExpanded ? undefined : 3).map((setLog) => (
                   <View key={setLog.id} style={styles.setLogItem}>
                     <Text style={styles.setLogText}>
                       {setLog.workoutType.name}
@@ -439,55 +232,26 @@ export function WorkoutScreen() {
                   </View>
                 ))}
 
-                {/* 追加したセット記録（ローカルデータ） */}
+                {/* 展開していない時で、セット記録が3件を超える場合に「...」を表示 */}
+                {!expandedWorkout.isExpanded && workoutLog.setLogs.length > 3 && (
+                  <View style={styles.setLogItem}>
+                    <Text style={styles.setLogText}>
+                      ... 他 {workoutLog.setLogs.length - 3} 件
+                    </Text>
+                  </View>
+                )}
+
                 {expandedWorkout.isExpanded && (
-                  <>
-                    <FormField
-                      label="筋トレ種目"
-                      value={expandedWorkout.selectedWorkoutType}
-                      onChangeText={(value) => updateWorkoutForm(workoutLog.id, 'selectedWorkoutType', value)}
-                      type="picker"
-                      pickerOptions={workoutTypesData?.workoutTypes.map((workoutType) => ({
-                        label: workoutType.name,
-                        value: workoutType.id,
-                      })) || []}
-                      placeholder="筋トレ種目を選択"
-                      marginBottom={6}
-                    />
-
-                    <View style={styles.rowContainer}>
-                      <View style={styles.halfWidth}>
-                        <FormField
-                          label="重量 (kg)"
-                          value={expandedWorkout.weight}
-                          onChangeText={(value) => updateWorkoutForm(workoutLog.id, 'weight', value)}
-                          type="number"
-                          placeholder="例: 100"
-                          marginBottom={0}
-                        />
-                      </View>
-                      <View style={styles.halfWidth}>
-                        <FormField
-                          label="回数"
-                          value={expandedWorkout.repCount}
-                          onChangeText={(value) => updateWorkoutForm(workoutLog.id, 'repCount', value)}
-                          type="number"
-                          placeholder="例: 10"
-                          marginBottom={0}
-                        />
-                      </View>
-                    </View>
-
-                    <TouchableOpacity
-                      style={styles.addButton}
-                      onPress={() => handleAddSetLog(workoutLog.id)}
-                      disabled={addingSetLog}
-                    >
-                      <Text style={styles.addButtonText}>
-                        {addingSetLog ? '追加中...' : 'セットを追加'}
-                      </Text>
-                    </TouchableOpacity>
-                  </>
+                  <WorkoutForm
+                    workoutId={workoutLog.id}
+                    selectedWorkoutType={expandedWorkout.selectedWorkoutType}
+                    weight={expandedWorkout.weight}
+                    repCount={expandedWorkout.repCount}
+                    onUpdateForm={(field, value) => updateWorkoutForm(workoutLog.id, field, value)}
+                    onSubmit={() => handleAddSetLog(workoutLog.id)}
+                    loading={addingSetLog}
+                    workoutTypesData={workoutTypesData}
+                  />
                 )}
               </View>
             );
