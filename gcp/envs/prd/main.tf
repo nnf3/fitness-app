@@ -30,6 +30,7 @@ module "server" {
   source     = "../../modules/server"
 
   project_id = var.project_id
-  registry_repository_id = module.registry.google_artifact_registry_repository.api.repository_id
+  registry_repository_api_id = module.registry.google_artifact_registry_repository.api.repository_id
+  registry_repository_migrate_id = module.registry.google_artifact_registry_repository.migrate.repository_id
   db_url_secret_id = module.secret.google_secret_manager_secret.db_url.secret_id
 }
