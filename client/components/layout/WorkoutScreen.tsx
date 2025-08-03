@@ -213,7 +213,7 @@ export function WorkoutScreen() {
                     onPress={() => toggleWorkoutExpansion(workoutLog.id)}
                   >
                     <FontAwesome
-                      name={expandedWorkout.isExpanded ? "chevron-up" : "chevron-down"}
+                      name={expandedWorkout.isExpanded ? "minus" : "plus"}
                       size={16}
                       color={theme.text}
                     />
