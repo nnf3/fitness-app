@@ -5879,7 +5879,7 @@ func (ec *executionContext) unmarshalInputAddSetLog(ctx context.Context, obj any
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"workoutLogID", "workoutTypeID", "weight", "repCount", "setNumber"}
+	fieldsInOrder := [...]string{"workoutLogID", "workoutTypeID", "weight", "repCount"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5914,13 +5914,6 @@ func (ec *executionContext) unmarshalInputAddSetLog(ctx context.Context, obj any
 				return it, err
 			}
 			it.RepCount = data
-		case "setNumber":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("setNumber"))
-			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SetNumber = data
 		}
 	}
 

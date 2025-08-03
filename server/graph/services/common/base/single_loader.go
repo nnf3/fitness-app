@@ -37,7 +37,7 @@ func NewBaseLoader[T any](
 		createMapFunc: createMapFunc,
 		parseKeyFunc:  parseKeyFunc,
 	}
-	loader.loader = dataloader.NewBatchedLoader(loader.batchLoad)
+	loader.loader = dataloader.NewBatchedLoader(loader.batchLoad, dataloader.WithCache(&dataloader.NoCache[StringKey, T]{}))
 	return loader
 }
 

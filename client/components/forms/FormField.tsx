@@ -4,19 +4,17 @@ import RNPickerSelect from 'react-native-picker-select';
 import { useTheme } from '../../theme';
 
 interface FormFieldProps {
-  label: string;
+  label?: string;
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
   type?: 'text' | 'number' | 'date' | 'picker';
   pickerOptions?: { label: string; value: string }[];
   required?: boolean;
+  marginBottom?: number;
 }
 
 const createStyles = (theme: any) => StyleSheet.create({
-  formGroup: {
-    marginBottom: 20,
-  },
   label: {
     fontSize: 16,
     fontWeight: '600',
@@ -58,15 +56,16 @@ export function FormField({
   type = 'text',
   pickerOptions = [],
   required = false,
+  marginBottom = 20,
 }: FormFieldProps) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
-  const labelText = required ? `${label} *` : label;
+  const labelText = label ? (required ? `${label} *` : label) : '';
 
   if (type === 'picker') {
     return (
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>{labelText}</Text>
+      <View style={{ marginBottom }}>
+        {label && <Text style={styles.label}>{labelText}</Text>}
         <View style={styles.pickerContainer}>
           <RNPickerSelect
             value={value}
@@ -84,7 +83,7 @@ export function FormField({
             }}
             placeholder={{ label: placeholder || '選択してください', value: '' }}
             pickerProps={{
-              itemStyle: { color: theme.text },
+              itemStyle: { color: 'black' },
             }}
           />
         </View>
@@ -93,7 +92,7 @@ export function FormField({
   }
 
   return (
-    <View style={styles.formGroup}>
+    <View style={{ marginBottom }}>
       <Text style={styles.label}>{labelText}</Text>
       <TextInput
         style={styles.input}

@@ -29,7 +29,7 @@ func NewWorkoutLogsLoader(db *gorm.DB) WorkoutLogsLoaderInterface {
 
 func (l *WorkoutLogsLoader) fetchWorkoutLogsFromDB(userIDs []uint) ([]*entity.WorkoutLog, error) {
 	var logs []entity.WorkoutLog
-	err := l.DB().Where("user_id IN ?", userIDs).Find(&logs).Error
+	err := l.DB().Where("user_id IN ?", userIDs).Order("created_at DESC").Find(&logs).Error
 	if err != nil {
 		return nil, err
 	}

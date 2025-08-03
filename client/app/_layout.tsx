@@ -39,6 +39,23 @@ function StackNavigator() {
           headerTintColor: theme.text,
         }}
       />
+      <Stack.Screen
+        name="workout-form"
+        options={{
+          headerShown: true,
+          title: "記録追加",
+          headerBackTitle: "筋トレ",
+          gestureEnabled: true,
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTitleStyle: {
+            color: theme.text,
+            fontWeight: 'bold',
+          },
+          headerTintColor: theme.text,
+        }}
+      />
     </Stack>
   );
 }
