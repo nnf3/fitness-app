@@ -65,6 +65,8 @@ const createStyles = (theme: any) => StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.border,
     shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
