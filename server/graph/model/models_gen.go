@@ -11,7 +11,6 @@ type AddSetLog struct {
 	WorkoutTypeID string   `json:"workoutTypeID"`
 	Weight        *float64 `json:"weight,omitempty"`
 	RepCount      *int32   `json:"repCount,omitempty"`
-	SetNumber     *int32   `json:"setNumber,omitempty"`
 }
 
 type CreateProfile struct {

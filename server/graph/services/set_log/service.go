@@ -37,12 +37,30 @@ func (s *setLogService) AddSetLog(ctx context.Context, input model.AddSetLog) (*
 		return nil, fmt.Errorf("failed to get workout type: %w", err)
 	}
 
+	setLogs, err := s.repo.GetSetLogsByWorkoutLogID(ctx, input.WorkoutLogID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get set logs: %w", err)
+	}
+
+	// workoutTypeIDでグループ化して、その中で一番大きいsetNumberを取得する
+	// そのsetNumberに1を足したものをsetNumberとする
+	maxSetNumber := 0
+	for _, setLog := range setLogs {
+		if setLog.WorkoutTypeID != workoutType.ID {
+			continue
+		}
+
+		if setLog.SetNumber > maxSetNumber {
+			maxSetNumber = setLog.SetNumber
+		}
+	}
+
 	setLog := entity.SetLog{
 		WorkoutLogID:  workoutLog.ID,
 		WorkoutTypeID: workoutType.ID,
 		Weight:        int(*input.Weight),
 		RepCount:      int(*input.RepCount),
-		SetNumber:     int(*input.SetNumber),
+		SetNumber:     maxSetNumber + 1,
 	}
 
 	if err := s.repo.CreateSetLog(ctx, &setLog); err != nil {
