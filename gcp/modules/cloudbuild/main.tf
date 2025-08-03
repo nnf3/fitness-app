@@ -1,7 +1,7 @@
 resource "google_cloudbuildv2_connection" "github" {
   project  = var.project_id
   name     = "fitness-app"
-  location = "asia-northeast1"
+  location = "us-central1"
 
   github_config {
     app_installation_id = var.app_installation_id
@@ -25,7 +25,7 @@ resource "google_cloudbuildv2_repository" "github" {
 
 resource "google_cloudbuild_trigger" "github" {
   project         = var.project_id
-  location        = "asia-northeast1"
+  location        = "us-central1"
   service_account = "projects/${var.project_id}/serviceAccounts/${google_service_account.cloudbuild.unique_id}"
   filename        = "server/cloudbuild.yaml"
 
