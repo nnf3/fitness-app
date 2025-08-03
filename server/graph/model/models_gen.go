@@ -79,6 +79,10 @@ type SetLog struct {
 	SetNumber     int32        `json:"setNumber"`
 }
 
+type StartWorkoutInput struct {
+	WorkoutGroupID *string `json:"workoutGroupID,omitempty"`
+}
+
 type UpdateProfile struct {
 	Name          *string        `json:"name,omitempty"`
 	BirthDate     *string        `json:"birthDate,omitempty"`
@@ -101,11 +105,21 @@ type User struct {
 	RecommendedUsers   []*User       `json:"recommendedUsers"`
 }
 
+type WorkoutGroup struct {
+	ID          string        `json:"id"`
+	Title       string        `json:"title"`
+	CreatedAt   string        `json:"createdAt"`
+	UpdatedAt   string        `json:"updatedAt"`
+	WorkoutLogs []*WorkoutLog `json:"workoutLogs"`
+}
+
 type WorkoutLog struct {
-	ID        string    `json:"id"`
-	CreatedAt string    `json:"createdAt"`
-	UpdatedAt string    `json:"updatedAt"`
-	SetLogs   []*SetLog `json:"setLogs"`
+	ID             string        `json:"id"`
+	CreatedAt      string        `json:"createdAt"`
+	UpdatedAt      string        `json:"updatedAt"`
+	SetLogs        []*SetLog     `json:"setLogs"`
+	WorkoutGroupID *string       `json:"workoutGroupID,omitempty"`
+	WorkoutGroup   *WorkoutGroup `json:"workoutGroup,omitempty"`
 }
 
 type WorkoutType struct {

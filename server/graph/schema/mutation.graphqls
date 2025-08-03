@@ -49,6 +49,10 @@ input AddSetLog {
   setNumber: Int
 }
 
+input StartWorkoutInput {
+  workoutGroupID: ID
+}
+
 type Mutation {
   deleteUser(input: DeleteUser!): Boolean!
 
@@ -59,7 +63,7 @@ type Mutation {
   acceptFriendshipRequest(input: AcceptFriendshipRequest!): Friendship!
   rejectFriendshipRequest(input: RejectFriendshipRequest!): Friendship!
 
-  startWorkout: WorkoutLog!
+  startWorkout(input: StartWorkoutInput): WorkoutLog!
 
   addSetLog(input: AddSetLog!): SetLog!
 }

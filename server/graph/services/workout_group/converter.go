@@ -1,0 +1,42 @@
+package workout_group
+
+import (
+    "app/entity"
+    "app/graph/model"
+		"fmt"
+)
+
+type WorkoutGroupConverter struct{}
+
+func NewWorkoutGroupConverter() *WorkoutGroupConverter {
+    return &WorkoutGroupConverter{}
+}
+
+func (c *WorkoutGroupConverter) ToModelWorkoutGroups(groups []entity.WorkoutGroup) []*model.WorkoutGroup {
+    result := make([]*model.WorkoutGroup, 0, len(groups))
+    for _, g := range groups {
+        result = append(result, c.ToModelWorkoutGroup(g))
+    }
+    return result
+}
+
+func (c *WorkoutGroupConverter) ToModelWorkoutGroup(group entity.WorkoutGroup) *model.WorkoutGroup {
+    return &model.WorkoutGroup{
+        ID:        fmt.Sprint(group.ID),
+        Title:     group.Title,
+        CreatedAt: group.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+        UpdatedAt: group.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+        // workoutLogsは必要に応じて追加
+    }
+}
+
+func (c *WorkoutGroupConverter) ToModelUsers(users []entity.User) []*model.User {
+    result := make([]*model.User, 0, len(users))
+    for _, u := range users {
+        result = append(result, &model.User{
+            ID: fmt.Sprint(u.ID),
+            // 必要に応じて他のフィールドも追加
+        })
+    }
+    return result
+}
