@@ -31,7 +31,6 @@ export enum ActivityLevel {
 
 export type AddSetLog = {
   repCount?: InputMaybe<Scalars['Int']['input']>;
-  setNumber?: InputMaybe<Scalars['Int']['input']>;
   weight?: InputMaybe<Scalars['Float']['input']>;
   workoutLogID: Scalars['ID']['input'];
   workoutTypeID: Scalars['ID']['input'];
@@ -268,7 +267,7 @@ export type GetProfileQuery = { __typename?: 'Query', currentUser: { __typename?
 export type WorkoutLogsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WorkoutLogsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, workoutLogs: Array<{ __typename?: 'WorkoutLog', id: string, createdAt: string, updatedAt: string, setLogs: Array<{ __typename?: 'SetLog', id: string, workoutTypeID: string, weight: number, repCount: number, setNumber: number, workoutType: { __typename?: 'WorkoutType', id: string, name: string, description?: string | null, category?: string | null } }> }> } };
+export type WorkoutLogsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, workoutLogs: Array<{ __typename?: 'WorkoutLog', id: string, createdAt: string, updatedAt: string, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number, workoutType: { __typename?: 'WorkoutType', id: string, name: string, category?: string | null, description?: string | null } }> }> } };
 
 export type WorkoutTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -500,15 +499,14 @@ export const WorkoutLogsDocument = gql`
       updatedAt
       setLogs {
         id
-        workoutTypeID
         weight
         repCount
         setNumber
         workoutType {
           id
           name
-          description
           category
+          description
         }
       }
     }

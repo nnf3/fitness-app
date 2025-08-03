@@ -283,12 +283,12 @@ export function HomeScreen() {
           style={styles.quickActionButton}
           onPress={() => router.push("/(tabs)/workout")}
         >
-          <FontAwesome name="headphones" size={16} color={theme.text} />
+          <FontAwesome name="list" size={16} color={theme.text} />
           <Text style={styles.quickActionButtonText}>筋トレ記録を見る</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.quickActionButton}
-          onPress={() => router.push("/workout-form")}
+          onPress={() => router.push("/(tabs)/workout")}
         >
           <FontAwesome name="plus" size={16} color={theme.text} />
           <Text style={styles.quickActionButtonText}>新しい筋トレを記録</Text>
