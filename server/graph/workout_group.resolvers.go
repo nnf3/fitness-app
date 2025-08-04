@@ -29,6 +29,11 @@ func (r *workoutGroupResolver) WorkoutLogs(ctx context.Context, obj *model.Worko
     return workoutLogConverter.ToModelWorkoutLogsFromPointers(workoutLogsEntities), nil
 }
 
+// WorkoutGroupMembers implements QueryResolver.
+func (r *queryResolver) WorkoutGroupMembers(ctx context.Context, groupID string) ([]*model.User, error) {
+	panic("unimplemented")
+}
+
 // ================================
 // Query
 // ================================
@@ -46,7 +51,7 @@ func (r *queryResolver) WorkoutGroup(ctx context.Context, id string) (*model.Wor
 }
 
 // WorkoutGroupMembers is the resolver for the workoutGroupMembers query.
-func (r *queryResolver) WorkoutGroupMembers(ctx context.Context, groupID string) ([]*model.User, error) {
-    workoutGroupService := services.NewWorkoutGroupServiceWithSeparation(r.DB, r.DataLoaders.WorkoutLogsLoaderForWorkoutGroup)
-    return workoutGroupService.GetWorkoutGroupMembers(ctx, groupID)
-}
+// func (r *queryResolver) WorkoutGroupMembers(ctx context.Context, groupID string) ([]*model.User, error) {
+//     workoutGroupService := services.NewWorkoutGroupServiceWithSeparation(r.DB, r.DataLoaders.WorkoutLogsLoaderForWorkoutGroup)
+//     return workoutGroupService.GetWorkoutGroupMembers(ctx, groupID)
+// }

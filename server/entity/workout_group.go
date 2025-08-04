@@ -9,7 +9,7 @@ import (
 type WorkoutGroup struct {
 		gorm.Model
     ID        uint           `gorm:"primaryKey"`
-    Title     string         `gorm:"size:255;not null;unique"`
+    Title     string         `gorm:"size:255;not null"`
 
     WorkoutLogs []WorkoutLog `gorm:"foreignKey:WorkoutGroupID;constraint:OnDelete:SET NULL"`
 }

@@ -3,10 +3,13 @@ package workout_group
 import (
     "app/entity"
     "app/graph/model"
+		"app/graph/services/common"
 		"fmt"
 )
 
-type WorkoutGroupConverter struct{}
+type WorkoutGroupConverter struct{
+		common *common.CommonConverter
+}
 
 func NewWorkoutGroupConverter() *WorkoutGroupConverter {
     return &WorkoutGroupConverter{}
@@ -30,13 +33,17 @@ func (c *WorkoutGroupConverter) ToModelWorkoutGroup(group entity.WorkoutGroup) *
     }
 }
 
-func (c *WorkoutGroupConverter) ToModelUsers(users []entity.User) []*model.User {
-    result := make([]*model.User, 0, len(users))
-    for _, u := range users {
-        result = append(result, &model.User{
-            ID: fmt.Sprint(u.ID),
-            // 必要に応じて他のフィールドも追加
-        })
-    }
-    return result
+// func (c *WorkoutGroupConverter) ToModelUsers(users []entity.User) []*model.User {
+//     result := make([]*model.User, 0, len(users))
+//     for _, u := range users {
+//         result = append(result, &model.User{
+//             ID: fmt.Sprint(u.ID),
+//             // 必要に応じて他のフィールドも追加
+//         })
+//     }
+//     return result
+// }
+// User変換はCommonConverterを使用
+func (c *WorkoutGroupConverter) ToModelUsers(user []entity.User) []*model.User {
+	return c.common.ToModelUsers(user)
 }

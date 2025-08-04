@@ -12,7 +12,5 @@ type Query {
 
   # 合トレグループ詳細
   workoutGroup(id: ID!): WorkoutGroup
-
-  # 合トレ参加メンバー取得
-  workoutGroupMembers(groupId: ID!): [User!]!
+  
 }
