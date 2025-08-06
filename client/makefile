@@ -5,8 +5,9 @@ LOCAL_IP := $(shell route -n get default | grep interface | awk '{print $$2}' | 
 EXPO_PUBLIC_SERVER_IP ?= $(LOCAL_IP)
 EXPO_PUBLIC_SERVER_PORT ?= 8080
 
+.PHONY: env setup-dev setup-prd build-ios-dev build-android-dev build-ios-prd submit-ios help
+
 # .env.localファイルを生成（expo.devから取得した環境変数を上書き）
-.PHONY: env
 env:
 	@echo "🔧 .env.localファイルを確認中..."
 	@if [ -f .env.local ]; then \
@@ -28,7 +29,6 @@ env:
 	fi
 
 # 開発環境セットアップ
-.PHONY: setup-dev
 setup-dev:
 	@echo "🚀 開発環境セットアップ中..."
 	@echo "1️⃣ expo.devから環境変数を取得中..."
@@ -38,8 +38,15 @@ setup-dev:
 	@echo "✅ 開発環境セットアップが完了しました！"
 	@echo "💡 次に 'npx expo start --dev-client' を実行してください"
 
+setup-prd:
+	@echo "🚀 本番環境セットアップ中..."
+	@echo "1️⃣ expo.devから環境変数を取得中..."
+	@eas env:pull --environment production
+	@echo "2️⃣ ローカルサーバー設定で上書き中..."
+	@make env
+	@echo "✅ 本番環境セットアップが完了しました！"
+
 # EAS Buildコマンド（.env.localからEXPO_PUBLIC_GOOGLE_IOS_REVERSED_CLIENT_IDのみ読み込み）
-.PHONY: build-ios-dev
 build-ios-dev:
 	@echo "🍎 iOS Development Buildを作成中..."
 	@if [ -f .env.local ]; then \
@@ -51,7 +58,6 @@ build-ios-dev:
 		exit 1; \
 	fi
 
-.PHONY: build-android-dev
 build-android-dev:
 	@echo "🤖 Android Development Buildを作成中..."
 	@if [ -f .env.local ]; then \
@@ -63,8 +69,29 @@ build-android-dev:
 		exit 1; \
 	fi
 
+build-ios-prd:
+	@echo "🍎 iOS Development Buildを作成中..."
+	@if [ -f .env.local ]; then \
+		echo "📄 .env.prdファイルからEXPO_PUBLIC_GOOGLE_IOS_REVERSED_CLIENT_IDを読み込み中..."; \
+		export EXPO_PUBLIC_GOOGLE_IOS_REVERSED_CLIENT_ID=$$(grep EXPO_PUBLIC_GOOGLE_IOS_REVERSED_CLIENT_ID .env.local | cut -d '=' -f2); \
+		eas build --platform ios --profile production; \
+	else \
+		echo "❌ .env.prdファイルが見つかりません。先に 'make setup-prd' を実行してください。"; \
+		exit 1; \
+	fi
+
+submit-ios:
+	@echo "🍎 iOS Production Buildを送信中..."
+	@if [ -f .env.local ]; then \
+		echo "📄 .env.localファイルからEXPO_PUBLIC_GOOGLE_IOS_REVERSED_CLIENT_IDを読み込み中..."; \
+		export EXPO_PUBLIC_GOOGLE_IOS_REVERSED_CLIENT_ID=$$(grep EXPO_PUBLIC_GOOGLE_IOS_REVERSED_CLIENT_ID .env.local | cut -d '=' -f2); \
+		eas submit --platform ios --profile production; \
+	else \
+		echo "❌ .env.localファイルが見つかりません。先に 'make setup-prd' を実行してください。"; \
+		exit 1; \
+	fi
+
 # デフォルトターゲット
-.PHONY: help
 help:
 	@echo "利用可能なコマンド:"
 	@echo "  make setup-dev      - 開発環境セットアップ（env:pull + env）"
@@ -73,6 +100,8 @@ help:
 	@echo "EAS Build:"
 	@echo "  make build-ios-dev    - iOS Development Build作成（.env.localからEXPO_PUBLIC_GOOGLE_IOS_REVERSED_CLIENT_IDを読み込み）"
 	@echo "  make build-android-dev - Android Development Build作成（.env.localからEXPO_PUBLIC_GOOGLE_IOS_REVERSED_CLIENT_IDを読み込み）"
+	@echo "  make build-ios-prd    - iOS Production Build作成"
+	@echo "  make submit-ios       - iOS Production Build送信"
 	@echo ""
 	@echo "環境変数:"
 	@echo "  LOCAL_IP        - 自動取得されたローカルIP: $(LOCAL_IP)"

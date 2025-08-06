@@ -4,6 +4,10 @@ import { setContext } from "@apollo/client/link/context";
 
 // プラットフォームに応じてURIを設定
 const getGraphQLUri = () => {
+  if (process.env.EXPO_PUBLIC_ENV === 'production' || process.env.EXPO_PUBLIC_ENV === 'preview') {
+    return `${process.env.EXPO_PUBLIC_SERVER_URL}/query`;
+  }
+
   // 環境変数からサーバー情報を取得
   const serverIP = process.env.EXPO_PUBLIC_SERVER_IP || 'localhost';
   const serverPort = process.env.EXPO_PUBLIC_SERVER_PORT || '8080';
