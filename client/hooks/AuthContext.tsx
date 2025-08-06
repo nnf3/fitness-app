@@ -5,7 +5,9 @@ import {
   onAuthStateChanged,
   signInWithCredential,
   signOut,
-  GoogleAuthProvider
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
 } from "@react-native-firebase/auth";
 import type { FirebaseAuthTypes } from "@react-native-firebase/auth";
 
@@ -20,6 +22,8 @@ interface AuthContextType {
   loading: boolean;
   error: string;
   signInWithGoogle: () => Promise<string | undefined>;
+  signInWithEmail: (email: string, password: string) => Promise<string | undefined>;
+  signUpWithEmail: (email: string, password: string) => Promise<string | undefined>;
   signOut: () => Promise<void>;
   getIdToken: () => Promise<string | null>;
 }
@@ -65,6 +69,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseIdToken = await userCredential.user.getIdToken(true);
+      setError("");
+      return firebaseIdToken;
+    } catch (e: any) {
+      setError(e.message);
+      return undefined;
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const firebaseIdToken = await userCredential.user.getIdToken(true);
+      setError("");
+      return firebaseIdToken;
+    } catch (e: any) {
+      setError(e.message);
+      return undefined;
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       const auth = getAuth();
@@ -91,6 +121,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     error,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
     signOut: handleSignOut,
     getIdToken,
   };
