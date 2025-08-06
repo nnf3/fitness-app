@@ -162,9 +162,9 @@ export function LoginForm() {
   return (
     <View style={styles.container}>
       <Text style={styles.logo}>💪</Text>
-      <Text style={styles.title}>フィットネスアプリ</Text>
+      <Text style={styles.title}>Workout Bro.</Text>
       <Text style={styles.subtitle}>
-        あなたのフィットネスライフをサポートします
+        最高な仲間たちと一緒にワークアウトを楽しもう
       </Text>
 
       <View style={styles.formContainer}>
