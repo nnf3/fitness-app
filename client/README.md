@@ -16,8 +16,8 @@
    # 事前にEAS CLIをインストールする必要があります
    npm install -g @expo/eas-cli
 
-   # expo.devから環境変数を取得し、ローカルIPなどを設定
-   make setup-dev
+   # ローカルIPなどを設定
+   make env
    ```
 
 3. アプリを起動
@@ -64,16 +64,14 @@
 
 4. **Development Buildの作成とインストール**
    ```bash
-   # iOS development buildを作成（.env.localから環境変数を自動読み込み）
+   # iOS development buildを作成
    make build-ios-dev
 
-   # Android development buildを作成（.env.localから環境変数を自動読み込み）
+   # Android development buildを作成
    make build-android-dev
    ```
 
    作成されたbuildをローカルデバイスにインストールしてください。
-
-   **注意**: これらのコマンドは`.env.local`ファイルから`EXPO_PUBLIC_GOOGLE_IOS_REVERSED_CLIENT_ID`のみを自動的に読み込みます。先に`make setup-dev`を実行してください。
 
 ### ビルドプロファイル
 
@@ -89,7 +87,7 @@
 
 ```bash
 # 開発用ビルド
-eas build --platform ios --profile development
+eas build --platform ios --profile development-device
 
 # プレビュー用ビルド
 eas build --platform ios --profile preview
@@ -102,7 +100,7 @@ eas build --platform ios --profile production
 
 ```bash
 # 開発用ビルド（APK）
-eas build --platform android --profile development
+eas build --platform android --profile development-device
 
 # プレビュー用ビルド
 eas build --platform android --profile preview

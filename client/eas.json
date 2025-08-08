@@ -4,58 +4,52 @@
     "appVersionSource": "remote"
   },
   "build": {
-    "development": {
+    "development-device": {
       "environment": "development",
       "developmentClient": true,
       "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
-      "ios": {
-        "simulator": false
-      },
+      "android": {  "buildType": "apk" },
+      "ios": { "simulator": false },
       "env": {
-        "EXPO_PUBLIC_SERVER_IP": "EXPO_PUBLIC_SERVER_IP",
-        "EXPO_PUBLIC_SERVER_PORT": "EXPO_PUBLIC_SERVER_PORT",
-        "GOOGLE_SERVICES_INFO_PLIST": "GOOGLE_SERVICES_INFO_PLIST",
-        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON",
-        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID"
+        "EXPO_PUBLIC_ENV": "development",
+        "EXPO_PUBLIC_SERVER_IP": "EXPO_PUBLIC_SERVER_IP"
+      }
+    },
+    "development-simulator": {
+      "environment": "development",
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": { "simulator": true },
+      "env": {
+        "EXPO_PUBLIC_ENV": "development",
+        "EXPO_PUBLIC_SERVER_IP": "EXPO_PUBLIC_SERVER_IP"
       }
     },
     "preview": {
       "environment": "preview",
       "distribution": "internal",
+      "developmentClient": false,
+      "ios": { "simulator": false },
+      "android": { "buildType": "app-bundle" },
       "env": {
-        "EXPO_PUBLIC_SERVER_IP": "EXPO_PUBLIC_SERVER_IP",
-        "EXPO_PUBLIC_SERVER_PORT": "EXPO_PUBLIC_SERVER_PORT",
-        "GOOGLE_SERVICES_INFO_PLIST": "GOOGLE_SERVICES_INFO_PLIST",
-        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON",
-        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID"
+        "EXPO_PUBLIC_ENV": "preview"
       }
     },
     "production": {
       "environment": "production",
       "autoIncrement": true,
-      "ios": {
-        "simulator": false
-      },
-      "android": {
-        "buildType": "app-bundle"
-      },
+      "ios": { "simulator": false },
+      "android": { "buildType": "app-bundle" },
       "env": {
-        "NODE_ENV": "production",
-        "EXPO_PUBLIC_SERVER_IP": "EXPO_PUBLIC_SERVER_IP",
-        "EXPO_PUBLIC_SERVER_PORT": "EXPO_PUBLIC_SERVER_PORT",
-        "GOOGLE_SERVICES_INFO_PLIST": "GOOGLE_SERVICES_INFO_PLIST",
-        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON",
-        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID"
+        "EXPO_PUBLIC_ENV": "production"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6749633887"
+      }
+    }
   }
 }
