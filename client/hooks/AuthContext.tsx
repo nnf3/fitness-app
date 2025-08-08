@@ -13,8 +13,8 @@ import type { FirebaseAuthTypes } from "@react-native-firebase/auth";
 
 // Google Sign-In設定
 GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  webClientId: process.env.GOOGLE_WEB_CLIENT_ID,
+  iosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
 });
 
 interface AuthContextType {
