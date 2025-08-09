@@ -7,10 +7,11 @@ import (
 	"app/graph/services/workout_log/loaders"
 	"context"
 	"fmt"
+	"strconv"
 )
 
 type WorkoutLogService interface {
-	StartWorkout(ctx context.Context) (*model.WorkoutLog, error)
+	StartWorkout(ctx context.Context, workoutGroupID *string) (*model.WorkoutLog, error)
 }
 
 type workoutLogService struct {
@@ -37,7 +38,7 @@ func NewWorkoutLogServiceWithLoader(repo WorkoutLogRepository, converter *Workou
 	}
 }
 
-func (s *workoutLogService) StartWorkout(ctx context.Context) (*model.WorkoutLog, error) {
+func (s *workoutLogService) StartWorkout(ctx context.Context, workoutGroupID * string) (*model.WorkoutLog, error) {
 	currentUser, err := s.common.GetCurrentUser(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get current user: %w", err)
@@ -45,6 +46,16 @@ func (s *workoutLogService) StartWorkout(ctx context.Context) (*model.WorkoutLog
 
 	workoutLog := entity.WorkoutLog{
 		UserID: currentUser.ID,
+	}
+
+	// WorkoutGroupID が指定されていれば uint に変換してセット
+	if workoutGroupID != nil {
+		if idUint, err := strconv.ParseUint(*workoutGroupID, 10, 64); err == nil {
+			idUint32 := uint(idUint)
+			workoutLog.WorkoutGroupID = &idUint32
+		} else {
+			return nil, fmt.Errorf("invalid workoutGroupID: %w", err)
+		}
 	}
 
 	if err := s.repo.CreateWorkoutLog(ctx, &workoutLog); err != nil {

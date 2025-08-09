@@ -35,5 +35,5 @@ func (r *workoutLogResolver) SetLogs(ctx context.Context, obj *model.WorkoutLog)
 // StartWorkout is the resolver for the startWorkout field.
 func (r *mutationResolver) StartWorkout(ctx context.Context, input *model.StartWorkoutInput) (*model.WorkoutLog, error) {
 	workoutLogService := services.NewWorkoutLogServiceWithSeparation(r.DB, r.DataLoaders.SetLogsLoaderForWorkoutLog)
-	return workoutLogService.StartWorkout(ctx)
+	return workoutLogService.StartWorkout(ctx, input.WorkoutGroupID)
 }
