@@ -17,6 +17,10 @@ type FriendshipService interface {
 	SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error)
 	AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error)
 	RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error)
+	// DataLoader使用メソッド
+	GetFriendsWithDataLoader(ctx context.Context, userID string) ([]*model.User, error)
+	GetFriendshipRequestsWithDataLoader(ctx context.Context, userID string) ([]*model.Friendship, error)
+	GetRecommendedUsersWithDataLoader(ctx context.Context, userID string) ([]*model.User, error)
 }
 
 type friendshipService struct {
@@ -39,22 +43,6 @@ func (s *friendshipService) GetFriendshipByID(ctx context.Context, friendshipID 
 		return nil, err
 	}
 	return s.converter.ToModelFriendship(*friendship), nil
-}
-
-func (s *friendshipService) GetFriendshipRequesterID(ctx context.Context, friendshipID string) (string, error) {
-	friendship, err := s.repo.GetFriendshipByID(ctx, friendshipID)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%d", friendship.RequesterID), nil
-}
-
-func (s *friendshipService) GetFriendshipRequesteeID(ctx context.Context, friendshipID string) (string, error) {
-	friendship, err := s.repo.GetFriendshipByID(ctx, friendshipID)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%d", friendship.RequesteeID), nil
 }
 
 func (s *friendshipService) GetFriends(ctx context.Context, userID string) ([]*model.User, error) {
@@ -157,4 +145,21 @@ func (s *friendshipService) getFriendshipRequest(ctx context.Context, currentUse
 		return nil, fmt.Errorf("friendship request not found")
 	}
 	return request, nil
+}
+
+// DataLoader使用メソッド
+func (s *friendshipService) GetFriendsWithDataLoader(ctx context.Context, userID string) ([]*model.User, error) {
+	// contextからDataLoadersを取得する必要があるが、循環インポートを避けるため
+	// 現在は既存の実装を使用
+	return s.GetFriends(ctx, userID)
+}
+
+func (s *friendshipService) GetFriendshipRequestsWithDataLoader(ctx context.Context, userID string) ([]*model.Friendship, error) {
+	// 現在は既存の実装を使用
+	return s.GetFriendshipRequests(ctx, userID)
+}
+
+func (s *friendshipService) GetRecommendedUsersWithDataLoader(ctx context.Context, userID string) ([]*model.User, error) {
+	// 現在は既存の実装を使用
+	return s.GetRecommendedUsers(ctx, userID)
 }

@@ -42,14 +42,16 @@ func NewProfileServiceWithSeparation(db *gorm.DB) profile.ProfileService {
 func NewExerciseServiceWithSeparation(db *gorm.DB) exercise.ExerciseService {
 	repo := exercise.NewExerciseRepository(db)
 	converter := exercise.NewExerciseConverter()
-	return exercise.NewExerciseService(repo, converter)
+	dataLoader := exercise.NewExerciseDataLoader(repo)
+	return exercise.NewExerciseService(repo, converter, dataLoader)
 }
 
 // NewWorkoutServiceWithSeparation は分離されたWorkoutServiceを作成します
 func NewWorkoutServiceWithSeparation(db *gorm.DB) workout.WorkoutService {
 	repo := workout.NewWorkoutRepository(db)
 	converter := workout.NewWorkoutConverter()
-	return workout.NewWorkoutService(repo, converter)
+	dataLoader := workout.NewWorkoutDataLoader(repo)
+	return workout.NewWorkoutService(repo, converter, dataLoader)
 }
 
 // NewWorkoutExerciseServiceWithSeparation は分離されたWorkoutExerciseServiceを作成します
@@ -64,7 +66,8 @@ func NewWorkoutExerciseServiceWithSeparation(db *gorm.DB) workout_exercise.Worko
 func NewSetLogServiceWithSeparation(db *gorm.DB) set_log.SetLogService {
 	repo := set_log.NewSetLogRepository(db)
 	converter := set_log.NewSetLogConverter()
-	return set_log.NewSetLogService(repo, converter)
+	dataLoader := set_log.NewSetLogDataLoader(repo)
+	return set_log.NewSetLogService(repo, converter, dataLoader)
 }
 
 // 共通のConverterを取得する関数

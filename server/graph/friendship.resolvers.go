@@ -18,13 +18,13 @@ type friendshipResolver struct{ *Resolver }
 // Requester is the resolver for the requester field.
 func (r *friendshipResolver) Requester(ctx context.Context, obj *model.Friendship) (*model.User, error) {
 	userService := services.NewUserServiceWithSeparation(r.DB)
-	return userService.GetUserByID(ctx, obj.RequesterID)
+	return userService.GetUserByIDWithDataLoader(ctx, obj.RequesterID)
 }
 
 // Requestee is the resolver for the requestee field.
 func (r *friendshipResolver) Requestee(ctx context.Context, obj *model.Friendship) (*model.User, error) {
 	userService := services.NewUserServiceWithSeparation(r.DB)
-	return userService.GetUserByID(ctx, obj.RequesteeID)
+	return userService.GetUserByIDWithDataLoader(ctx, obj.RequesteeID)
 }
 
 // ================================

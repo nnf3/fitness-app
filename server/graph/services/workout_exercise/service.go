@@ -10,8 +10,9 @@ import (
 
 type WorkoutExerciseService interface {
 	GetWorkoutExercisesByWorkoutID(ctx context.Context, workoutID string) ([]*model.WorkoutExercise, error)
-	GetWorkoutExercisesByExerciseID(ctx context.Context, exerciseID string) ([]*model.WorkoutExercise, error)
 	CreateWorkoutExercise(ctx context.Context, input model.CreateWorkoutExercise) (*model.WorkoutExercise, error)
+	// DataLoader使用メソッド
+	GetWorkoutExercisesByWorkoutIDWithDataLoader(ctx context.Context, workoutID string) ([]*model.WorkoutExercise, error)
 }
 
 type workoutExerciseService struct {
@@ -37,15 +38,6 @@ func (s *workoutExerciseService) GetWorkoutExercisesByWorkoutID(ctx context.Cont
 	return s.converter.ToModelWorkoutExercisesFromPointers(workoutExercises), nil
 }
 
-func (s *workoutExerciseService) GetWorkoutExercisesByExerciseID(ctx context.Context, exerciseID string) ([]*model.WorkoutExercise, error) {
-	// DataLoaderを使用して遅延ローディング
-	workoutExercises, err := s.dataLoader.LoadByExerciseID(ctx, exerciseID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get workout exercises for exercise %s: %w", exerciseID, err)
-	}
-	return s.converter.ToModelWorkoutExercisesFromPointers(workoutExercises), nil
-}
-
 func (s *workoutExerciseService) CreateWorkoutExercise(ctx context.Context, input model.CreateWorkoutExercise) (*model.WorkoutExercise, error) {
 	workoutID, err := strconv.ParseUint(input.WorkoutID, 10, 32)
 	if err != nil {
@@ -67,4 +59,14 @@ func (s *workoutExerciseService) CreateWorkoutExercise(ctx context.Context, inpu
 	}
 
 	return s.converter.ToModelWorkoutExercise(*workoutExercise), nil
+}
+
+// DataLoader使用メソッド
+func (s *workoutExerciseService) GetWorkoutExercisesByWorkoutIDWithDataLoader(ctx context.Context, workoutID string) ([]*model.WorkoutExercise, error) {
+	// 既存のDataLoaderを使用
+	entityWorkoutExercises, err := s.dataLoader.LoadByWorkoutID(ctx, workoutID)
+	if err != nil {
+		return nil, err
+	}
+	return s.converter.ToModelWorkoutExercisesFromPointers(entityWorkoutExercises), nil
 }

@@ -18,7 +18,7 @@ type workoutResolver struct{ *Resolver }
 // WorkoutExercises is the resolver for the workoutExercises field.
 func (r *workoutResolver) WorkoutExercises(ctx context.Context, obj *model.Workout) ([]*model.WorkoutExercise, error) {
 	workoutExerciseService := services.NewWorkoutExerciseServiceWithSeparation(r.DB)
-	return workoutExerciseService.GetWorkoutExercisesByWorkoutID(ctx, obj.ID)
+	return workoutExerciseService.GetWorkoutExercisesByWorkoutIDWithDataLoader(ctx, obj.ID)
 }
 
 // ================================

@@ -12,19 +12,24 @@ type WorkoutService interface {
 	GetWorkoutByID(ctx context.Context, workoutID string) (*model.Workout, error)
 	GetWorkoutsByUserID(ctx context.Context, userID string) ([]*model.Workout, error)
 	StartWorkout(ctx context.Context) (*model.Workout, error)
+	// DataLoader使用メソッド
+	GetWorkoutByIDWithDataLoader(ctx context.Context, workoutID string) (*model.Workout, error)
+	GetWorkoutsByUserIDWithDataLoader(ctx context.Context, userID string) ([]*model.Workout, error)
 }
 
 type workoutService struct {
-	repo      WorkoutRepository
-	converter *WorkoutConverter
-	common    common.CommonRepository
+	repo       WorkoutRepository
+	converter  *WorkoutConverter
+	common     common.CommonRepository
+	dataLoader *WorkoutDataLoader // DataLoaderを統合
 }
 
-func NewWorkoutService(repo WorkoutRepository, converter *WorkoutConverter) WorkoutService {
+func NewWorkoutService(repo WorkoutRepository, converter *WorkoutConverter, dataLoader *WorkoutDataLoader) WorkoutService {
 	return &workoutService{
-		repo:      repo,
-		converter: converter,
-		common:    common.NewCommonRepository(repo.(*workoutRepository).db),
+		repo:       repo,
+		converter:  converter,
+		common:     common.NewCommonRepository(repo.(*workoutRepository).db),
+		dataLoader: dataLoader,
 	}
 }
 
@@ -59,4 +64,26 @@ func (s *workoutService) StartWorkout(ctx context.Context) (*model.Workout, erro
 	}
 
 	return s.converter.ToModelWorkout(workout), nil
+}
+
+// DataLoader使用メソッド
+func (s *workoutService) GetWorkoutByIDWithDataLoader(ctx context.Context, workoutID string) (*model.Workout, error) {
+	// 既存のDataLoaderを使用
+	entityWorkout, err := s.dataLoader.LoadByID(ctx, workoutID)
+	if err != nil {
+		return nil, err
+	}
+	if entityWorkout == nil {
+		return nil, nil
+	}
+	return s.converter.ToModelWorkout(*entityWorkout), nil
+}
+
+func (s *workoutService) GetWorkoutsByUserIDWithDataLoader(ctx context.Context, userID string) ([]*model.Workout, error) {
+	// 既存のDataLoaderを使用
+	entityWorkouts, err := s.dataLoader.LoadByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.converter.ToModelWorkoutsFromPointers(entityWorkouts), nil
 }

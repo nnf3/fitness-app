@@ -17,17 +17,17 @@ type workoutExerciseResolver struct{ *Resolver }
 
 func (r *workoutExerciseResolver) Exercise(ctx context.Context, obj *model.WorkoutExercise) (*model.Exercise, error) {
 	exerciseService := services.NewExerciseServiceWithSeparation(r.DB)
-	return exerciseService.GetExercise(ctx, obj.Exercise.ID)
+	return exerciseService.GetExerciseWithDataLoader(ctx, obj.Exercise.ID)
 }
 
 func (r *workoutExerciseResolver) Workout(ctx context.Context, obj *model.WorkoutExercise) (*model.Workout, error) {
 	workoutService := services.NewWorkoutServiceWithSeparation(r.DB)
-	return workoutService.GetWorkoutByID(ctx, obj.Workout.ID)
+	return workoutService.GetWorkoutByIDWithDataLoader(ctx, obj.Workout.ID)
 }
 
 func (r *workoutExerciseResolver) SetLogs(ctx context.Context, obj *model.WorkoutExercise) ([]*model.SetLog, error) {
 	setLogService := services.NewSetLogServiceWithSeparation(r.DB)
-	return setLogService.GetSetLogsByWorkoutExerciseID(ctx, obj.ID)
+	return setLogService.GetSetLogsByWorkoutExerciseIDWithDataLoader(ctx, obj.ID)
 }
 
 // ================================

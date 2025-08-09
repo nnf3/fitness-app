@@ -7,15 +7,6 @@ import (
 )
 
 // ================================
-// Model
-// ================================
-
-// SetLog returns SetLogResolver implementation.
-// func (r *Resolver) SetLog() SetLogResolver { return &setLogResolver{r} }
-
-// type setLogResolver struct{ *Resolver }
-
-// ================================
 // Mutation
 // ================================
 

@@ -15,6 +15,8 @@ type UserService interface {
 	GetUserByID(ctx context.Context, userID string) (*model.User, error)
 	GetUsers(ctx context.Context) ([]*model.User, error)
 	DeleteUser(ctx context.Context, input model.DeleteUser) (bool, error)
+	// DataLoader使用メソッド
+	GetUserByIDWithDataLoader(ctx context.Context, userID string) (*model.User, error)
 }
 
 type userService struct {
@@ -98,4 +100,17 @@ func (s *userService) DeleteUser(ctx context.Context, input model.DeleteUser) (b
 	}
 
 	return true, nil
+}
+
+// DataLoader使用メソッド
+func (s *userService) GetUserByIDWithDataLoader(ctx context.Context, userID string) (*model.User, error) {
+	// 既存のDataLoaderを使用
+	entityUser, err := s.dataLoader.LoadByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if entityUser == nil {
+		return nil, nil
+	}
+	return s.converter.ToModelUser(*entityUser), nil
 }

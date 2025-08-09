@@ -7,14 +7,6 @@ import (
 )
 
 // ================================
-// Model
-// ================================
-// Exercise returns ExerciseResolver implementation.
-// func (r *Resolver) Exercise() ExerciseResolver { return &exerciseResolver{r} }
-
-// type exerciseResolver struct{ *Resolver }
-
-// ================================
 // Query
 // ================================
 // Exercises is the resolver for the exercises field.
