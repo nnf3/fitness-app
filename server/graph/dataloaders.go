@@ -1,8 +1,12 @@
 package graph
 
 import (
+	"app/graph/services/exercise"
+	"app/graph/services/friendship"
 	"app/graph/services/profile"
+	"app/graph/services/set_log"
 	"app/graph/services/user"
+	"app/graph/services/workout"
 	"app/graph/services/workout_exercise"
 	"context"
 
@@ -17,6 +21,10 @@ type DataLoaders struct {
 	User            *user.UserDataLoader
 	Profile         *profile.ProfileDataLoader
 	WorkoutExercise *workout_exercise.WorkoutExerciseDataLoader
+	Exercise        *exercise.ExerciseDataLoader
+	Friendship      *friendship.FriendshipDataLoader
+	Workout         *workout.WorkoutDataLoader
+	SetLog          *set_log.SetLogDataLoader
 }
 
 // NewDataLoaders は新しいDataLoadersを作成
@@ -25,11 +33,19 @@ func NewDataLoaders(db *gorm.DB) *DataLoaders {
 	userRepo := user.NewUserRepository(db)
 	profileRepo := profile.NewProfileRepository(db)
 	workoutExerciseRepo := workout_exercise.NewWorkoutExerciseRepository(db)
+	exerciseRepo := exercise.NewExerciseRepository(db)
+	friendshipRepo := friendship.NewFriendshipRepository(db)
+	workoutRepo := workout.NewWorkoutRepository(db)
+	setLogRepo := set_log.NewSetLogRepository(db)
 
 	return &DataLoaders{
 		User:            user.NewUserDataLoader(userRepo),
 		Profile:         profile.NewProfileDataLoader(profileRepo),
 		WorkoutExercise: workout_exercise.NewWorkoutExerciseDataLoader(workoutExerciseRepo),
+		Exercise:        exercise.NewExerciseDataLoader(exerciseRepo),
+		Friendship:      friendship.NewFriendshipDataLoader(friendshipRepo),
+		Workout:         workout.NewWorkoutDataLoader(workoutRepo),
+		SetLog:          set_log.NewSetLogDataLoader(setLogRepo),
 	}
 }
 

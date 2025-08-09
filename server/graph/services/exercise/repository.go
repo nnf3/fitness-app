@@ -12,6 +12,7 @@ import (
 type ExerciseRepository interface {
 	GetExercises(ctx context.Context) ([]entity.Exercise, error)
 	GetExerciseByID(ctx context.Context, id string) (*entity.Exercise, error)
+	GetExercisesByIDs(exerciseIDs []uint) ([]*entity.Exercise, error)
 }
 
 type exerciseRepository struct {
@@ -42,4 +43,23 @@ func (r *exerciseRepository) GetExerciseByID(ctx context.Context, id string) (*e
 	}
 
 	return &exercise, nil
+}
+
+func (r *exerciseRepository) GetExercisesByIDs(exerciseIDs []uint) ([]*entity.Exercise, error) {
+	if len(exerciseIDs) == 0 {
+		return []*entity.Exercise{}, nil
+	}
+
+	var exercises []entity.Exercise
+	if err := r.db.Where("id IN ?", exerciseIDs).Find(&exercises).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch exercises by IDs: %w", err)
+	}
+
+	// 値のスライスをポインタのスライスに変換
+	result := make([]*entity.Exercise, len(exercises))
+	for i := range exercises {
+		result[i] = &exercises[i]
+	}
+
+	return result, nil
 }
