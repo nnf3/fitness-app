@@ -6,61 +6,52 @@ import (
 	"app/graph/services/common"
 	"context"
 	"fmt"
+	"strconv"
 )
 
 type SetLogService interface {
-	AddSetLog(ctx context.Context, input model.AddSetLog) (*model.SetLog, error)
+	GetSetLogsByWorkoutExerciseID(ctx context.Context, workoutExerciseID string) ([]*model.SetLog, error)
+	CreateSetLog(ctx context.Context, input model.CreateSetLog) (*model.SetLog, error)
+	DeleteSetLog(ctx context.Context, input model.DeleteSetLog) (bool, error)
+	// DataLoader使用メソッド
+	GetSetLogsByWorkoutExerciseIDWithDataLoader(ctx context.Context, workoutExerciseID string) ([]*model.SetLog, error)
 }
 
 type setLogService struct {
-	repo      SetLogRepository
-	converter *SetLogConverter
-	common    common.CommonRepository
+	repo       SetLogRepository
+	converter  *SetLogConverter
+	common     common.CommonRepository
+	dataLoader *SetLogDataLoader // DataLoaderを統合
 }
 
-func NewSetLogService(repo SetLogRepository, converter *SetLogConverter) SetLogService {
+func NewSetLogService(repo SetLogRepository, converter *SetLogConverter, dataLoader *SetLogDataLoader) SetLogService {
 	return &setLogService{
-		repo:      repo,
-		converter: converter,
-		common:    common.NewCommonRepository(repo.(*setLogRepository).db),
+		repo:       repo,
+		converter:  converter,
+		common:     common.NewCommonRepository(repo.(*setLogRepository).db),
+		dataLoader: dataLoader,
 	}
 }
 
-func (s *setLogService) AddSetLog(ctx context.Context, input model.AddSetLog) (*model.SetLog, error) {
-	workoutLog, err := s.repo.GetWorkoutLogByID(ctx, input.WorkoutLogID)
+func (s *setLogService) GetSetLogsByWorkoutExerciseID(ctx context.Context, workoutExerciseID string) ([]*model.SetLog, error) {
+	setLogs, err := s.repo.GetSetLogsByWorkoutExerciseID(ctx, workoutExerciseID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get workout log: %w", err)
+		return nil, fmt.Errorf("failed to get set logs for workout exercise %s: %w", workoutExerciseID, err)
 	}
+	return s.converter.ToModelSetLogsFromPointers(setLogs), nil
+}
 
-	workoutType, err := s.repo.GetWorkoutTypeByID(ctx, input.WorkoutTypeID)
+func (s *setLogService) CreateSetLog(ctx context.Context, input model.CreateSetLog) (*model.SetLog, error) {
+	workoutExerciseID, err := strconv.ParseUint(input.WorkoutExerciseID, 10, 32)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get workout type: %w", err)
-	}
-
-	setLogs, err := s.repo.GetSetLogsByWorkoutLogID(ctx, input.WorkoutLogID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get set logs: %w", err)
-	}
-
-	// workoutTypeIDでグループ化して、その中で一番大きいsetNumberを取得する
-	// そのsetNumberに1を足したものをsetNumberとする
-	maxSetNumber := 0
-	for _, setLog := range setLogs {
-		if setLog.WorkoutTypeID != workoutType.ID {
-			continue
-		}
-
-		if setLog.SetNumber > maxSetNumber {
-			maxSetNumber = setLog.SetNumber
-		}
+		return nil, fmt.Errorf("invalid workout exercise ID: %s", input.WorkoutExerciseID)
 	}
 
 	setLog := entity.SetLog{
-		WorkoutLogID:  workoutLog.ID,
-		WorkoutTypeID: workoutType.ID,
-		Weight:        int(*input.Weight),
-		RepCount:      int(*input.RepCount),
-		SetNumber:     maxSetNumber + 1,
+		WorkoutExerciseID: uint(workoutExerciseID),
+		Weight:            int(*input.Weight),
+		RepCount:          int(*input.RepCount),
+		SetNumber:         int(input.SetNumber),
 	}
 
 	if err := s.repo.CreateSetLog(ctx, &setLog); err != nil {
@@ -68,4 +59,21 @@ func (s *setLogService) AddSetLog(ctx context.Context, input model.AddSetLog) (*
 	}
 
 	return s.converter.ToModelSetLog(setLog), nil
+}
+
+func (s *setLogService) DeleteSetLog(ctx context.Context, input model.DeleteSetLog) (bool, error) {
+	if err := s.repo.DeleteSetLog(ctx, input.SetLogID); err != nil {
+		return false, fmt.Errorf("failed to delete set log: %w", err)
+	}
+	return true, nil
+}
+
+// DataLoader使用メソッド
+func (s *setLogService) GetSetLogsByWorkoutExerciseIDWithDataLoader(ctx context.Context, workoutExerciseID string) ([]*model.SetLog, error) {
+	// 既存のDataLoaderを使用
+	entitySetLogs, err := s.dataLoader.LoadByWorkoutExerciseID(ctx, workoutExerciseID)
+	if err != nil {
+		return nil, err
+	}
+	return s.converter.ToModelSetLogsFromPointers(entitySetLogs), nil
 }

@@ -8,14 +8,12 @@ import (
 
 type SetLog struct {
 	gorm.Model
-	WorkoutLogID  uint `gorm:"not null;index"`
-	WorkoutTypeID uint `gorm:"not null;index"`
-	Weight        int  `gorm:"not null"` // 何キロでやったか
-	RepCount      int  `gorm:"not null"` // 何レップやったか
-	SetNumber     int  `gorm:"not null"` // 何セット目か
+	WorkoutExerciseID uint `gorm:"not null;index"`
+	Weight            int  `gorm:"not null"` // 何キロでやったか
+	RepCount          int  `gorm:"not null"` // 何レップやったか
+	SetNumber         int  `gorm:"not null"` // 何セット目か
 
-	WorkoutLog  WorkoutLog  `gorm:"constraint:OnDelete:CASCADE;foreignKey:WorkoutLogID"`
-	WorkoutType WorkoutType `gorm:"constraint:OnDelete:CASCADE;foreignKey:WorkoutTypeID"`
+	WorkoutExercise WorkoutExercise `gorm:"constraint:OnDelete:CASCADE;foreignKey:WorkoutExerciseID"`
 }
 
 func (s *SetLog) BeforeSave(tx *gorm.DB) error {
@@ -35,11 +33,8 @@ func (s *SetLog) BeforeUpdate(tx *gorm.DB) error {
 }
 
 func (s *SetLog) Validate() error {
-	if s.WorkoutLogID == 0 {
-		return fmt.Errorf("workout_log_id は必須です")
-	}
-	if s.WorkoutTypeID == 0 {
-		return fmt.Errorf("workout_type_type_id は必須です")
+	if s.WorkoutExerciseID == 0 {
+		return fmt.Errorf("workout_exercise_id は必須です")
 	}
 	if s.Weight <= 0 {
 		return fmt.Errorf("重量は正の整数で入力してください")
@@ -57,16 +52,10 @@ func (s *SetLog) Validate() error {
 func (s *SetLog) checkForeignKeys(tx *gorm.DB) error {
 	var count int64
 
-	// WorkoutLog存在確認
-	tx.Model(&WorkoutLog{}).Where("id = ?", s.WorkoutLogID).Count(&count)
+	// WorkoutExercise存在確認
+	tx.Model(&WorkoutExercise{}).Where("id = ?", s.WorkoutExerciseID).Count(&count)
 	if count == 0 {
-		return fmt.Errorf("指定された workout_log_id は存在しません")
-	}
-
-	// WorkoutType存在確認
-	tx.Model(&WorkoutType{}).Where("id = ?", s.WorkoutTypeID).Count(&count)
-	if count == 0 {
-		return fmt.Errorf("指定された workout_type_id は存在しません")
+		return fmt.Errorf("指定された workout_exercise_id は存在しません")
 	}
 
 	return nil

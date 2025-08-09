@@ -3,8 +3,6 @@ package graph
 import (
 	"app/graph/model"
 	"app/graph/services"
-	"app/graph/services/profile"
-	"app/graph/services/workout_log"
 	"context"
 	"fmt"
 )
@@ -20,47 +18,32 @@ type userResolver struct{ *Resolver }
 
 // Profile is the resolver for the profile field.
 func (r *userResolver) Profile(ctx context.Context, obj *model.User) (*model.Profile, error) {
-	profileEntity, err := r.DataLoaders.ProfileLoaderForUserDirect.LoadByUserID(ctx, obj.ID)
-	if err != nil {
-		return nil, err
-	}
-	if profileEntity == nil {
-		return nil, nil
-	}
-
-	// エンティティからモデルに変換
-	profileConverter := profile.NewProfileConverter()
-	return profileConverter.ToModelProfile(*profileEntity), nil
+	profileService := services.NewProfileServiceWithSeparation(r.DB)
+	return profileService.GetProfileByUserID(ctx, obj.ID)
 }
 
 // WorkoutLogs is the resolver for the workoutLogs field.
-func (r *userResolver) WorkoutLogs(ctx context.Context, obj *model.User) ([]*model.WorkoutLog, error) {
-	workoutLogsEntities, err := r.DataLoaders.WorkoutLogsLoaderForUserDirect.LoadByUserID(ctx, obj.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	// エンティティからモデルに変換
-	workoutLogConverter := workout_log.NewWorkoutLogConverter()
-	return workoutLogConverter.ToModelWorkoutLogsFromPointers(workoutLogsEntities), nil
+func (r *userResolver) Workouts(ctx context.Context, obj *model.User) ([]*model.Workout, error) {
+	workoutService := services.NewWorkoutServiceWithSeparation(r.DB)
+	return workoutService.GetWorkoutsByUserIDWithDataLoader(ctx, obj.ID)
 }
 
 // Friends is the resolver for the friends field.
 func (r *userResolver) Friends(ctx context.Context, obj *model.User) ([]*model.User, error) {
-	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
-	return friendshipService.GetFriends(ctx, obj.ID)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB)
+	return friendshipService.GetFriendsWithDataLoader(ctx, obj.ID)
 }
 
 // FriendshipRequests is the resolver for the friendshipRequests field.
 func (r *userResolver) FriendshipRequests(ctx context.Context, obj *model.User) ([]*model.Friendship, error) {
-	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
-	return friendshipService.GetFriendshipRequests(ctx, obj.ID)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB)
+	return friendshipService.GetFriendshipRequestsWithDataLoader(ctx, obj.ID)
 }
 
 // RecommendedUsers is the resolver for the recommendedUsers field.
 func (r *userResolver) RecommendedUsers(ctx context.Context, obj *model.User) ([]*model.User, error) {
-	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForFriendship)
-	return friendshipService.GetRecommendedUsers(ctx, obj.ID)
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB)
+	return friendshipService.GetRecommendedUsersWithDataLoader(ctx, obj.ID)
 }
 
 // ================================
@@ -69,7 +52,7 @@ func (r *userResolver) RecommendedUsers(ctx context.Context, obj *model.User) ([
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	userService := services.NewUserServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForUser)
+	userService := services.NewUserServiceWithSeparation(r.DB)
 	currentUser, err := userService.GetCurrentUser(ctx)
 	if err != nil {
 		return nil, err
@@ -83,7 +66,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 
 // CurrentUser is the resolver for the currentUser field.
 func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
-	userService := services.NewUserServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForUser)
+	userService := services.NewUserServiceWithSeparation(r.DB)
 	return userService.GetOrCreateUserByUID(ctx)
 }
 
@@ -93,6 +76,6 @@ func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
 
 // DeleteUser is the resolver for the deleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context, input model.DeleteUser) (bool, error) {
-	userService := services.NewUserServiceWithSeparation(r.DB, r.DataLoaders.UserLoaderForUser)
+	userService := services.NewUserServiceWithSeparation(r.DB)
 	return userService.DeleteUser(ctx, input)
 }

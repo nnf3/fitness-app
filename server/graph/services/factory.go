@@ -2,17 +2,13 @@ package services
 
 import (
 	"app/graph/services/common"
+	"app/graph/services/exercise"
 	"app/graph/services/friendship"
 	"app/graph/services/profile"
 	"app/graph/services/set_log"
 	"app/graph/services/user"
-	"app/graph/services/workout_log"
-	"app/graph/services/workout_type"
-
-	friendshipLoaders "app/graph/services/friendship/loaders"
-	userLoaders "app/graph/services/user/loaders"
-	workoutLogLoaders "app/graph/services/workout_log/loaders"
-	workoutTypeLoaders "app/graph/services/workout_type/loaders"
+	"app/graph/services/workout"
+	"app/graph/services/workout_exercise"
 
 	"gorm.io/gorm"
 )
@@ -20,46 +16,58 @@ import (
 // 新しい分離されたサービス構造のファクトリー関数
 
 // NewFriendshipServiceWithSeparation は分離されたFriendshipServiceを作成します
-func NewFriendshipServiceWithSeparation(db *gorm.DB, userLoader friendshipLoaders.UserLoaderInterface) friendship.FriendshipService {
+func NewFriendshipServiceWithSeparation(db *gorm.DB) friendship.FriendshipService {
 	repo := friendship.NewFriendshipRepository(db)
-	userRepo := user.NewUserRepository(db)
 	converter := friendship.NewFriendshipConverter()
-	return friendship.NewFriendshipServiceWithUserLoader(repo, userRepo, converter, userLoader)
+	return friendship.NewFriendshipService(repo, converter)
 }
 
 // NewUserServiceWithSeparation は分離されたUserServiceを作成します
-func NewUserServiceWithSeparation(db *gorm.DB, loader friendshipLoaders.UserLoaderInterface) user.UserService {
+func NewUserServiceWithSeparation(db *gorm.DB) user.UserService {
 	repo := user.NewUserRepository(db)
 	converter := user.NewUserConverter()
-	return user.NewUserServiceWithDataLoader(repo, converter, loader)
+	dataLoader := user.NewUserDataLoader(repo)
+	return user.NewUserService(repo, converter, dataLoader)
 }
 
 // NewProfileServiceWithSeparation は分離されたProfileServiceを作成します
-func NewProfileServiceWithSeparation(db *gorm.DB, loader userLoaders.ProfileLoaderInterface) profile.ProfileService {
+func NewProfileServiceWithSeparation(db *gorm.DB) profile.ProfileService {
 	repo := profile.NewProfileRepository(db)
 	converter := profile.NewProfileConverter()
-	return profile.NewProfileService(repo, converter, loader)
+	dataLoader := profile.NewProfileDataLoader(repo)
+	return profile.NewProfileService(repo, converter, dataLoader)
 }
 
-// NewWorkoutLogServiceWithSeparation は分離されたWorkoutLogServiceを作成します
-func NewWorkoutLogServiceWithSeparation(db *gorm.DB, loader workoutLogLoaders.SetLogsLoaderInterface) workout_log.WorkoutLogService {
-	repo := workout_log.NewWorkoutLogRepository(db)
-	converter := workout_log.NewWorkoutLogConverter()
-	return workout_log.NewWorkoutLogService(repo, converter)
+// NewExerciseServiceWithSeparation は分離されたExerciseServiceを作成します
+func NewExerciseServiceWithSeparation(db *gorm.DB) exercise.ExerciseService {
+	repo := exercise.NewExerciseRepository(db)
+	converter := exercise.NewExerciseConverter()
+	dataLoader := exercise.NewExerciseDataLoader(repo)
+	return exercise.NewExerciseService(repo, converter, dataLoader)
+}
+
+// NewWorkoutServiceWithSeparation は分離されたWorkoutServiceを作成します
+func NewWorkoutServiceWithSeparation(db *gorm.DB) workout.WorkoutService {
+	repo := workout.NewWorkoutRepository(db)
+	converter := workout.NewWorkoutConverter()
+	dataLoader := workout.NewWorkoutDataLoader(repo)
+	return workout.NewWorkoutService(repo, converter, dataLoader)
+}
+
+// NewWorkoutExerciseServiceWithSeparation は分離されたWorkoutExerciseServiceを作成します
+func NewWorkoutExerciseServiceWithSeparation(db *gorm.DB) workout_exercise.WorkoutExerciseService {
+	repo := workout_exercise.NewWorkoutExerciseRepository(db)
+	converter := workout_exercise.NewWorkoutExerciseConverter()
+	dataLoader := workout_exercise.NewWorkoutExerciseDataLoader(repo)
+	return workout_exercise.NewWorkoutExerciseService(repo, converter, dataLoader)
 }
 
 // NewSetLogServiceWithSeparation は分離されたSetLogServiceを作成します
 func NewSetLogServiceWithSeparation(db *gorm.DB) set_log.SetLogService {
 	repo := set_log.NewSetLogRepository(db)
 	converter := set_log.NewSetLogConverter()
-	return set_log.NewSetLogService(repo, converter)
-}
-
-// NewWorkoutTypeServiceWithSeparation は分離されたWorkoutTypeServiceを作成します
-func NewWorkoutTypeServiceWithSeparation(db *gorm.DB, loader workoutTypeLoaders.SetLogsLoaderForWorkoutTypeInterface) workout_type.WorkoutTypeService {
-	repo := workout_type.NewWorkoutTypeRepository(db)
-	converter := workout_type.NewWorkoutTypeConverter()
-	return workout_type.NewWorkoutTypeServiceWithLoader(repo, converter, loader)
+	dataLoader := set_log.NewSetLogDataLoader(repo)
+	return set_log.NewSetLogService(repo, converter, dataLoader)
 }
 
 // 共通のConverterを取得する関数

@@ -4,7 +4,6 @@ import (
 	"app/entity"
 	"app/graph/model"
 	"app/graph/services/common"
-	"app/graph/services/user/loaders"
 	"context"
 	"fmt"
 	"time"
@@ -17,25 +16,26 @@ type ProfileService interface {
 }
 
 type profileService struct {
-	repo      ProfileRepository
-	converter *ProfileConverter
-	loader    loaders.ProfileLoaderInterface
-	common    common.CommonRepository
+	repo       ProfileRepository
+	converter  *ProfileConverter
+	common     common.CommonRepository
+	dataLoader *ProfileDataLoader // DataLoaderを統合
 }
 
-func NewProfileService(repo ProfileRepository, converter *ProfileConverter, loader loaders.ProfileLoaderInterface) ProfileService {
+func NewProfileService(repo ProfileRepository, converter *ProfileConverter, dataLoader *ProfileDataLoader) ProfileService {
 	return &profileService{
-		repo:      repo,
-		converter: converter,
-		loader:    loader,
-		common:    common.NewCommonRepository(repo.(*profileRepository).db),
+		repo:       repo,
+		converter:  converter,
+		common:     common.NewCommonRepository(repo.GetDB()),
+		dataLoader: dataLoader,
 	}
 }
 
 func (s *profileService) GetProfileByUserID(ctx context.Context, userID string) (*model.Profile, error) {
-	profile, err := s.loader.LoadByUserID(ctx, userID)
+	// DataLoaderを使用して遅延ローディング
+	profile, err := s.dataLoader.LoadByUserID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load profile: %w", err)
+		return nil, fmt.Errorf("failed to get profile: %w", err)
 	}
 
 	if profile == nil {

@@ -9,8 +9,8 @@ import (
 
 type User struct {
 	gorm.Model
-	UID         string       `gorm:"unique;not null"`
-	WorkoutLogs []WorkoutLog `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	UID      string    `gorm:"unique;not null"`
+	Workouts []Workout `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
 }
 
 // BeforeSave GORMフック - 保存前のバリデーション

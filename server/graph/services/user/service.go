@@ -3,7 +3,6 @@ package user
 import (
 	"app/entity"
 	"app/graph/model"
-	"app/graph/services/friendship/loaders"
 	"app/middleware"
 	"context"
 	"fmt"
@@ -16,26 +15,21 @@ type UserService interface {
 	GetUserByID(ctx context.Context, userID string) (*model.User, error)
 	GetUsers(ctx context.Context) ([]*model.User, error)
 	DeleteUser(ctx context.Context, input model.DeleteUser) (bool, error)
+	// DataLoader使用メソッド
+	GetUserByIDWithDataLoader(ctx context.Context, userID string) (*model.User, error)
 }
 
 type userService struct {
 	repo       UserRepository
 	converter  *UserConverter
-	userLoader loaders.UserLoaderInterface
+	dataLoader *UserDataLoader // DataLoaderを統合
 }
 
-func NewUserService(repo UserRepository, converter *UserConverter) UserService {
-	return &userService{
-		repo:      repo,
-		converter: converter,
-	}
-}
-
-func NewUserServiceWithDataLoader(repo UserRepository, converter *UserConverter, userLoader loaders.UserLoaderInterface) UserService {
+func NewUserService(repo UserRepository, converter *UserConverter, dataLoader *UserDataLoader) UserService {
 	return &userService{
 		repo:       repo,
 		converter:  converter,
-		userLoader: userLoader,
+		dataLoader: dataLoader,
 	}
 }
 
@@ -79,21 +73,14 @@ func (s *userService) GetUserByUID(ctx context.Context) (*model.User, error) {
 }
 
 func (s *userService) GetUserByID(ctx context.Context, userID string) (*model.User, error) {
-	// DataLoaderが利用可能な場合はそれを使用
-	if s.userLoader != nil {
-		user, err := s.userLoader.LoadByID(ctx, userID)
-		if err != nil {
-			return nil, err
-		}
-		return s.converter.ToModelUser(*user), nil
-	}
-
-	// フォールバック: 直接リポジトリから取得
-	user, err := s.repo.GetUserByID(ctx, userID)
+	// DataLoaderを使用して遅延ローディング
+	user, err := s.dataLoader.LoadByID(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get user by ID %s: %w", userID, err)
 	}
-
+	if user == nil {
+		return nil, fmt.Errorf("user not found: %s", userID)
+	}
 	return s.converter.ToModelUser(*user), nil
 }
 
@@ -113,4 +100,17 @@ func (s *userService) DeleteUser(ctx context.Context, input model.DeleteUser) (b
 	}
 
 	return true, nil
+}
+
+// DataLoader使用メソッド
+func (s *userService) GetUserByIDWithDataLoader(ctx context.Context, userID string) (*model.User, error) {
+	// 既存のDataLoaderを使用
+	entityUser, err := s.dataLoader.LoadByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if entityUser == nil {
+		return nil, nil
+	}
+	return s.converter.ToModelUser(*entityUser), nil
 }

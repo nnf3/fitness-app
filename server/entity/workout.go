@@ -6,19 +6,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type WorkoutLog struct {
+type Workout struct {
 	gorm.Model
-	UserID    uint           `gorm:"not null;index"`
+	UserID uint `gorm:"not null;index"`
 
-	User     User      `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
-	SetLogs  []SetLog  `gorm:"foreignKey:WorkoutLogID;constraint:OnDelete:CASCADE"`
+	User             User              `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
+	WorkoutExercises []WorkoutExercise `gorm:"foreignKey:WorkoutID;constraint:OnDelete:CASCADE"`
 }
 
-func (w *WorkoutLog) BeforeSave(tx *gorm.DB) error {
+func (w *Workout) BeforeSave(tx *gorm.DB) error {
 	return w.Validate()
 }
 
-func (w *WorkoutLog) BeforeCreate(tx *gorm.DB) error {
+func (w *Workout) BeforeCreate(tx *gorm.DB) error {
 	// User の存在をチェック（DB整合性のため）
 	var user User
 	if err := tx.First(&user, w.UserID).Error; err != nil {
@@ -27,11 +27,11 @@ func (w *WorkoutLog) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-func (w *WorkoutLog) BeforeUpdate(tx *gorm.DB) error {
+func (w *Workout) BeforeUpdate(tx *gorm.DB) error {
 	return w.Validate()
 }
 
-func (wl *WorkoutLog) Validate() error {
+func (wl *Workout) Validate() error {
 	if wl.UserID == 0 {
 		return fmt.Errorf("ユーザーIDは必須です")
 	}

@@ -29,17 +29,17 @@ func main() {
 	}
 
 	// YAMLファイルのパスを構築
-	yamlPath := filepath.Join(currentDir, "data", "initial_workout_types.yaml")
+	yamlPath := filepath.Join(currentDir, "data", "initial_exercises.yaml")
 
 	// アクションの実行
 	if *seed {
-		if err := data.SeedInitialWorkoutTypes(db.DB, yamlPath); err != nil {
+		if err := data.SeedInitialExercises(db.DB, yamlPath); err != nil {
 			log.Printf("❌ 初期データの登録に失敗しました: %v", err)
 			os.Exit(1)
 		}
 		log.Printf("✅ 初期データの登録が完了しました")
 	} else if *remove {
-		if err := data.RemoveInitialWorkoutTypes(db.DB, yamlPath); err != nil {
+		if err := data.RemoveInitialExercises(db.DB, yamlPath); err != nil {
 			log.Printf("❌ 初期データの削除に失敗しました: %v", err)
 			os.Exit(1)
 		}
