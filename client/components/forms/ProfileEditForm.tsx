@@ -11,8 +11,8 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks';
 import { useQuery, useMutation } from '@apollo/client';
-import { GetProfileDocument, UpdateProfileDocument } from '@/documents';
-import { GetProfileQuery, UpdateProfileMutation } from '@/types/graphql';
+import { GetProfileDocument, CreateProfileDocument, UpdateProfileDocument } from '@/documents';
+import { GetProfileQuery, CreateProfileMutation, UpdateProfileMutation } from '@/types/graphql';
 import { FormField } from './FormField';
 import { ImagePickerComponent } from './ImagePicker';
 import { useTheme } from '../../theme';
@@ -105,16 +105,32 @@ const useProfileEditQuery = () => {
     skip: !user,
   });
 
-  const [createProfile, { loading: mutationLoading }] = useMutation<UpdateProfileMutation>(UpdateProfileDocument, {
+  const [createProfile, { loading: createLoading }] = useMutation<CreateProfileMutation>(CreateProfileDocument, {
+    refetchQueries: [{ query: GetProfileDocument }],
     onCompleted: () => {
-      Alert.alert('成功', 'プロフィールを保存しました', [
+      Alert.alert('成功', 'プロフィールを作成しました', [
         { text: 'OK', onPress: () => router.back() }
       ]);
     },
     onError: (error) => {
-      Alert.alert('エラー', `プロフィールの保存に失敗しました: ${error.message}`);
+      Alert.alert('エラー', `プロフィールの作成に失敗しました: ${error.message}`);
     },
   });
+
+  const [updateProfile, { loading: updateLoading }] = useMutation<UpdateProfileMutation>(UpdateProfileDocument, {
+    refetchQueries: [{ query: GetProfileDocument }],
+    onCompleted: () => {
+      Alert.alert('成功', 'プロフィールを更新しました', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    },
+    onError: (error) => {
+      Alert.alert('エラー', `プロフィールの更新に失敗しました: ${error.message}`);
+    },
+  });
+
+  const hasProfile = !!data?.currentUser?.profile;
+  const mutationLoading = createLoading || updateLoading;
 
   return {
     router,
@@ -123,6 +139,8 @@ const useProfileEditQuery = () => {
     loading: queryLoading,
     error: queryError,
     createProfile,
+    updateProfile,
+    hasProfile,
     mutationLoading,
   };
 }
@@ -167,6 +185,8 @@ export const ProfileEditForm = () => {
     loading: queryLoading,
     error: queryError,
     createProfile,
+    updateProfile,
+    hasProfile,
     mutationLoading,
   } = useProfileEditQuery();
 
@@ -217,19 +237,27 @@ export const ProfileEditForm = () => {
       return;
     }
 
-    createProfile({
-      variables: {
-        input: {
-          name: formData.name.trim(),
-          birthDate: formData.birthDate,
-          gender: formData.gender,
-          height: parseFloat(formData.height),
-          weight: parseFloat(formData.weight),
-          activityLevel: formData.activityLevel || undefined,
-          imageURL: formData.imageURL || undefined,
-        },
-      },
-    });
+    const input = {
+      name: formData.name.trim(),
+      birthDate: formData.birthDate,
+      gender: formData.gender,
+      height: parseFloat(formData.height) || undefined,
+      weight: parseFloat(formData.weight) || undefined,
+      activityLevel: formData.activityLevel || undefined,
+      imageURL: formData.imageURL || undefined,
+    };
+
+    if (hasProfile) {
+      // プロフィールが存在する場合は更新
+      updateProfile({
+        variables: { input },
+      });
+    } else {
+      // プロフィールが存在しない場合は作成
+      createProfile({
+        variables: { input },
+      });
+    }
   };
 
   if (!user) {
@@ -336,7 +364,10 @@ export const ProfileEditForm = () => {
           disabled={!isFormValid || mutationLoading}
         >
           <Text style={styles.saveButtonText}>
-            {mutationLoading ? '保存中...' : '保存'}
+            {mutationLoading 
+              ? (hasProfile ? '更新中...' : '作成中...') 
+              : (hasProfile ? '更新' : '作成')
+            }
           </Text>
         </TouchableOpacity>
       </ScrollView>

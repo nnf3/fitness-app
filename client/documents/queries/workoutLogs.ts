@@ -4,20 +4,23 @@ export const WorkoutLogsDocument = gql`
   query WorkoutLogs {
     currentUser {
       id
-      workoutLogs {
+      workouts {
         id
         createdAt
         updatedAt
-        setLogs {
+        workoutExercises {
           id
-          weight
-          repCount
-          setNumber
-          workoutType {
+          exercise {
             id
             name
             category
             description
+          }
+          setLogs {
+            id
+            weight
+            repCount
+            setNumber
           }
         }
       }

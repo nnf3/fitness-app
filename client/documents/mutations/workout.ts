@@ -10,20 +10,38 @@ export const StartWorkoutDocument = gql`
   }
 `;
 
-export const AddSetLogDocument = gql`
-  mutation AddSetLog($input: AddSetLog!) {
-    addSetLog(input: $input) {
+export const CreateWorkoutExerciseDocument = gql`
+  mutation CreateWorkoutExercise($input: CreateWorkoutExercise!) {
+    createWorkoutExercise(input: $input) {
       id
-      workoutTypeID
-      weight
-      repCount
-      setNumber
-      workoutType {
+      workout {
+        id
+        createdAt
+        updatedAt
+      }
+      exercise {
         id
         name
         description
         category
       }
     }
+  }
+`;
+
+export const CreateSetLogDocument = gql`
+  mutation CreateSetLog($input: CreateSetLog!) {
+    createSetLog(input: $input) {
+      id
+      weight
+      repCount
+      setNumber
+    }
+  }
+`;
+
+export const DeleteSetLogDocument = gql`
+  mutation DeleteSetLog($input: DeleteSetLog!) {
+    deleteSetLog(input: $input)
   }
 `;

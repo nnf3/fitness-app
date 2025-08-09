@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
-export const WorkoutTypesDocument = gql`
-  query WorkoutTypes {
-    workoutTypes {
+export const ExercisesDocument = gql`
+  query Exercises {
+    exercises {
       id
       name
       description

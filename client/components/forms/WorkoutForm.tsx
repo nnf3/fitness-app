@@ -2,21 +2,21 @@ import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { FormField } from './FormField';
 import { useTheme } from '../../theme';
-import { WorkoutTypesQuery } from '@/types/graphql';
+import { ExercisesQuery } from '@/types/graphql';
 
 interface WorkoutFormProps {
   workoutId: string;
-  selectedWorkoutType: string;
+  selectedExercise: string;
   weight: string;
   repCount: string;
   onUpdateForm: (field: keyof WorkoutFormData, value: string) => void;
   onSubmit: () => void;
   loading: boolean;
-  workoutTypesData?: WorkoutTypesQuery;
+  exercisesData?: ExercisesQuery;
 }
 
 interface WorkoutFormData {
-  selectedWorkoutType: string;
+  selectedExercise: string;
   weight: string;
   repCount: string;
 }
@@ -47,13 +47,13 @@ const createStyles = (theme: any) => StyleSheet.create({
 
 export function WorkoutForm({
   workoutId,
-  selectedWorkoutType,
+  selectedExercise,
   weight,
   repCount,
   onUpdateForm,
   onSubmit,
   loading,
-  workoutTypesData,
+  exercisesData,
 }: WorkoutFormProps) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
@@ -61,15 +61,15 @@ export function WorkoutForm({
   return (
     <>
       <FormField
-        label="筋トレ種目"
-        value={selectedWorkoutType}
-        onChangeText={(value) => onUpdateForm('selectedWorkoutType', value)}
+        label="種目"
+        value={selectedExercise}
+        onChangeText={(value) => onUpdateForm('selectedExercise', value)}
         type="picker"
-        pickerOptions={workoutTypesData?.workoutTypes.map((workoutType) => ({
-          label: workoutType.name,
-          value: workoutType.id,
+        pickerOptions={exercisesData?.exercises.map((exercise) => ({
+          label: exercise.name,
+          value: exercise.id,
         })) || []}
-        placeholder="筋トレ種目を選択"
+        placeholder="種目を選択"
         marginBottom={6}
       />
 
