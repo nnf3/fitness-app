@@ -7,7 +7,7 @@ type User {
   createdAt: String!
   updatedAt: String!
   profile: Profile
-  workoutLogs: [WorkoutLog!]!
+  workouts: [Workout!]!
   friends: [User!]!
   friendshipRequests: [Friendship!]!
   recommendedUsers: [User!]!
@@ -27,26 +27,29 @@ type Profile {
   updatedAt: String!
 }
 
-type WorkoutType {
+type Exercise {
   id: ID!
   name: String!
   description: String
   category: String
-  setLogs: [SetLog!]!
 }
 
-type WorkoutLog {
+type Workout {
   id: ID!
   createdAt: String!
   updatedAt: String!
+  workoutExercises: [WorkoutExercise!]!
+}
+
+type WorkoutExercise {
+  id: ID!
+  workout: Workout!
+  exercise: Exercise!
   setLogs: [SetLog!]!
 }
 
 type SetLog {
   id: ID!
-  workoutLog: WorkoutLog!
-  workoutType: WorkoutType!
-  workoutTypeID: ID!
   weight: Int!
   repCount: Int!
   setNumber: Int!

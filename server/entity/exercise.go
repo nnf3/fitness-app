@@ -11,6 +11,8 @@ type Exercise struct {
 	Name        string `gorm:"size:255;not null;unique"`
 	Description string `gorm:"size:1000"`
 	Category    string `gorm:"size:100"`
+
+	WorkoutExercises []WorkoutExercise `gorm:"foreignKey:ExerciseID;constraint:OnDelete:CASCADE"`
 }
 
 func (e *Exercise) BeforeSave(tx *gorm.DB) error {

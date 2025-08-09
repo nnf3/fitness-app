@@ -5,5 +5,5 @@ type Query {
   users: [User!]!
   currentUser: User!
 
-  workoutTypes: [WorkoutType!]!
+  exercises: [Exercise!]!
 }

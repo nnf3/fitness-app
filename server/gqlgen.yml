@@ -193,7 +193,7 @@ models:
     fields:
       profile:
         resolver: true
-      workoutLogs:
+      workouts:
         resolver: true
       friends:
         resolver: true
@@ -202,21 +202,18 @@ models:
       recommendedUsers:
         resolver: true
 
-  WorkoutLog:
+  Workout:
     fields:
-      setLogs:
+      workoutExercises:
         resolver: true
 
-  WorkoutType:
+  WorkoutExercise:
     fields:
+      workout:
+        resolver: true
+      exercise:
+        resolver: true
       setLogs:
-        resolver: true
-
-  SetLog:
-    fields:
-      workoutLog:
-        resolver: true
-      workoutType:
         resolver: true
 
   Friendship:

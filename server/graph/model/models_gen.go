@@ -6,13 +6,6 @@ type AcceptFriendshipRequest struct {
 	FriendshipID string `json:"friendshipID"`
 }
 
-type AddSetLog struct {
-	WorkoutLogID  string   `json:"workoutLogID"`
-	WorkoutTypeID string   `json:"workoutTypeID"`
-	Weight        *float64 `json:"weight,omitempty"`
-	RepCount      *int32   `json:"repCount,omitempty"`
-}
-
 type CreateProfile struct {
 	Name          string         `json:"name"`
 	BirthDate     string         `json:"birthDate"`
@@ -23,8 +16,31 @@ type CreateProfile struct {
 	ImageURL      *string        `json:"imageURL,omitempty"`
 }
 
+type CreateSetLog struct {
+	WorkoutExerciseID string   `json:"workoutExerciseID"`
+	SetNumber         int32    `json:"setNumber"`
+	Weight            *float64 `json:"weight,omitempty"`
+	RepCount          *int32   `json:"repCount,omitempty"`
+}
+
+type CreateWorkoutExercise struct {
+	WorkoutID  string `json:"workoutID"`
+	ExerciseID string `json:"exerciseID"`
+}
+
+type DeleteSetLog struct {
+	SetLogID string `json:"setLogID"`
+}
+
 type DeleteUser struct {
 	ID string `json:"id"`
+}
+
+type Exercise struct {
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+	Category    *string `json:"category,omitempty"`
 }
 
 type Friendship struct {
@@ -69,13 +85,10 @@ type SendFriendshipRequest struct {
 }
 
 type SetLog struct {
-	ID            string       `json:"id"`
-	WorkoutLog    *WorkoutLog  `json:"workoutLog"`
-	WorkoutType   *WorkoutType `json:"workoutType"`
-	WorkoutTypeID string       `json:"workoutTypeID"`
-	Weight        int32        `json:"weight"`
-	RepCount      int32        `json:"repCount"`
-	SetNumber     int32        `json:"setNumber"`
+	ID        string `json:"id"`
+	Weight    int32  `json:"weight"`
+	RepCount  int32  `json:"repCount"`
+	SetNumber int32  `json:"setNumber"`
 }
 
 type UpdateProfile struct {
@@ -94,23 +107,22 @@ type User struct {
 	CreatedAt          string        `json:"createdAt"`
 	UpdatedAt          string        `json:"updatedAt"`
 	Profile            *Profile      `json:"profile,omitempty"`
-	WorkoutLogs        []*WorkoutLog `json:"workoutLogs"`
+	Workouts           []*Workout    `json:"workouts"`
 	Friends            []*User       `json:"friends"`
 	FriendshipRequests []*Friendship `json:"friendshipRequests"`
 	RecommendedUsers   []*User       `json:"recommendedUsers"`
 }
 
-type WorkoutLog struct {
-	ID        string    `json:"id"`
-	CreatedAt string    `json:"createdAt"`
-	UpdatedAt string    `json:"updatedAt"`
-	SetLogs   []*SetLog `json:"setLogs"`
+type Workout struct {
+	ID               string             `json:"id"`
+	CreatedAt        string             `json:"createdAt"`
+	UpdatedAt        string             `json:"updatedAt"`
+	WorkoutExercises []*WorkoutExercise `json:"workoutExercises"`
 }
 
-type WorkoutType struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description,omitempty"`
-	Category    *string   `json:"category,omitempty"`
-	SetLogs     []*SetLog `json:"setLogs"`
+type WorkoutExercise struct {
+	ID       string    `json:"id"`
+	Workout  *Workout  `json:"workout"`
+	Exercise *Exercise `json:"exercise"`
+	SetLogs  []*SetLog `json:"setLogs"`
 }

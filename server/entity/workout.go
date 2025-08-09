@@ -10,8 +10,8 @@ type Workout struct {
 	gorm.Model
 	UserID uint `gorm:"not null;index"`
 
-	User    User     `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
-	SetLogs []SetLog `gorm:"foreignKey:WorkoutLogID;constraint:OnDelete:CASCADE"`
+	User             User              `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
+	WorkoutExercises []WorkoutExercise `gorm:"foreignKey:WorkoutID;constraint:OnDelete:CASCADE"`
 }
 
 func (w *Workout) BeforeSave(tx *gorm.DB) error {

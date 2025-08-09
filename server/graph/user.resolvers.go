@@ -4,7 +4,6 @@ import (
 	"app/graph/model"
 	"app/graph/services"
 	"app/graph/services/profile"
-	"app/graph/services/workout_log"
 	"context"
 	"fmt"
 )
@@ -34,15 +33,9 @@ func (r *userResolver) Profile(ctx context.Context, obj *model.User) (*model.Pro
 }
 
 // WorkoutLogs is the resolver for the workoutLogs field.
-func (r *userResolver) WorkoutLogs(ctx context.Context, obj *model.User) ([]*model.WorkoutLog, error) {
-	workoutLogsEntities, err := r.DataLoaders.WorkoutLogsLoaderForUserDirect.LoadByUserID(ctx, obj.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	// エンティティからモデルに変換
-	workoutLogConverter := workout_log.NewWorkoutLogConverter()
-	return workoutLogConverter.ToModelWorkoutLogsFromPointers(workoutLogsEntities), nil
+func (r *userResolver) Workouts(ctx context.Context, obj *model.User) ([]*model.Workout, error) {
+	workoutService := services.NewWorkoutServiceWithSeparation(r.DB)
+	return workoutService.GetWorkoutsByUserID(ctx, obj.ID)
 }
 
 // Friends is the resolver for the friends field.
