@@ -251,5 +251,29 @@ func getMigrations() []*gormigrate.Migration {
 				return nil
 			},
 		},
+		{
+			ID: "202508031100_create_workout_groups",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&entity.WorkoutGroup{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&entity.WorkoutGroup{})
+			},
+		},
+		{
+			ID: "202508031110_add_workout_group_id_to_workout_logs",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&entity.WorkoutLog{}, "WorkoutGroupID") {
+					return tx.Migrator().AddColumn(&entity.WorkoutLog{}, "WorkoutGroupID")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&entity.WorkoutLog{}, "WorkoutGroupID") {
+					return tx.Migrator().DropColumn(&entity.WorkoutLog{}, "WorkoutGroupID")
+				}
+				return nil
+			},
+		},
 	}
 }

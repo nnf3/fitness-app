@@ -6,4 +6,11 @@ type Query {
   currentUser: User!
 
   workoutTypes: [WorkoutType!]!
+
+  # 合トレグループ一覧
+  workoutGroups: [WorkoutGroup!]!
+
+  # 合トレグループ詳細
+  workoutGroup(id: ID!): WorkoutGroup
+  
 }

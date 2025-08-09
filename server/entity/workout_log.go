@@ -9,6 +9,8 @@ import (
 type WorkoutLog struct {
 	gorm.Model
 	UserID    uint           `gorm:"not null;index"`
+	WorkoutGroupID *uint          `gorm:"index"` // 追加: nullableな外部キー
+	WorkoutGroup   *WorkoutGroup  // 追加: リレーション
 
 	User     User      `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
 	SetLogs  []SetLog  `gorm:"foreignKey:WorkoutLogID;constraint:OnDelete:CASCADE"`

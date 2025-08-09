@@ -8,11 +8,13 @@ import (
 	"app/graph/services/user"
 	"app/graph/services/workout_log"
 	"app/graph/services/workout_type"
+	"app/graph/services/workout_group"
 
 	friendshipLoaders "app/graph/services/friendship/loaders"
 	userLoaders "app/graph/services/user/loaders"
 	workoutLogLoaders "app/graph/services/workout_log/loaders"
 	workoutTypeLoaders "app/graph/services/workout_type/loaders"
+	workoutGroupLoaders "app/graph/services/workout_group/loaders"
 
 	"gorm.io/gorm"
 )
@@ -60,6 +62,12 @@ func NewWorkoutTypeServiceWithSeparation(db *gorm.DB, loader workoutTypeLoaders.
 	repo := workout_type.NewWorkoutTypeRepository(db)
 	converter := workout_type.NewWorkoutTypeConverter()
 	return workout_type.NewWorkoutTypeServiceWithLoader(repo, converter, loader)
+}
+// NewWorkoutGroupServiceWithSeparation は分離されたWorkoutGroupServiceを作成します
+func NewWorkoutGroupServiceWithSeparation(db *gorm.DB, loader workoutGroupLoaders.WorkoutLogsLoaderForWorkoutGroupInterface) workout_group.WorkoutGroupService {
+	repo := workout_group.NewWorkoutGroupRepository(db)
+	converter := workout_group.NewWorkoutGroupConverter()
+	return workout_group.NewWorkoutGroupServiceWithLoader(repo, converter, loader)
 }
 
 // 共通のConverterを取得する関数

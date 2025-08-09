@@ -206,6 +206,8 @@ models:
     fields:
       setLogs:
         resolver: true
+      workout_group:
+        resolver: true
 
   WorkoutType:
     fields:
@@ -224,4 +226,9 @@ models:
       requester:
         resolver: true
       requestee:
+        resolver: true
+
+  WorkoutGroup:
+    fields:
+      workoutLogs:
         resolver: true

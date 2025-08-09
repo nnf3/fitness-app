@@ -8,6 +8,7 @@ import (
 	userLoaders "app/graph/services/user/loaders"
 	workoutLogLoaders "app/graph/services/workout_log/loaders"
 	workoutTypeLoaders "app/graph/services/workout_type/loaders"
+	workoutGrouploaders "app/graph/services/workout_group/loaders"
 
 	"gorm.io/gorm"
 )
@@ -42,6 +43,8 @@ type DataLoaders struct {
 
 	// SetLogs関連
 	SetLogsLoaderForWorkoutLogDirect workoutLogLoaders.SetLogsLoaderInterface
+
+	WorkoutLogsLoaderForWorkoutGroup workoutGrouploaders.WorkoutLogsLoaderForWorkoutGroupInterface
 }
 
 func NewDataLoaders(db *gorm.DB) *DataLoaders {
@@ -73,6 +76,9 @@ func NewDataLoaders(db *gorm.DB) *DataLoaders {
 
 		// SetLogs関連
 		SetLogsLoaderForWorkoutLogDirect: workoutLogLoaders.NewSetLogsLoader(db),
+
+		// WorkoutLogs関連
+		WorkoutLogsLoaderForWorkoutGroup: workoutGrouploaders.NewWorkoutLogsLoader(db),
 	}
 }
 

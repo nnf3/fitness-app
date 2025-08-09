@@ -40,6 +40,8 @@ type WorkoutLog {
   createdAt: String!
   updatedAt: String!
   setLogs: [SetLog!]!
+  workoutGroupID: ID
+  workoutGroup: WorkoutGroup
 }
 
 type SetLog {
@@ -50,6 +52,14 @@ type SetLog {
   weight: Int!
   repCount: Int!
   setNumber: Int!
+}
+
+type WorkoutGroup {
+  id: ID!
+  title: String!
+  createdAt: String!
+  updatedAt: String!
+  workoutLogs: [WorkoutLog!]!
 }
 
 type Friendship {
