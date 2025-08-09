@@ -164,54 +164,34 @@ func getMigrations() []*gormigrate.Migration {
 			},
 		},
 		{
-			ID: "202507281403_create_workout_types",
+			ID: "202507281403_create_exercises",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&entity.WorkoutType{})
+				return tx.AutoMigrate(&entity.Exercise{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&entity.WorkoutType{})
+				return tx.Migrator().DropTable(&entity.Exercise{})
 			},
 		},
 		{
-			ID: "202508021520_add_description_category_to_workout_types",
+			ID: "202507281404_create_workouts",
 			Migrate: func(tx *gorm.DB) error {
-				if !tx.Migrator().HasColumn(&entity.WorkoutType{}, "description") {
-					if err := tx.Migrator().AddColumn(&entity.WorkoutType{}, "description"); err != nil {
-						return err
-					}
-				}
-				if !tx.Migrator().HasColumn(&entity.WorkoutType{}, "category") {
-					if err := tx.Migrator().AddColumn(&entity.WorkoutType{}, "category"); err != nil {
-						return err
-					}
-				}
-				return nil
+				return tx.AutoMigrate(&entity.Workout{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				if tx.Migrator().HasColumn(&entity.WorkoutType{}, "description") {
-					if err := tx.Migrator().DropColumn(&entity.WorkoutType{}, "description"); err != nil {
-						return err
-					}
-				}
-				if tx.Migrator().HasColumn(&entity.WorkoutType{}, "category") {
-					if err := tx.Migrator().DropColumn(&entity.WorkoutType{}, "category"); err != nil {
-						return err
-					}
-				}
-				return nil
+				return tx.Migrator().DropTable(&entity.Workout{})
 			},
 		},
 		{
-			ID: "202507281404_create_workout_logs",
+			ID: "202507281405_create_workout_exercises",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&entity.WorkoutLog{})
+				return tx.AutoMigrate(&entity.WorkoutExercise{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&entity.WorkoutLog{})
+				return tx.Migrator().DropTable(&entity.WorkoutExercise{})
 			},
 		},
 		{
-			ID: "202507281405_create_set_logs",
+			ID: "202507281406_create_set_logs",
 			Migrate: func(tx *gorm.DB) error {
 				return tx.AutoMigrate(&entity.SetLog{})
 			},
@@ -226,29 +206,6 @@ func getMigrations() []*gormigrate.Migration {
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.Migrator().DropTable(&entity.Friendship{})
-			},
-		},
-		{
-			ID: "202508021518_create_admin_user_2",
-			Migrate: func(tx *gorm.DB) error {
-				if os.Getenv("ENABLE_MOCK_AUTH") == "true" {
-					var count int64
-					tx.Model(&entity.User{}).Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")+"-2").Count(&count)
-					if count == 0 {
-						adminUser := &entity.User{
-							UID: os.Getenv("MOCK_ADMIN_UID") + "-2",
-						}
-						return tx.Create(adminUser).Error
-					}
-					return nil
-				}
-				return nil
-			},
-			Rollback: func(tx *gorm.DB) error {
-				if os.Getenv("ENABLE_MOCK_AUTH") == "true" {
-					return tx.Unscoped().Where("uid = ?", os.Getenv("MOCK_ADMIN_UID")+"-2").Delete(&entity.User{}).Error
-				}
-				return nil
 			},
 		},
 	}
