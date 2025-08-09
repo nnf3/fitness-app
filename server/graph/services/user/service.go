@@ -18,14 +18,16 @@ type UserService interface {
 }
 
 type userService struct {
-	repo      UserRepository
-	converter *UserConverter
+	repo       UserRepository
+	converter  *UserConverter
+	dataLoader *UserDataLoader // DataLoaderを統合
 }
 
-func NewUserService(repo UserRepository, converter *UserConverter) UserService {
+func NewUserService(repo UserRepository, converter *UserConverter, dataLoader *UserDataLoader) UserService {
 	return &userService{
-		repo:      repo,
-		converter: converter,
+		repo:       repo,
+		converter:  converter,
+		dataLoader: dataLoader,
 	}
 }
 
@@ -69,11 +71,14 @@ func (s *userService) GetUserByUID(ctx context.Context) (*model.User, error) {
 }
 
 func (s *userService) GetUserByID(ctx context.Context, userID string) (*model.User, error) {
-	user, err := s.repo.GetUserByID(ctx, userID)
+	// DataLoaderを使用して遅延ローディング
+	user, err := s.dataLoader.LoadByID(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get user by ID %s: %w", userID, err)
 	}
-
+	if user == nil {
+		return nil, fmt.Errorf("user not found: %s", userID)
+	}
 	return s.converter.ToModelUser(*user), nil
 }
 

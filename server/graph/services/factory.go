@@ -26,14 +26,16 @@ func NewFriendshipServiceWithSeparation(db *gorm.DB) friendship.FriendshipServic
 func NewUserServiceWithSeparation(db *gorm.DB) user.UserService {
 	repo := user.NewUserRepository(db)
 	converter := user.NewUserConverter()
-	return user.NewUserService(repo, converter)
+	dataLoader := user.NewUserDataLoader(repo)
+	return user.NewUserService(repo, converter, dataLoader)
 }
 
 // NewProfileServiceWithSeparation は分離されたProfileServiceを作成します
 func NewProfileServiceWithSeparation(db *gorm.DB) profile.ProfileService {
 	repo := profile.NewProfileRepository(db)
 	converter := profile.NewProfileConverter()
-	return profile.NewProfileService(repo, converter)
+	dataLoader := profile.NewProfileDataLoader(repo)
+	return profile.NewProfileService(repo, converter, dataLoader)
 }
 
 // NewExerciseServiceWithSeparation は分離されたExerciseServiceを作成します
@@ -54,7 +56,8 @@ func NewWorkoutServiceWithSeparation(db *gorm.DB) workout.WorkoutService {
 func NewWorkoutExerciseServiceWithSeparation(db *gorm.DB) workout_exercise.WorkoutExerciseService {
 	repo := workout_exercise.NewWorkoutExerciseRepository(db)
 	converter := workout_exercise.NewWorkoutExerciseConverter()
-	return workout_exercise.NewWorkoutExerciseService(repo, converter)
+	dataLoader := workout_exercise.NewWorkoutExerciseDataLoader(repo)
+	return workout_exercise.NewWorkoutExerciseService(repo, converter, dataLoader)
 }
 
 // NewSetLogServiceWithSeparation は分離されたSetLogServiceを作成します

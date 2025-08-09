@@ -10,27 +10,40 @@ import (
 
 type WorkoutExerciseService interface {
 	GetWorkoutExercisesByWorkoutID(ctx context.Context, workoutID string) ([]*model.WorkoutExercise, error)
+	GetWorkoutExercisesByExerciseID(ctx context.Context, exerciseID string) ([]*model.WorkoutExercise, error)
 	CreateWorkoutExercise(ctx context.Context, input model.CreateWorkoutExercise) (*model.WorkoutExercise, error)
 }
 
 type workoutExerciseService struct {
-	repo      WorkoutExerciseRepository
-	converter *WorkoutExerciseConverter
+	repo       WorkoutExerciseRepository
+	converter  *WorkoutExerciseConverter
+	dataLoader *WorkoutExerciseDataLoader // DataLoaderを統合
 }
 
-func NewWorkoutExerciseService(repo WorkoutExerciseRepository, converter *WorkoutExerciseConverter) WorkoutExerciseService {
+func NewWorkoutExerciseService(repo WorkoutExerciseRepository, converter *WorkoutExerciseConverter, dataLoader *WorkoutExerciseDataLoader) WorkoutExerciseService {
 	return &workoutExerciseService{
-		repo:      repo,
-		converter: converter,
+		repo:       repo,
+		converter:  converter,
+		dataLoader: dataLoader,
 	}
 }
 
 func (s *workoutExerciseService) GetWorkoutExercisesByWorkoutID(ctx context.Context, workoutID string) ([]*model.WorkoutExercise, error) {
-	workoutExercises, err := s.repo.GetWorkoutExercisesByWorkoutID(ctx, workoutID)
+	// DataLoaderを使用して遅延ローディング
+	workoutExercises, err := s.dataLoader.LoadByWorkoutID(ctx, workoutID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get workout exercises for workout %s: %w", workoutID, err)
 	}
-	return s.converter.ToModelWorkoutExercises(workoutExercises), nil
+	return s.converter.ToModelWorkoutExercisesFromPointers(workoutExercises), nil
+}
+
+func (s *workoutExerciseService) GetWorkoutExercisesByExerciseID(ctx context.Context, exerciseID string) ([]*model.WorkoutExercise, error) {
+	// DataLoaderを使用して遅延ローディング
+	workoutExercises, err := s.dataLoader.LoadByExerciseID(ctx, exerciseID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workout exercises for exercise %s: %w", exerciseID, err)
+	}
+	return s.converter.ToModelWorkoutExercisesFromPointers(workoutExercises), nil
 }
 
 func (s *workoutExerciseService) CreateWorkoutExercise(ctx context.Context, input model.CreateWorkoutExercise) (*model.WorkoutExercise, error) {

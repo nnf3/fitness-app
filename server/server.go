@@ -4,7 +4,6 @@ import (
 	"app/auth"
 	"app/db"
 	"app/graph"
-	"app/graph/services/common/loaders"
 	"app/middleware"
 	"context"
 	"log"
@@ -39,7 +38,7 @@ func main() {
 		DB:             db.DB,
 		FirebaseAuth:   firebaseAuth,
 		AuthMiddleware: authMiddleware,
-		DataLoaders:    loaders.NewDataLoaders(db.DB),
+		DataLoaders:    graph.NewDataLoaders(db.DB),
 	}}))
 
 	srv.AddTransport(transport.Options{})
@@ -66,7 +65,7 @@ func main() {
 	// GraphQL endpoint with auth middleware and data loaders
 	withDataloaderHandler := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := loaders.WithDataLoaders(r.Context(), db.DB)
+			ctx := graph.WithDataLoaders(r.Context(), db.DB)
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
 		})

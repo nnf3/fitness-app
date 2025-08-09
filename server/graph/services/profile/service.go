@@ -16,21 +16,24 @@ type ProfileService interface {
 }
 
 type profileService struct {
-	repo      ProfileRepository
-	converter *ProfileConverter
-	common    common.CommonRepository
+	repo       ProfileRepository
+	converter  *ProfileConverter
+	common     common.CommonRepository
+	dataLoader *ProfileDataLoader // DataLoaderを統合
 }
 
-func NewProfileService(repo ProfileRepository, converter *ProfileConverter) ProfileService {
+func NewProfileService(repo ProfileRepository, converter *ProfileConverter, dataLoader *ProfileDataLoader) ProfileService {
 	return &profileService{
-		repo:      repo,
-		converter: converter,
-		common:    common.NewCommonRepository(repo.GetDB()),
+		repo:       repo,
+		converter:  converter,
+		common:     common.NewCommonRepository(repo.GetDB()),
+		dataLoader: dataLoader,
 	}
 }
 
 func (s *profileService) GetProfileByUserID(ctx context.Context, userID string) (*model.Profile, error) {
-	profile, err := s.repo.GetProfileByUserID(ctx, userID)
+	// DataLoaderを使用して遅延ローディング
+	profile, err := s.dataLoader.LoadByUserID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get profile: %w", err)
 	}

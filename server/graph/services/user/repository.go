@@ -17,6 +17,9 @@ type UserRepository interface {
 	GetUsers(ctx context.Context) ([]entity.User, error)
 	CreateUser(ctx context.Context, user *entity.User) error
 	DeleteUser(ctx context.Context, id string) error
+
+	// バッチ取得メソッド（DataLoader用）
+	GetUsersByIDs(userIDs []uint) ([]*entity.User, error)
 }
 
 type userRepository struct {
@@ -84,4 +87,23 @@ func (r *userRepository) DeleteUser(ctx context.Context, id string) error {
 	}
 
 	return r.db.Delete(&user).Error
+}
+
+// GetUsersByIDs はバッチでUserIDsからUsersを取得
+func (r *userRepository) GetUsersByIDs(userIDs []uint) ([]*entity.User, error) {
+	if len(userIDs) == 0 {
+		return []*entity.User{}, nil
+	}
+
+	var users []entity.User
+	if err := r.db.Where("id IN ?", userIDs).Find(&users).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch users by IDs: %w", err)
+	}
+
+	// ポインタスライスに変換
+	result := make([]*entity.User, len(users))
+	for i := range users {
+		result[i] = &users[i]
+	}
+	return result, nil
 }
