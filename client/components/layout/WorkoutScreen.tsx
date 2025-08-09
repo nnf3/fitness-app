@@ -134,7 +134,7 @@ export function WorkoutScreen() {
     data,
     loading,
     error,
-    workoutTypesData,
+    exercisesData,
     startingWorkout,
     addingSetLog,
     handleStartWorkout,
@@ -200,19 +200,19 @@ export function WorkoutScreen() {
           </Text>
         )}
 
-        {data?.currentUser?.workoutLogs && data.currentUser.workoutLogs.length > 0 ? (
-          data.currentUser.workoutLogs.map((workoutLog) => {
-            const expandedWorkout = getExpandedWorkout(workoutLog.id);
+        {data?.currentUser?.workouts && data.currentUser.workouts.length > 0 ? (
+          data.currentUser.workouts.map((workout) => {
+            const expandedWorkout = getExpandedWorkout(workout.id);
 
             return (
-              <View key={workoutLog.id} style={styles.workoutCard}>
+              <View key={workout.id} style={styles.workoutCard}>
                 <View style={styles.workoutCardHeader}>
                   <Text style={styles.workoutDate}>
-                    {formatDate(workoutLog.createdAt)}
+                    {formatDate(workout.createdAt)}
                   </Text>
                   <TouchableOpacity
                     style={styles.toggleButton}
-                    onPress={() => toggleWorkoutExpansion(workoutLog.id)}
+                    onPress={() => toggleWorkoutExpansion(workout.id)}
                   >
                     <FontAwesome
                       name={expandedWorkout.isExpanded ? "minus" : "plus"}
@@ -223,10 +223,12 @@ export function WorkoutScreen() {
                 </View>
 
                 {/* 既存のセット記録（サーバーデータ） */}
-                {workoutLog.setLogs.slice(0, expandedWorkout.isExpanded ? undefined : 3).map((setLog) => (
+                {workout.workoutExercises.flatMap(we => 
+                  we.setLogs.map(setLog => ({ ...setLog, exercise: we.exercise }))
+                ).slice(0, expandedWorkout.isExpanded ? undefined : 3).map((setLog) => (
                   <View key={setLog.id} style={styles.setLogItem}>
                     <Text style={styles.setLogText}>
-                      {setLog.workoutType.name}
+                      {setLog.exercise.name}
                     </Text>
                     <Text style={styles.setLogText}>
                       {setLog.weight}kg × {setLog.repCount}回 (セット{setLog.setNumber})
@@ -235,24 +237,25 @@ export function WorkoutScreen() {
                 ))}
 
                 {/* 展開していない時で、セット記録が3件を超える場合に「...」を表示 */}
-                {!expandedWorkout.isExpanded && workoutLog.setLogs.length > 3 && (
+                {!expandedWorkout.isExpanded && 
+                 workout.workoutExercises.reduce((total, we) => total + we.setLogs.length, 0) > 3 && (
                   <View style={styles.setLogItem}>
                     <Text style={styles.setLogText}>
-                      ... 他 {workoutLog.setLogs.length - 3} 件
+                      ... 他 {workout.workoutExercises.reduce((total, we) => total + we.setLogs.length, 0) - 3} 件
                     </Text>
                   </View>
                 )}
 
                 {expandedWorkout.isExpanded && (
                   <WorkoutForm
-                    workoutId={workoutLog.id}
-                    selectedWorkoutType={expandedWorkout.selectedWorkoutType}
+                    workoutId={workout.id}
+                    selectedExercise={expandedWorkout.selectedExercise}
                     weight={expandedWorkout.weight}
                     repCount={expandedWorkout.repCount}
-                    onUpdateForm={(field, value) => updateWorkoutForm(workoutLog.id, field, value)}
-                    onSubmit={() => handleAddSetLog(workoutLog.id)}
+                    onUpdateForm={(field, value) => updateWorkoutForm(workout.id, field, value)}
+                    onSubmit={() => handleAddSetLog(workout.id)}
                     loading={addingSetLog}
-                    workoutTypesData={workoutTypesData}
+                    exercisesData={exercisesData}
                   />
                 )}
               </View>
