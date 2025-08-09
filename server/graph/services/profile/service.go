@@ -4,7 +4,6 @@ import (
 	"app/entity"
 	"app/graph/model"
 	"app/graph/services/common"
-	"app/graph/services/user/loaders"
 	"context"
 	"fmt"
 	"time"
@@ -19,23 +18,21 @@ type ProfileService interface {
 type profileService struct {
 	repo      ProfileRepository
 	converter *ProfileConverter
-	loader    loaders.ProfileLoaderInterface
 	common    common.CommonRepository
 }
 
-func NewProfileService(repo ProfileRepository, converter *ProfileConverter, loader loaders.ProfileLoaderInterface) ProfileService {
+func NewProfileService(repo ProfileRepository, converter *ProfileConverter) ProfileService {
 	return &profileService{
 		repo:      repo,
 		converter: converter,
-		loader:    loader,
-		common:    common.NewCommonRepository(repo.(*profileRepository).db),
+		common:    common.NewCommonRepository(repo.GetDB()),
 	}
 }
 
 func (s *profileService) GetProfileByUserID(ctx context.Context, userID string) (*model.Profile, error) {
-	profile, err := s.loader.LoadByUserID(ctx, userID)
+	profile, err := s.repo.GetProfileByUserID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load profile: %w", err)
+		return nil, fmt.Errorf("failed to get profile: %w", err)
 	}
 
 	if profile == nil {

@@ -4,8 +4,6 @@ import (
 	"app/entity"
 	"app/graph/model"
 	"app/graph/services/common"
-	"app/graph/services/friendship/loaders"
-	"app/graph/services/user"
 	"context"
 	"fmt"
 	"strconv"
@@ -22,11 +20,9 @@ type FriendshipService interface {
 }
 
 type friendshipService struct {
-	repo       FriendshipRepository
-	userRepo   user.UserRepository
-	converter  *FriendshipConverter
-	userLoader loaders.UserLoaderInterface
-	common     common.CommonRepository
+	repo      FriendshipRepository
+	converter *FriendshipConverter
+	common    common.CommonRepository
 }
 
 func NewFriendshipService(repo FriendshipRepository, converter *FriendshipConverter) FriendshipService {
@@ -34,16 +30,6 @@ func NewFriendshipService(repo FriendshipRepository, converter *FriendshipConver
 		repo:      repo,
 		converter: converter,
 		common:    common.NewCommonRepository(repo.GetDB()),
-	}
-}
-
-func NewFriendshipServiceWithUserLoader(repo FriendshipRepository, userRepo user.UserRepository, converter *FriendshipConverter, userLoader loaders.UserLoaderInterface) FriendshipService {
-	return &friendshipService{
-		repo:       repo,
-		userRepo:   userRepo,
-		converter:  converter,
-		userLoader: userLoader,
-		common:     common.NewCommonRepository(repo.GetDB()),
 	}
 }
 

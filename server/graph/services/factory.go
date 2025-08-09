@@ -10,34 +10,30 @@ import (
 	"app/graph/services/workout"
 	"app/graph/services/workout_exercise"
 
-	friendshipLoaders "app/graph/services/friendship/loaders"
-	userLoaders "app/graph/services/user/loaders"
-
 	"gorm.io/gorm"
 )
 
 // 新しい分離されたサービス構造のファクトリー関数
 
 // NewFriendshipServiceWithSeparation は分離されたFriendshipServiceを作成します
-func NewFriendshipServiceWithSeparation(db *gorm.DB, userLoader friendshipLoaders.UserLoaderInterface) friendship.FriendshipService {
+func NewFriendshipServiceWithSeparation(db *gorm.DB) friendship.FriendshipService {
 	repo := friendship.NewFriendshipRepository(db)
-	userRepo := user.NewUserRepository(db)
 	converter := friendship.NewFriendshipConverter()
-	return friendship.NewFriendshipServiceWithUserLoader(repo, userRepo, converter, userLoader)
+	return friendship.NewFriendshipService(repo, converter)
 }
 
 // NewUserServiceWithSeparation は分離されたUserServiceを作成します
-func NewUserServiceWithSeparation(db *gorm.DB, loader friendshipLoaders.UserLoaderInterface) user.UserService {
+func NewUserServiceWithSeparation(db *gorm.DB) user.UserService {
 	repo := user.NewUserRepository(db)
 	converter := user.NewUserConverter()
-	return user.NewUserServiceWithDataLoader(repo, converter, loader)
+	return user.NewUserService(repo, converter)
 }
 
 // NewProfileServiceWithSeparation は分離されたProfileServiceを作成します
-func NewProfileServiceWithSeparation(db *gorm.DB, loader userLoaders.ProfileLoaderInterface) profile.ProfileService {
+func NewProfileServiceWithSeparation(db *gorm.DB) profile.ProfileService {
 	repo := profile.NewProfileRepository(db)
 	converter := profile.NewProfileConverter()
-	return profile.NewProfileService(repo, converter, loader)
+	return profile.NewProfileService(repo, converter)
 }
 
 // NewExerciseServiceWithSeparation は分離されたExerciseServiceを作成します

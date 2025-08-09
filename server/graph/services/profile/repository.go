@@ -13,6 +13,7 @@ type ProfileRepository interface {
 	GetProfileByUserID(ctx context.Context, userID string) (*entity.Profile, error)
 	CreateProfile(ctx context.Context, profile *entity.Profile) error
 	UpdateProfile(ctx context.Context, profile *entity.Profile) error
+	GetDB() *gorm.DB
 }
 
 type profileRepository struct {
@@ -46,4 +47,8 @@ func (r *profileRepository) CreateProfile(ctx context.Context, profile *entity.P
 
 func (r *profileRepository) UpdateProfile(ctx context.Context, profile *entity.Profile) error {
 	return r.db.Save(profile).Error
+}
+
+func (r *profileRepository) GetDB() *gorm.DB {
+	return r.db
 }
