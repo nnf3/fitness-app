@@ -39,6 +39,8 @@ type Workout {
   date: String
   createdAt: String!
   updatedAt: String!
+  user: User!
+  userID: ID!
   workoutExercises: [WorkoutExercise!]!
   workoutGroup: WorkoutGroup
   workoutGroupID: ID

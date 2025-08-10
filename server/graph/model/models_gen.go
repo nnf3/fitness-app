@@ -129,6 +129,8 @@ type Workout struct {
 	Date             *string            `json:"date,omitempty"`
 	CreatedAt        string             `json:"createdAt"`
 	UpdatedAt        string             `json:"updatedAt"`
+	User             *User              `json:"user"`
+	UserID           string             `json:"userID"`
 	WorkoutExercises []*WorkoutExercise `json:"workoutExercises"`
 	WorkoutGroup     *WorkoutGroup      `json:"workoutGroup,omitempty"`
 	WorkoutGroupID   *string            `json:"workoutGroupID,omitempty"`

@@ -213,6 +213,8 @@ models:
         resolver: true
       workoutGroup:
         resolver: true
+      user:
+        resolver: true
 
   WorkoutExercise:
     fields:

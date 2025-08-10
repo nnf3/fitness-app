@@ -168,6 +168,7 @@ export function GroupWorkoutScreen() {
   const {
     availableGroups,
     joinedGroups,
+    formatDate,
     loading,
     error,
     refetch
@@ -231,8 +232,7 @@ export function GroupWorkoutScreen() {
   };
 
   const handleViewGroup = (groupId: string) => {
-    // TODO: グループ詳細画面に遷移
-    console.log("グループ詳細画面に遷移:", groupId);
+    router.push(`/group-detail?groupId=${groupId}`);
   };
 
   if (!user) {
@@ -299,7 +299,7 @@ export function GroupWorkoutScreen() {
                 <View style={styles.groupCardHeader}>
                   <Text style={styles.groupTitle}>{group?.title}</Text>
                   <Text style={styles.groupDate}>
-                    {group?.date ? new Date(group.date).toLocaleDateString('ja-JP') : '日付未設定'}
+                    {group?.date ? formatDate(group.date) : '日付未設定'}
                   </Text>
                 </View>
                 <View style={styles.groupInfo}>
@@ -324,7 +324,7 @@ export function GroupWorkoutScreen() {
                 <View style={styles.groupCardHeader}>
                   <Text style={styles.groupTitle}>{group.title}</Text>
                   <Text style={styles.groupDate}>
-                    {group.date ? new Date(group.date).toLocaleDateString('ja-JP') : '日付未設定'}
+                    {group.date ? formatDate(group.date) : '日付未設定'}
                   </Text>
                 </View>
                 <View style={styles.groupInfo}>

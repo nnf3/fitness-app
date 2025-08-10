@@ -42,7 +42,8 @@ func (r *workoutGroupRepository) GetWorkoutGroupByID(ctx context.Context, id str
 	err := r.db.WithContext(ctx).
 		Joins("inner join workouts on workout_groups.id = workouts.workout_group_id").
 		Where("workouts.user_id = ?", userID).
-		First(&group, "id = ?", id).Error
+		Where("workout_groups.id = ?", id).
+		First(&group).Error
 	if err != nil {
 		return nil, err
 	}

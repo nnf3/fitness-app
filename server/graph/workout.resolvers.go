@@ -31,6 +31,11 @@ func (r *workoutResolver) WorkoutGroup(ctx context.Context, obj *model.Workout) 
 	return workoutGroupService.GetWorkoutGroupWithDataLoader(ctx, *obj.WorkoutGroupID)
 }
 
+func (r *workoutResolver) User(ctx context.Context, obj *model.Workout) (*model.User, error) {
+	userService := services.NewUserServiceWithSeparation(r.DB)
+	return userService.GetUserByIDWithDataLoader(ctx, obj.UserID)
+}
+
 // ================================
 // Mutation
 // ================================

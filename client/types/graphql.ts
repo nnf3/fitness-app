@@ -248,6 +248,7 @@ export type Workout = {
   date?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   updatedAt: Scalars['String']['output'];
+  user: User;
   workoutExercises: Array<WorkoutExercise>;
   workoutGroup?: Maybe<WorkoutGroup>;
   workoutGroupID?: Maybe<Scalars['ID']['output']>;
@@ -376,7 +377,7 @@ export type WorkoutGroupQueryVariables = Exact<{
 }>;
 
 
-export type WorkoutGroupQuery = { __typename?: 'Query', workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } | null };
+export type WorkoutGroupQuery = { __typename?: 'Query', workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, user: { __typename?: 'User', id: string, profile?: { __typename?: 'Profile', id: string, name: string } | null }, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } | null };
 
 export type CurrentUserWorkoutGroupsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -700,6 +701,13 @@ export const WorkoutGroupDocument = gql`
       date
       createdAt
       updatedAt
+      user {
+        id
+        profile {
+          id
+          name
+        }
+      }
       workoutExercises {
         id
         exercise {

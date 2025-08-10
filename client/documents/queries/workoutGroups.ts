@@ -46,6 +46,13 @@ export const WorkoutGroupDocument = gql`
         date
         createdAt
         updatedAt
+        user {
+          id
+          profile {
+            id
+            name
+          }
+        }
         workoutExercises {
           id
           exercise {

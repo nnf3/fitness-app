@@ -34,6 +34,7 @@ func (c *WorkoutConverter) ToModelWorkout(workout entity.Workout) *model.Workout
 		Date:           formatDate(workout.Date),
 		CreatedAt:      workout.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:      workout.UpdatedAt.Format(time.RFC3339),
+		UserID:         fmt.Sprintf("%d", workout.UserID),
 		WorkoutGroupID: workoutGroupID,
 	}
 }

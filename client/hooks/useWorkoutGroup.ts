@@ -1,4 +1,5 @@
 import { useQuery, useMutation } from '@apollo/client';
+import dayjs from 'dayjs';
 import {
   WorkoutGroupsDocument,
   CurrentUserWorkoutGroupsDocument,
@@ -12,6 +13,21 @@ import {
   CreateWorkoutGroupMutation,
   CreateWorkoutGroupMutationVariables
 } from '../types/graphql';
+
+export interface Member {
+  id: string;
+  date: string;
+  createdAt: string;
+  userName: string;
+}
+
+export interface WorkoutSummary {
+  id: string;
+  date: string;
+  createdAt: string;
+  memberName: string;
+  exercises: string[];
+}
 
 export function useWorkoutGroups() {
   const {
@@ -65,8 +81,40 @@ export function useWorkoutGroup(id: string) {
     skip: !id,
   });
 
+  // 日付フォーマット関数
+  const formatDate = (dateString: string) => {
+    return dayjs(dateString).format('YYYY年MM月DD日');
+  };
+
+  const formatDateTime = (dateString: string) => {
+    return dayjs(dateString).format('YYYY年MM月DD日 HH:mm');
+  };
+
+  // メンバー情報を取得
+  const members: Member[] = workoutGroupData?.workoutGroup?.workouts
+    .map(workout => ({
+      id: workout?.id || '',
+      date: workout?.date || '',
+      createdAt: workout?.createdAt || '',
+      userName: workout?.user?.profile?.name || '名前未設定'
+    })) || [];
+
+  // ワークアウトサマリー情報を取得
+  const workoutSummaries: WorkoutSummary[] = workoutGroupData?.workoutGroup?.workouts
+    .map(workout => ({
+      id: workout?.id || '',
+      date: workout?.date || '',
+      createdAt: workout?.createdAt || '',
+      memberName: workout?.user?.profile?.name || '名前未設定',
+      exercises: workout?.workoutExercises?.map(we => we.exercise.name) || []
+    })) || [];
+
   return {
     workoutGroup: workoutGroupData?.workoutGroup,
+    members,
+    workoutSummaries,
+    formatDate,
+    formatDateTime,
     loading: workoutGroupLoading,
     error: workoutGroupError,
     refetch: refetchWorkoutGroup,
@@ -106,6 +154,11 @@ export function useAvailableWorkoutGroups() {
   const { workoutGroups, loading: workoutGroupsLoading, error: workoutGroupsError, refetch: refetchWorkoutGroups } = useWorkoutGroups();
   const { joinedGroups, loading: currentUserLoading, error: currentUserError, refetch: refetchCurrentUser } = useCurrentUserWorkoutGroups();
 
+  // 日付フォーマット関数
+  const formatDate = (dateString: string) => {
+    return dayjs(dateString).format('YYYY年MM月DD日');
+  };
+
   // 参加可能なグループを取得（参加中のグループを除く）
   const availableGroups = workoutGroups.filter(group =>
     !joinedGroups.some(joinedGroup => joinedGroup?.id === group.id)
@@ -121,6 +174,7 @@ export function useAvailableWorkoutGroups() {
   return {
     availableGroups,
     joinedGroups,
+    formatDate,
     loading: workoutGroupsLoading || currentUserLoading,
     error: workoutGroupsError || currentUserError,
     refetch: refetchAll,
