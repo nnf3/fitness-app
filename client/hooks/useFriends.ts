@@ -1,117 +1,82 @@
 import { useQuery, useMutation } from '@apollo/client';
-import { Alert } from 'react-native';
-import {
-  GetFriendsDocument,
-  AddWorkoutGroupMemberDocument,
-} from '../documents';
+import { GetFriendsDocument, GetFriendshipRequestsDocument } from '../documents/queries';
+import { AcceptFriendshipRequestDocument, RejectFriendshipRequestDocument } from '../documents/mutations';
 import {
   GetFriendsQuery,
-  AddWorkoutGroupMemberMutation,
-  AddWorkoutGroupMemberMutationVariables,
+  GetFriendsQueryVariables,
+  GetFriendshipRequestsQuery,
+  GetFriendshipRequestsQueryVariables
 } from '../types/graphql';
 
 export function useFriends() {
+  // フレンド一覧の取得
   const {
     data: friendsData,
     loading: friendsLoading,
     error: friendsError,
     refetch: refetchFriends
-  } = useQuery<GetFriendsQuery>(GetFriendsDocument);
+  } = useQuery<GetFriendsQuery, GetFriendsQueryVariables>(GetFriendsDocument);
 
-  return {
-    friends: friendsData?.currentUser?.friends || [],
-    loading: friendsLoading,
-    error: friendsError,
-    refetch: refetchFriends,
-  };
-}
+  // フレンドリクエストの取得
+  const {
+    data: requestsData,
+    loading: requestsLoading,
+    error: requestsError,
+    refetch: refetchRequests
+  } = useQuery<GetFriendshipRequestsQuery, GetFriendshipRequestsQueryVariables>(GetFriendshipRequestsDocument);
 
-export function useAddWorkoutGroupMember() {
-  const [addWorkoutGroupMember, { loading: addMemberLoading }] = useMutation<
-    AddWorkoutGroupMemberMutation,
-    AddWorkoutGroupMemberMutationVariables
-  >(AddWorkoutGroupMemberDocument);
+  // フレンドリクエスト承認
+  const [acceptRequest, { loading: acceptLoading }] = useMutation(AcceptFriendshipRequestDocument, {
+    refetchQueries: [
+      { query: GetFriendsDocument },
+      { query: GetFriendshipRequestsDocument }
+    ],
+  });
 
-  const addMember = async (workoutGroupID: string, userID: string) => {
+  // フレンドリクエスト拒否
+  const [rejectRequest, { loading: rejectLoading }] = useMutation(RejectFriendshipRequestDocument, {
+    refetchQueries: [
+      { query: GetFriendsDocument },
+      { query: GetFriendshipRequestsDocument }
+    ],
+  });
+
+  // データの加工
+  const friends = friendsData?.currentUser?.friends || [];
+  const pendingRequests = requestsData?.currentUser?.friendshipRequests?.filter(
+    (friendship: any) => friendship.status === 'PENDING'
+  ) || [];
+
+  // リフレッシュ処理
+  const refreshData = async () => {
     try {
-      const result = await addWorkoutGroupMember({
-        variables: {
-          input: {
-            workoutGroupID,
-            userID,
-          },
-        },
-      });
-      return { success: true, data: result.data?.addWorkoutGroupMember };
+      await Promise.all([
+        refetchFriends(),
+        refetchRequests()
+      ]);
     } catch (error) {
-      return { success: false, error };
+      console.error('データの更新に失敗しました:', error);
     }
   };
 
   return {
-    addMember,
-    loading: addMemberLoading,
-  };
-}
-
-// フレンド選択用のヘルパー関数
-export function useFriendSelection(existingMemberIds: string[] = []) {
-  const { friends, loading, error } = useFriends();
-
-  // フレンド検索・フィルタリング
-  const getFilteredFriends = (searchQuery: string) => {
-    return friends.filter(friend => {
-      const friendName = friend.profile?.name || '名前未設定';
-      const matchesSearch = friendName
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      const isNotMember = !existingMemberIds.includes(friend.id);
-      return matchesSearch && isNotMember;
-    });
-  };
-
-  // フレンド選択の確認ダイアログ
-  const showFriendSelectionConfirmation = (
-    friend: any,
-    onConfirm: (friend: any) => void
-  ) => {
-    if (existingMemberIds.includes(friend.id)) {
-      Alert.alert('エラー', 'このユーザーは既にグループのメンバーです。');
-      return;
-    }
-
-    Alert.alert(
-      'メンバー追加の確認',
-      `${friend.profile?.name || '名前未設定'}をグループに追加しますか？`,
-      [
-        {
-          text: 'キャンセル',
-          style: 'cancel',
-        },
-        {
-          text: '追加',
-          onPress: () => onConfirm(friend),
-        },
-      ]
-    );
-  };
-
-  // イニシャル取得
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  return {
+    // データ
     friends,
-    loading,
-    error,
-    getFilteredFriends,
-    showFriendSelectionConfirmation,
-    getInitials,
+    pendingRequests,
+
+    // ローディング状態
+    friendsLoading,
+    requestsLoading,
+    acceptLoading,
+    rejectLoading,
+
+    // エラー状態
+    friendsError,
+    requestsError,
+
+    // アクション
+    acceptRequest,
+    rejectRequest,
+    refreshData,
   };
 }

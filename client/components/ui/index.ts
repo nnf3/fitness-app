@@ -5,3 +5,7 @@ export * from './FriendSelectionModal';
 export * from './QRCodeGenerator';
 export * from './QRCodeScanner';
 export * from './FriendQRModal';
+export * from './FriendsTabBar';
+export * from './FriendItem';
+export * from './FriendshipRequestItem';
+export * from './EmptyState';
