@@ -33,6 +33,14 @@ build-android-dev:
 	@echo "🤖 Android Development Buildを作成中..."
 	eas build --platform android --profile development-device
 
+build-ios-preview:
+	@echo "🍎 iOS Preview Buildを作成中..."
+	eas build --platform ios --profile preview
+
+build-android-preview:
+	@echo "🤖 Android Preview Buildを作成中..."
+	eas build --platform android --profile preview
+
 build-ios-prd:
 	@echo "🍎 iOS Production Buildを作成中..."
 	eas build --platform ios --profile production
