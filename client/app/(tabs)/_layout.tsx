@@ -32,15 +32,22 @@ export default function TabLayout() {
       <Tabs.Screen
         name="workout"
         options={{
-          title: '筋トレ',
-          tabBarIcon: ({ color }) => <FontAwesome size={24} name="list" color={color} />,
+          title: '個人トレ',
+          tabBarIcon: ({ color }) => <FontAwesome size={24} name="user" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="group-workout"
+        options={{
+          title: '合トレ',
+          tabBarIcon: ({ color }) => <FontAwesome size={24} name="users" color={color} />,
         }}
       />
       <Tabs.Screen
         name="friends"
         options={{
           title: 'フレンド',
-          tabBarIcon: ({ color }) => <FontAwesome size={24} name="users" color={color} />,
+          tabBarIcon: ({ color }) => <FontAwesome size={24} name="user-plus" color={color} />,
         }}
       />
       <Tabs.Screen

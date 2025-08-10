@@ -46,9 +46,25 @@ func RollbackTo(migrationID string) error {
 		return fmt.Errorf("データベースが接続されていません")
 	}
 
-	m := gormigrate.New(DB, gormigrate.DefaultOptions, getMigrations())
+	// マイグレーションIDの存在確認
+	migrations := getMigrations()
+	migrationExists := false
+	for _, migration := range migrations {
+		if migration.ID == migrationID {
+			migrationExists = true
+			break
+		}
+	}
+	if !migrationExists {
+		return fmt.Errorf("マイグレーションID '%s' が見つかりません", migrationID)
+	}
+
+	m := gormigrate.New(DB, gormigrate.DefaultOptions, migrations)
+
+	log.Printf("🔄 マイグレーション '%s' までロールバックを開始します...", migrationID)
 
 	if err := m.RollbackTo(migrationID); err != nil {
+		log.Printf("❌ ロールバックに失敗しました: %v", err)
 		return fmt.Errorf("ロールバックに失敗しました: %w", err)
 	}
 
@@ -62,14 +78,75 @@ func RollbackLast() error {
 		return fmt.Errorf("データベースが接続されていません")
 	}
 
-	m := gormigrate.New(DB, gormigrate.DefaultOptions, getMigrations())
+	migrations := getMigrations()
+	if len(migrations) == 0 {
+		return fmt.Errorf("マイグレーションが定義されていません")
+	}
+
+	m := gormigrate.New(DB, gormigrate.DefaultOptions, migrations)
+
+	// 最後に実行されたマイグレーションを確認
+	lastMigration, err := getLastRunMigration()
+	if err != nil {
+		return fmt.Errorf("最後のマイグレーションの確認に失敗しました: %w", err)
+	}
+	if lastMigration == "" {
+		return fmt.Errorf("実行されたマイグレーションがありません")
+	}
+
+	log.Printf("🔄 最後のマイグレーション '%s' をロールバックします...", lastMigration)
 
 	if err := m.RollbackLast(); err != nil {
+		log.Printf("❌ 最後のマイグレーションのロールバックに失敗しました: %v", err)
 		return fmt.Errorf("最後のマイグレーションのロールバックに失敗しました: %w", err)
 	}
 
-	log.Printf("✅ 最後のマイグレーションをロールバックしました")
+	log.Printf("✅ 最後のマイグレーション '%s' をロールバックしました", lastMigration)
 	return nil
+}
+
+// getLastRunMigration 最後に実行されたマイグレーションIDを取得する
+func getLastRunMigration() (string, error) {
+	if DB == nil {
+		return "", fmt.Errorf("データベースが接続されていません")
+	}
+
+	var migration struct {
+		ID string `gorm:"column:id"`
+	}
+
+	err := DB.Table("migrations").Order("id DESC").First(&migration).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return "", nil // マイグレーションが実行されていない
+		}
+		return "", err
+	}
+
+	return migration.ID, nil
+}
+
+// GetMigrationStatus マイグレーションの状態を取得する
+func GetMigrationStatus() ([]string, error) {
+	if DB == nil {
+		return nil, fmt.Errorf("データベースが接続されていません")
+	}
+
+	var migrations []struct {
+		ID string `gorm:"column:id"`
+	}
+
+	err := DB.Table("migrations").Order("id ASC").Find(&migrations).Error
+	if err != nil {
+		return nil, fmt.Errorf("マイグレーション状態の取得に失敗しました: %w", err)
+	}
+
+	var executedMigrations []string
+	for _, migration := range migrations {
+		executedMigrations = append(executedMigrations, migration.ID)
+	}
+
+	return executedMigrations, nil
 }
 
 // MigrateTo 指定したマイグレーションIDまでマイグレーションを実行する
@@ -78,9 +155,25 @@ func MigrateTo(migrationID string) error {
 		return fmt.Errorf("データベースが接続されていません")
 	}
 
-	m := gormigrate.New(DB, gormigrate.DefaultOptions, getMigrations())
+	// マイグレーションIDの存在確認
+	migrations := getMigrations()
+	migrationExists := false
+	for _, migration := range migrations {
+		if migration.ID == migrationID {
+			migrationExists = true
+			break
+		}
+	}
+	if !migrationExists {
+		return fmt.Errorf("マイグレーションID '%s' が見つかりません", migrationID)
+	}
+
+	m := gormigrate.New(DB, gormigrate.DefaultOptions, migrations)
+
+	log.Printf("🔄 マイグレーション '%s' まで実行を開始します...", migrationID)
 
 	if err := m.MigrateTo(migrationID); err != nil {
+		log.Printf("❌ マイグレーションに失敗しました: %v", err)
 		return fmt.Errorf("マイグレーションに失敗しました: %w", err)
 	}
 
@@ -94,9 +187,18 @@ func RunMigrations() error {
 		return fmt.Errorf("データベースが接続されていません")
 	}
 
-	m := gormigrate.New(DB, gormigrate.DefaultOptions, getMigrations())
+	migrations := getMigrations()
+	if len(migrations) == 0 {
+		return fmt.Errorf("マイグレーションが定義されていません")
+	}
+
+	m := gormigrate.New(DB, gormigrate.DefaultOptions, migrations)
+
+	log.Printf("🔄 マイグレーションを開始します...")
+	log.Printf("📋 実行予定のマイグレーション数: %d", len(migrations))
 
 	if err := m.Migrate(); err != nil {
+		log.Printf("❌ マイグレーションに失敗しました: %v", err)
 		return fmt.Errorf("マイグレーションに失敗しました: %w", err)
 	}
 
@@ -206,6 +308,45 @@ func getMigrations() []*gormigrate.Migration {
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.Migrator().DropTable(&entity.Friendship{})
+			},
+		},
+		{
+			ID: "202508031100_create_workout_groups",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&entity.WorkoutGroup{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&entity.WorkoutGroup{})
+			},
+		},
+		{
+			ID: "202508031110_add_workout_group_id_to_workouts",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&entity.Workout{}, "WorkoutGroupID") {
+					return tx.Migrator().AddColumn(&entity.Workout{}, "WorkoutGroupID")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&entity.Workout{}, "WorkoutGroupID") {
+					return tx.Migrator().DropColumn(&entity.Workout{}, "WorkoutGroupID")
+				}
+				return nil
+			},
+		},
+		{
+			ID: "202508101110_add_date_to_workouts",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&entity.Workout{}, "Date") {
+					return tx.Migrator().AddColumn(&entity.Workout{}, "Date")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&entity.Workout{}, "Date") {
+					return tx.Migrator().DropColumn(&entity.Workout{}, "Date")
+				}
+				return nil
 			},
 		},
 	}

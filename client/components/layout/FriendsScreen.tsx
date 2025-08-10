@@ -7,6 +7,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { useTheme } from '../../theme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -22,8 +23,11 @@ const createStyles = (theme: any) => StyleSheet.create({
     flex: 1,
     backgroundColor: theme.background,
   },
+  contentContainer: {
+    padding: 20,
+  },
   section: {
-    padding: 16,
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
@@ -104,8 +108,8 @@ const createStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: theme.surface,
     borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 16,
+    marginHorizontal: 20,
+    marginBottom: 20,
     padding: 4,
   },
   tabButton: {
@@ -168,10 +172,11 @@ export function FriendsScreen() {
   const { theme } = useTheme();
   const styles = createStyles(theme);
   const [activeTab, setActiveTab] = useState<TabType>('friends');
+  const [refreshing, setRefreshing] = useState(false);
 
   // GraphQLクエリでフレンドデータを取得
-  const { data: friendsData, loading: friendsLoading, error: friendsError } = useQuery<GetFriendsQuery, GetFriendsQueryVariables>(GetFriendsDocument);
-  const { data: requestsData, loading: requestsLoading, error: requestsError } = useQuery<GetFriendshipRequestsQuery, GetFriendshipRequestsQueryVariables>(GetFriendshipRequestsDocument);
+  const { data: friendsData, loading: friendsLoading, error: friendsError, refetch: refetchFriends } = useQuery<GetFriendsQuery, GetFriendsQueryVariables>(GetFriendsDocument);
+  const { data: requestsData, loading: requestsLoading, error: requestsError, refetch: refetchRequests } = useQuery<GetFriendshipRequestsQuery, GetFriendshipRequestsQueryVariables>(GetFriendshipRequestsDocument);
 
   // GraphQLミューテーション
   const [acceptRequest, { loading: acceptLoading }] = useMutation(AcceptFriendshipRequestDocument, {
@@ -199,6 +204,20 @@ export function FriendsScreen() {
       Alert.alert('エラー', `リクエストの拒否に失敗しました: ${error.message}`);
     }
   });
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refetchFriends(),
+        refetchRequests()
+      ]);
+    } catch (error) {
+      console.error('Refresh error:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // フレンドデータの処理
   const friends = friendsData?.currentUser?.friends || [];
@@ -384,42 +403,52 @@ export function FriendsScreen() {
 
       return (
       <View style={styles.container}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.contentContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[theme.primary]}
+              tintColor={theme.primary}
+            />
+          }
+        >
+          {/* タブ切り替え */}
+          <View style={styles.tabContainer}>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === 'friends' ? styles.tabButtonActive : styles.tabButtonInactive
+              ]}
+              onPress={() => setActiveTab('friends')}
+            >
+              <Text style={[
+                styles.tabText,
+                activeTab === 'friends' ? styles.tabTextActive : styles.tabTextInactive
+              ]}>
+                フレンド ({friends.length})
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === 'requests' ? styles.tabButtonActive : styles.tabButtonInactive
+              ]}
+              onPress={() => setActiveTab('requests')}
+            >
+              <Text style={[
+                styles.tabText,
+                activeTab === 'requests' ? styles.tabTextActive : styles.tabTextInactive
+              ]}>
+                リクエスト ({pendingRequests.length})
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-      {/* タブ切り替え */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[
-            styles.tabButton,
-            activeTab === 'friends' ? styles.tabButtonActive : styles.tabButtonInactive
-          ]}
-          onPress={() => setActiveTab('friends')}
-        >
-          <Text style={[
-            styles.tabText,
-            activeTab === 'friends' ? styles.tabTextActive : styles.tabTextInactive
-          ]}>
-            フレンド ({friends.length})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.tabButton,
-            activeTab === 'requests' ? styles.tabButtonActive : styles.tabButtonInactive
-          ]}
-          onPress={() => setActiveTab('requests')}
-        >
-          <Text style={[
-            styles.tabText,
-            activeTab === 'requests' ? styles.tabTextActive : styles.tabTextInactive
-          ]}>
-            リクエスト ({pendingRequests.length})
-          </Text>
-        </TouchableOpacity>
+          {activeTab === 'friends' ? renderFriendsTab() : renderRequestsTab()}
+        </ScrollView>
       </View>
-
-      <ScrollView style={{ flex: 1 }}>
-        {activeTab === 'friends' ? renderFriendsTab() : renderRequestsTab()}
-      </ScrollView>
-    </View>
-  );
+    );
 }

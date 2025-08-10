@@ -16,6 +16,7 @@ type WorkoutRepository interface {
 	// Batch methods for DataLoader
 	GetWorkoutsByIDs(workoutIDs []uint) ([]*entity.Workout, error)
 	GetWorkoutsByUserIDs(userIDs []uint) ([]*entity.Workout, error)
+	GetWorkoutsByWorkoutGroupIDs(workoutGroupIDs []uint) ([]*entity.Workout, error)
 }
 
 type workoutRepository struct {
@@ -91,6 +92,25 @@ func (r *workoutRepository) GetWorkoutsByUserIDs(userIDs []uint) ([]*entity.Work
 	var workouts []entity.Workout
 	if err := r.db.Where("user_id IN ?", userIDs).Find(&workouts).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch workouts by user IDs: %w", err)
+	}
+
+	// 値のスライスをポインタのスライスに変換
+	result := make([]*entity.Workout, len(workouts))
+	for i := range workouts {
+		result[i] = &workouts[i]
+	}
+
+	return result, nil
+}
+
+func (r *workoutRepository) GetWorkoutsByWorkoutGroupIDs(workoutGroupIDs []uint) ([]*entity.Workout, error) {
+	if len(workoutGroupIDs) == 0 {
+		return []*entity.Workout{}, nil
+	}
+
+	var workouts []entity.Workout
+	if err := r.db.Where("workout_group_id IN ?", workoutGroupIDs).Find(&workouts).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch workouts by workout group IDs: %w", err)
 	}
 
 	// 値のスライスをポインタのスライスに変換

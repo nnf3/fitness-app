@@ -1,9 +1,10 @@
 import { gql } from '@apollo/client';
 
 export const StartWorkoutDocument = gql`
-  mutation StartWorkout {
-    startWorkout {
+  mutation StartWorkout($input: StartWorkout!) {
+    startWorkout(input: $input) {
       id
+      date
       createdAt
       updatedAt
     }

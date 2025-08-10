@@ -1,173 +1,109 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { Alert } from 'react-native';
 import {
-  WorkoutLogsDocument,
+  WorkoutsDocument,
   StartWorkoutDocument,
   ExercisesDocument,
+  CreateWorkoutExerciseDocument,
   CreateSetLogDocument,
-  CreateWorkoutExerciseDocument
 } from '@/documents';
 import {
-  WorkoutLogsQuery,
+  WorkoutsQuery,
   StartWorkoutMutation,
   ExercisesQuery,
+  CreateWorkoutExerciseMutation,
   CreateSetLogMutation,
-  CreateWorkoutExerciseMutation
 } from '@/types/graphql';
 
-interface ExpandedWorkout {
-  id: string;
-  isExpanded: boolean;
-  selectedExercise: string;
-  weight: string;
-  repCount: string;
-  workoutExerciseId?: string;
-}
-
 export const useWorkout = (user: any) => {
-  const [expandedWorkouts, setExpandedWorkouts] = useState<ExpandedWorkout[]>([]);
-
-  const { data, loading, error } = useQuery<WorkoutLogsQuery>(WorkoutLogsDocument, {
+  const { data, loading, error } = useQuery<WorkoutsQuery>(WorkoutsDocument, {
     skip: !user,
   });
 
   const { data: exercisesData } = useQuery<ExercisesQuery>(ExercisesDocument);
 
-  // 既存のワークアウトをexpandedWorkoutsに初期化
-  useEffect(() => {
-    if (data?.currentUser?.workouts) {
-      setExpandedWorkouts(prev => {
-        // 既存のexpandedWorkoutsのIDを取得
-        const existingIds = new Set(prev.map(w => w.id));
+  // 特定のワークアウトを取得する関数
+  const getWorkoutById = useCallback((workoutId: string) => {
+    return data?.currentUser?.workouts?.find(workout => workout?.id === workoutId);
+  }, [data]);
 
-        // 新しいworkoutsのみをフィルタリング
-        const newWorkouts = data.currentUser.workouts
-          .filter(workout => !existingIds.has(workout.id))
-          .map(workout => ({
-            id: workout.id,
-            isExpanded: false,
-            selectedExercise: '',
-            weight: '',
-            repCount: '',
-          }));
-
-        // 新しいworkoutsがある場合のみ更新
-        return newWorkouts.length > 0 ? [...prev, ...newWorkouts] : prev;
-      });
-    }
-  }, [data?.currentUser?.workouts]);
+  // ワークアウトの所有者をチェックする関数
+  // currentUserのworkoutsに含まれている場合は所有者
+  const isWorkoutOwner = useCallback((workoutId: string) => {
+    const workout = getWorkoutById(workoutId);
+    return !!workout; // currentUserのworkoutsに含まれている場合は所有者
+  }, [getWorkoutById]);
 
   const [startWorkout, { loading: startingWorkout }] = useMutation<StartWorkoutMutation>(StartWorkoutDocument, {
     refetchQueries: [
-      { query: WorkoutLogsDocument },
+      { query: WorkoutsDocument },
     ],
-    onCompleted: (data) => {
-      if (data?.startWorkout) {
-        // 新しいワークアウトを展開状態で追加
-        const newWorkout: ExpandedWorkout = {
-          id: data.startWorkout.id,
-          isExpanded: true,
-          selectedExercise: '',
-          weight: '',
-          repCount: '',
-        };
-        setExpandedWorkouts(prev => [newWorkout, ...prev]);
-        Alert.alert("筋トレ開始", "新しい筋トレセッションを開始しました！");
-      }
-    },
     onError: (error) => {
       Alert.alert("エラー", `筋トレの開始に失敗しました: ${error.message}`);
     },
   });
 
-  const [createWorkoutExercise] = useMutation<CreateWorkoutExerciseMutation>(CreateWorkoutExerciseDocument);
-  const [createSetLog, { loading: addingSetLog }] = useMutation<CreateSetLogMutation>(CreateSetLogDocument, {
+  const [createWorkoutExercise] = useMutation<CreateWorkoutExerciseMutation>(CreateWorkoutExerciseDocument, {
     refetchQueries: [
-      { query: WorkoutLogsDocument },
+      { query: WorkoutsDocument },
     ],
-    onCompleted: (data) => {
-      if (data?.createSetLog) {
-        // フォームをクリア
-        setExpandedWorkouts(prev =>
-          prev.map(w => ({
-            ...w,
-            selectedExercise: '',
-            weight: '',
-            repCount: '',
-          }))
-        );
-      }
-    },
-    onError: (error) => {
-      Alert.alert('エラー', `セット記録の追加に失敗しました: ${error.message}`);
-    },
   });
 
-  const handleStartWorkout = useCallback(() => {
-    startWorkout();
-  }, [startWorkout]);
+  const [createSetLog] = useMutation<CreateSetLogMutation>(CreateSetLogDocument, {
+    refetchQueries: [
+      { query: WorkoutsDocument },
+    ],
+  });
 
-  const toggleWorkoutExpansion = useCallback((workoutId: string) => {
-    setExpandedWorkouts(prev =>
-      prev.map(workout =>
-        workout.id === workoutId
-          ? { ...workout, isExpanded: !workout.isExpanded }
-          : workout
-      )
-    );
-  }, []);
+  const handleStartWorkout = useCallback(async (
+    date?: string,
+    workoutGroupID?: string,
+    onSuccess?: (workoutId: string) => void
+  ) => {
+    const input: any = {};
 
-  const handleAddSetLog = useCallback(async (workoutId: string) => {
-    const workout = expandedWorkouts.find(w => w.id === workoutId);
-    if (!workout) return;
-
-    if (!workout.selectedExercise || !workout.weight || !workout.repCount) {
-      Alert.alert('エラー', 'すべての項目を入力してください。');
-      return;
+    if (date) {
+      input.date = date;
     }
 
-    const exercise = exercisesData?.exercises.find(ex => ex.id === workout.selectedExercise);
-    if (!exercise) {
-      Alert.alert('エラー', '選択された種目が見つかりません。');
-      return;
+    if (workoutGroupID) {
+      input.workoutGroupID = workoutGroupID;
     }
 
     try {
-      // まず、この workout と exercise の組み合わせで WorkoutExercise を作成
-      let workoutExerciseId = workout.workoutExerciseId;
-      
-      if (!workoutExerciseId) {
-        const workoutExerciseResult = await createWorkoutExercise({
-          variables: {
-            input: {
-              workoutID: workoutId,
-              exerciseID: workout.selectedExercise,
-            },
-          },
-        });
-        
-        workoutExerciseId = workoutExerciseResult.data?.createWorkoutExercise?.id;
-        
-        if (!workoutExerciseId) {
-          Alert.alert('エラー', 'ワークアウト種目の作成に失敗しました。');
-          return;
-        }
-        
-        // workoutExerciseId を保存
-        setExpandedWorkouts(prev =>
-          prev.map(w =>
-            w.id === workoutId
-              ? { ...w, workoutExerciseId }
-              : w
-          )
-        );
+      const result = await startWorkout({ variables: { input } });
+      if (result.data?.startWorkout?.id && onSuccess) {
+        onSuccess(result.data.startWorkout.id);
       }
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }, [startWorkout]);
 
-      // 現在のセット数を計算（既存のセットログ数 + 1）
-      const currentWorkout = data?.currentUser?.workouts?.find(w => w.id === workoutId);
-      const workoutExercise = currentWorkout?.workoutExercises?.find(we => we.exercise.id === workout.selectedExercise);
-      const setNumber = (workoutExercise?.setLogs?.length || 0) + 1;
+  const handleAddSetLog = useCallback(async (
+    workoutId: string,
+    exerciseId: string,
+    weight: number,
+    repCount: number,
+    setNumber: number
+  ) => {
+    try {
+      // まず、この workout と exercise の組み合わせで WorkoutExercise を作成
+      const workoutExerciseResult = await createWorkoutExercise({
+        variables: {
+          input: {
+            workoutID: workoutId,
+            exerciseID: exerciseId,
+          },
+        },
+      });
+
+      const workoutExerciseId = workoutExerciseResult.data?.createWorkoutExercise?.id;
+      if (!workoutExerciseId) {
+        throw new Error('ワークアウト種目の作成に失敗しました。');
+      }
 
       // SetLog を作成
       await createSetLog({
@@ -175,48 +111,63 @@ export const useWorkout = (user: any) => {
           input: {
             workoutExerciseID: workoutExerciseId,
             setNumber,
-            weight: parseFloat(workout.weight),
-            repCount: parseInt(workout.repCount),
+            weight,
+            repCount,
           },
         },
       });
+
+      return true;
     } catch (error) {
-      Alert.alert('エラー', `セット記録の追加に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw error;
     }
-  }, [expandedWorkouts, exercisesData, createWorkoutExercise, createSetLog, data]);
+  }, [createWorkoutExercise, createSetLog]);
 
-  const updateWorkoutForm = useCallback((workoutId: string, field: keyof ExpandedWorkout, value: string) => {
-    setExpandedWorkouts(prev =>
-      prev.map(w =>
-        w.id === workoutId
-          ? { ...w, [field]: value }
-          : w
-      )
-    );
-  }, []);
+  // 現在のワークアウトのセット記録を取得するヘルパー関数
+  const getCurrentWorkoutSetLogs = useCallback((workoutId: string) => {
+    const currentWorkout = data?.currentUser?.workouts?.find(w => w.id === workoutId);
+    return currentWorkout?.workoutExercises?.flatMap(we =>
+      we.setLogs?.map(setLog => ({ ...setLog, exercise: we.exercise })) || []
+    ) || [];
+  }, [data]);
 
-  const getExpandedWorkout = useCallback((workoutId: string): ExpandedWorkout => {
-    return expandedWorkouts.find(w => w.id === workoutId) || {
-      id: workoutId,
-      isExpanded: false,
-      selectedExercise: '',
-      weight: '',
-      repCount: '',
-    };
-  }, [expandedWorkouts]);
+  // 利用可能な種目のリストを取得するヘルパー関数
+  const getAvailableExercises = useCallback((workoutId: string) => {
+    const allSetLogs = getCurrentWorkoutSetLogs(workoutId);
+    const existingExercises = [...new Set(allSetLogs.map(setLog => setLog.exercise.name))];
+    const allExercises = exercisesData?.exercises?.map(ex => ex.name) || [];
+
+    // 既存の種目と全ての種目を結合して重複を除去
+    return [...new Set([...existingExercises, ...allExercises])];
+  }, [getCurrentWorkoutSetLogs, exercisesData]);
+
+  // 選択された種目のセット記録を取得するヘルパー関数
+  const getSelectedExerciseSetLogs = useCallback((workoutId: string, exerciseName: string) => {
+    const allSetLogs = getCurrentWorkoutSetLogs(workoutId);
+    return allSetLogs.filter(setLog => setLog.exercise.name === exerciseName);
+  }, [getCurrentWorkoutSetLogs]);
+
+  // 次のセット番号を計算するヘルパー関数
+  const getNextSetNumber = useCallback((workoutId: string, exerciseName: string) => {
+    const setLogs = getSelectedExerciseSetLogs(workoutId, exerciseName);
+    if (setLogs.length === 0) return 1;
+    const maxSetNumber = Math.max(...setLogs.map(setLog => setLog.setNumber));
+    return maxSetNumber + 1;
+  }, [getSelectedExerciseSetLogs]);
 
   return {
     data,
     loading,
     error,
     exercisesData,
-    expandedWorkouts,
     startingWorkout,
-    addingSetLog,
     handleStartWorkout,
-    toggleWorkoutExpansion,
     handleAddSetLog,
-    updateWorkoutForm,
-    getExpandedWorkout,
+    getCurrentWorkoutSetLogs,
+    getAvailableExercises,
+    getSelectedExerciseSetLogs,
+    getNextSetNumber,
+    getWorkoutById,
+    isWorkoutOwner,
   };
 };

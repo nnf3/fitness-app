@@ -202,9 +202,18 @@ models:
       recommendedUsers:
         resolver: true
 
+  WorkoutGroup:
+    fields:
+      workouts:
+        resolver: true
+
   Workout:
     fields:
       workoutExercises:
+        resolver: true
+      workoutGroup:
+        resolver: true
+      user:
         resolver: true
 
   WorkoutExercise:

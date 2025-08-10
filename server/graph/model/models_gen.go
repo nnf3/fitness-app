@@ -6,6 +6,11 @@ type AcceptFriendshipRequest struct {
 	FriendshipID string `json:"friendshipID"`
 }
 
+type AddWorkoutGroupMember struct {
+	WorkoutGroupID string `json:"workoutGroupID"`
+	UserID         string `json:"userID"`
+}
+
 type CreateProfile struct {
 	Name          string         `json:"name"`
 	BirthDate     string         `json:"birthDate"`
@@ -26,6 +31,11 @@ type CreateSetLog struct {
 type CreateWorkoutExercise struct {
 	WorkoutID  string `json:"workoutID"`
 	ExerciseID string `json:"exerciseID"`
+}
+
+type CreateWorkoutGroup struct {
+	Title string  `json:"title"`
+	Date  *string `json:"date,omitempty"`
 }
 
 type DeleteSetLog struct {
@@ -91,6 +101,11 @@ type SetLog struct {
 	SetNumber int32  `json:"setNumber"`
 }
 
+type StartWorkout struct {
+	Date           *string `json:"date,omitempty"`
+	WorkoutGroupID *string `json:"workoutGroupID,omitempty"`
+}
+
 type UpdateProfile struct {
 	Name          *string        `json:"name,omitempty"`
 	BirthDate     *string        `json:"birthDate,omitempty"`
@@ -115,9 +130,14 @@ type User struct {
 
 type Workout struct {
 	ID               string             `json:"id"`
+	Date             *string            `json:"date,omitempty"`
 	CreatedAt        string             `json:"createdAt"`
 	UpdatedAt        string             `json:"updatedAt"`
+	User             *User              `json:"user"`
+	UserID           string             `json:"userID"`
 	WorkoutExercises []*WorkoutExercise `json:"workoutExercises"`
+	WorkoutGroup     *WorkoutGroup      `json:"workoutGroup,omitempty"`
+	WorkoutGroupID   *string            `json:"workoutGroupID,omitempty"`
 }
 
 type WorkoutExercise struct {
@@ -125,4 +145,13 @@ type WorkoutExercise struct {
 	Workout  *Workout  `json:"workout"`
 	Exercise *Exercise `json:"exercise"`
 	SetLogs  []*SetLog `json:"setLogs"`
+}
+
+type WorkoutGroup struct {
+	ID        string     `json:"id"`
+	Title     string     `json:"title"`
+	Date      *string    `json:"date,omitempty"`
+	CreatedAt string     `json:"createdAt"`
+	UpdatedAt string     `json:"updatedAt"`
+	Workouts  []*Workout `json:"workouts"`
 }

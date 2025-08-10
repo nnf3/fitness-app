@@ -36,9 +36,23 @@ type Exercise {
 
 type Workout {
   id: ID!
+  date: String
   createdAt: String!
   updatedAt: String!
+  user: User!
+  userID: ID!
   workoutExercises: [WorkoutExercise!]!
+  workoutGroup: WorkoutGroup
+  workoutGroupID: ID
+}
+
+type WorkoutGroup {
+  id: ID!
+  title: String!
+  date: String
+  createdAt: String!
+  updatedAt: String!
+  workouts: [Workout!]!
 }
 
 type WorkoutExercise {

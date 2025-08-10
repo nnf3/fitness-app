@@ -2,15 +2,19 @@ package entity
 
 import (
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 type Workout struct {
 	gorm.Model
-	UserID uint `gorm:"not null;index"`
+	Date           *time.Time
+	UserID         uint  `gorm:"not null;index"`
+	WorkoutGroupID *uint `gorm:"index"`
 
-	User             User              `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
+	User             User `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
+	WorkoutGroup     *WorkoutGroup
 	WorkoutExercises []WorkoutExercise `gorm:"foreignKey:WorkoutID;constraint:OnDelete:CASCADE"`
 }
 
