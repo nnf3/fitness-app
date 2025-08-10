@@ -96,7 +96,7 @@ type SetLog struct {
 	SetNumber int32  `json:"setNumber"`
 }
 
-type StartWorkoutInput struct {
+type StartWorkout struct {
 	Date           *string `json:"date,omitempty"`
 	WorkoutGroupID *string `json:"workoutGroupID,omitempty"`
 	UserID         *string `json:"userID,omitempty"`

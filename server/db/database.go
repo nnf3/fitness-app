@@ -218,13 +218,10 @@ func getMigrations() []*gormigrate.Migration {
 			},
 		},
 		{
-			ID: "202508031110_add_workout_group_id_and_date_to_workouts",
+			ID: "202508031110_add_workout_group_id_to_workouts",
 			Migrate: func(tx *gorm.DB) error {
 				if !tx.Migrator().HasColumn(&entity.Workout{}, "WorkoutGroupID") {
 					return tx.Migrator().AddColumn(&entity.Workout{}, "WorkoutGroupID")
-				}
-				if !tx.Migrator().HasColumn(&entity.Workout{}, "Date") {
-					return tx.Migrator().AddColumn(&entity.Workout{}, "Date")
 				}
 				return nil
 			},
@@ -232,6 +229,18 @@ func getMigrations() []*gormigrate.Migration {
 				if tx.Migrator().HasColumn(&entity.Workout{}, "WorkoutGroupID") {
 					return tx.Migrator().DropColumn(&entity.Workout{}, "WorkoutGroupID")
 				}
+				return nil
+			},
+		},
+		{
+			ID: "202508101110_add_date_to_workouts",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&entity.Workout{}, "Date") {
+					return tx.Migrator().AddColumn(&entity.Workout{}, "Date")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
 				if tx.Migrator().HasColumn(&entity.Workout{}, "Date") {
 					return tx.Migrator().DropColumn(&entity.Workout{}, "Date")
 				}

@@ -13,7 +13,7 @@ import (
 type WorkoutService interface {
 	GetWorkoutByID(ctx context.Context, workoutID string) (*model.Workout, error)
 	GetWorkoutsByUserID(ctx context.Context, userID string) ([]*model.Workout, error)
-	StartWorkout(ctx context.Context, input model.StartWorkoutInput) (*model.Workout, error)
+	StartWorkout(ctx context.Context, input model.StartWorkout) (*model.Workout, error)
 	// DataLoader使用メソッド
 	GetWorkoutByIDWithDataLoader(ctx context.Context, workoutID string) (*model.Workout, error)
 	GetWorkoutsByUserIDWithDataLoader(ctx context.Context, userID string) ([]*model.Workout, error)
@@ -52,7 +52,7 @@ func (s *workoutService) GetWorkoutsByUserID(ctx context.Context, userID string)
 	return s.converter.ToModelWorkoutsFromPointers(workouts), nil
 }
 
-func (s *workoutService) StartWorkout(ctx context.Context, input model.StartWorkoutInput) (*model.Workout, error) {
+func (s *workoutService) StartWorkout(ctx context.Context, input model.StartWorkout) (*model.Workout, error) {
 	var userID uint
 	if input.UserID != nil {
 		// ユーザーIDが指定されている場合はそれを使用
@@ -70,21 +70,31 @@ func (s *workoutService) StartWorkout(ctx context.Context, input model.StartWork
 		userID = currentUser.ID
 	}
 
-	workoutGroupIDUint64, err := strconv.ParseUint(*input.WorkoutGroupID, 10, 32)
-	if err != nil {
-		return nil, fmt.Errorf("invalid workout group ID: %s", *input.WorkoutGroupID)
+	// ワークアウトグループIDの処理（オプショナル）
+	var workoutGroupID *uint
+	if input.WorkoutGroupID != nil {
+		workoutGroupIDUint64, err := strconv.ParseUint(*input.WorkoutGroupID, 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("invalid workout group ID: %s", *input.WorkoutGroupID)
+		}
+		workoutGroupIDValue := uint(workoutGroupIDUint64)
+		workoutGroupID = &workoutGroupIDValue
 	}
-	workoutGroupID := uint(workoutGroupIDUint64)
 
-	date, err := time.Parse(time.RFC3339, *input.Date)
-	if err != nil {
-		return nil, fmt.Errorf("invalid date: %s", *input.Date)
+	// 日付の処理（オプショナル）
+	var date *time.Time
+	if input.Date != nil {
+		parsedDate, err := time.Parse(common.DateFormat, *input.Date)
+		if err != nil {
+			return nil, fmt.Errorf("invalid date: %s", *input.Date)
+		}
+		date = &parsedDate
 	}
 
 	workout := entity.Workout{
 		UserID:         userID,
-		WorkoutGroupID: &workoutGroupID,
-		Date:           &date,
+		WorkoutGroupID: workoutGroupID,
+		Date:           date,
 	}
 
 	if err := s.repo.CreateWorkout(ctx, &workout); err != nil {

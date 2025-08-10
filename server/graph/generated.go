@@ -78,7 +78,7 @@ type ComplexityRoot struct {
 		DeleteUser              func(childComplexity int, input model.DeleteUser) int
 		RejectFriendshipRequest func(childComplexity int, input model.RejectFriendshipRequest) int
 		SendFriendshipRequest   func(childComplexity int, input model.SendFriendshipRequest) int
-		StartWorkout            func(childComplexity int, input *model.StartWorkoutInput) int
+		StartWorkout            func(childComplexity int, input *model.StartWorkout) int
 		UpdateProfile           func(childComplexity int, input model.UpdateProfile) int
 	}
 
@@ -161,7 +161,7 @@ type MutationResolver interface {
 	SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error)
 	AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error)
 	RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error)
-	StartWorkout(ctx context.Context, input *model.StartWorkoutInput) (*model.Workout, error)
+	StartWorkout(ctx context.Context, input *model.StartWorkout) (*model.Workout, error)
 	CreateWorkoutExercise(ctx context.Context, input model.CreateWorkoutExercise) (*model.WorkoutExercise, error)
 	CreateWorkoutGroup(ctx context.Context, input model.CreateWorkoutGroup) (*model.WorkoutGroup, error)
 	CreateSetLog(ctx context.Context, input model.CreateSetLog) (*model.SetLog, error)
@@ -401,7 +401,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.StartWorkout(childComplexity, args["input"].(*model.StartWorkoutInput)), true
+		return e.complexity.Mutation.StartWorkout(childComplexity, args["input"].(*model.StartWorkout)), true
 
 	case "Mutation.updateProfile":
 		if e.complexity.Mutation.UpdateProfile == nil {
@@ -760,7 +760,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputNewUser,
 		ec.unmarshalInputRejectFriendshipRequest,
 		ec.unmarshalInputSendFriendshipRequest,
-		ec.unmarshalInputStartWorkoutInput,
+		ec.unmarshalInputStartWorkout,
 		ec.unmarshalInputUpdateProfile,
 	)
 	first := true
@@ -1101,13 +1101,13 @@ func (ec *executionContext) field_Mutation_startWorkout_args(ctx context.Context
 func (ec *executionContext) field_Mutation_startWorkout_argsInput(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (*model.StartWorkoutInput, error) {
+) (*model.StartWorkout, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalOStartWorkoutInput2ᚖappᚋgraphᚋmodelᚐStartWorkoutInput(ctx, tmp)
+		return ec.unmarshalOStartWorkout2ᚖappᚋgraphᚋmodelᚐStartWorkout(ctx, tmp)
 	}
 
-	var zeroVal *model.StartWorkoutInput
+	var zeroVal *model.StartWorkout
 	return zeroVal, nil
 }
 
@@ -2188,7 +2188,7 @@ func (ec *executionContext) _Mutation_startWorkout(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().StartWorkout(rctx, fc.Args["input"].(*model.StartWorkoutInput))
+		return ec.resolvers.Mutation().StartWorkout(rctx, fc.Args["input"].(*model.StartWorkout))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7195,8 +7195,8 @@ func (ec *executionContext) unmarshalInputSendFriendshipRequest(ctx context.Cont
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputStartWorkoutInput(ctx context.Context, obj any) (model.StartWorkoutInput, error) {
-	var it model.StartWorkoutInput
+func (ec *executionContext) unmarshalInputStartWorkout(ctx context.Context, obj any) (model.StartWorkout, error) {
+	var it model.StartWorkout
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
@@ -9820,11 +9820,11 @@ func (ec *executionContext) marshalOProfile2ᚖappᚋgraphᚋmodelᚐProfile(ctx
 	return ec._Profile(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOStartWorkoutInput2ᚖappᚋgraphᚋmodelᚐStartWorkoutInput(ctx context.Context, v any) (*model.StartWorkoutInput, error) {
+func (ec *executionContext) unmarshalOStartWorkout2ᚖappᚋgraphᚋmodelᚐStartWorkout(ctx context.Context, v any) (*model.StartWorkout, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalInputStartWorkoutInput(ctx, v)
+	res, err := ec.unmarshalInputStartWorkout(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

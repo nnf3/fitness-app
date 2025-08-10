@@ -36,7 +36,7 @@ func (r *workoutResolver) WorkoutGroup(ctx context.Context, obj *model.Workout) 
 // ================================
 
 // StartWorkout is the resolver for the startWorkout field.
-func (r *mutationResolver) StartWorkout(ctx context.Context, input *model.StartWorkoutInput) (*model.Workout, error) {
+func (r *mutationResolver) StartWorkout(ctx context.Context, input *model.StartWorkout) (*model.Workout, error) {
 	workoutService := services.NewWorkoutServiceWithSeparation(r.DB)
 	return workoutService.StartWorkout(ctx, *input)
 }

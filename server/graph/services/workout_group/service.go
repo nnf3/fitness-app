@@ -79,14 +79,18 @@ func (s *workoutGroupService) GetWorkoutGroupMembers(ctx context.Context, groupI
 }
 
 func (s *workoutGroupService) CreateWorkoutGroup(ctx context.Context, input model.CreateWorkoutGroup) (*model.WorkoutGroup, error) {
-	date, err := time.Parse(time.RFC3339, *input.Date)
-	if err != nil {
-		return nil, fmt.Errorf("invalid date: %s", *input.Date)
+	var date *time.Time
+	if input.Date != nil {
+		parsedDate, err := time.Parse(common.DateFormat, *input.Date)
+		if err != nil {
+			return nil, fmt.Errorf("invalid date: %s", *input.Date)
+		}
+		date = &parsedDate
 	}
 
 	workoutGroup := &entity.WorkoutGroup{
 		Title: input.Title,
-		Date:  &date,
+		Date:  date,
 	}
 
 	if err := s.repo.CreateWorkoutGroup(ctx, workoutGroup); err != nil {
