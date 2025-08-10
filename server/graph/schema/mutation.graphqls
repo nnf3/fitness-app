@@ -46,6 +46,10 @@ input StartWorkout {
   workoutGroupID: ID
 }
 
+input DeleteWorkout {
+  id: ID!
+}
+
 input CreateWorkoutExercise {
   workoutID: ID!
   exerciseID: ID!
@@ -95,6 +99,7 @@ type Mutation {
   rejectFriendshipRequest(input: RejectFriendshipRequest!): Friendship!
 
   startWorkout(input: StartWorkout): Workout!
+  deleteWorkout(input: DeleteWorkout!): Boolean!
 
   createWorkoutExercise(input: CreateWorkoutExercise!): WorkoutExercise!
 

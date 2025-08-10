@@ -47,6 +47,10 @@ type DeleteUser struct {
 	ID string `json:"id"`
 }
 
+type DeleteWorkout struct {
+	ID string `json:"id"`
+}
+
 type DeleteWorkoutGroup struct {
 	ID string `json:"id"`
 }

@@ -45,3 +45,8 @@ func (r *mutationResolver) StartWorkout(ctx context.Context, input *model.StartW
 	workoutService := services.NewWorkoutServiceWithSeparation(r.DB)
 	return workoutService.StartWorkout(ctx, *input)
 }
+
+func (r *mutationResolver) DeleteWorkout(ctx context.Context, input model.DeleteWorkout) (bool, error) {
+	workoutService := services.NewWorkoutServiceWithSeparation(r.DB)
+	return workoutService.DeleteWorkout(ctx, input)
+}

@@ -77,6 +77,7 @@ type ComplexityRoot struct {
 		CreateWorkoutGroup      func(childComplexity int, input model.CreateWorkoutGroup) int
 		DeleteSetLog            func(childComplexity int, input model.DeleteSetLog) int
 		DeleteUser              func(childComplexity int, input model.DeleteUser) int
+		DeleteWorkout           func(childComplexity int, input model.DeleteWorkout) int
 		DeleteWorkoutGroup      func(childComplexity int, input model.DeleteWorkoutGroup) int
 		RejectFriendshipRequest func(childComplexity int, input model.RejectFriendshipRequest) int
 		SendFriendshipRequest   func(childComplexity int, input model.SendFriendshipRequest) int
@@ -168,6 +169,7 @@ type MutationResolver interface {
 	AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error)
 	RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error)
 	StartWorkout(ctx context.Context, input *model.StartWorkout) (*model.Workout, error)
+	DeleteWorkout(ctx context.Context, input model.DeleteWorkout) (bool, error)
 	CreateWorkoutExercise(ctx context.Context, input model.CreateWorkoutExercise) (*model.WorkoutExercise, error)
 	CreateWorkoutGroup(ctx context.Context, input model.CreateWorkoutGroup) (*model.WorkoutGroup, error)
 	UpdateWorkoutGroup(ctx context.Context, input model.UpdateWorkoutGroup) (*model.WorkoutGroup, error)
@@ -389,6 +391,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.DeleteUser(childComplexity, args["input"].(model.DeleteUser)), true
+
+	case "Mutation.deleteWorkout":
+		if e.complexity.Mutation.DeleteWorkout == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteWorkout_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteWorkout(childComplexity, args["input"].(model.DeleteWorkout)), true
 
 	case "Mutation.deleteWorkoutGroup":
 		if e.complexity.Mutation.DeleteWorkoutGroup == nil {
@@ -826,6 +840,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateWorkoutGroup,
 		ec.unmarshalInputDeleteSetLog,
 		ec.unmarshalInputDeleteUser,
+		ec.unmarshalInputDeleteWorkout,
 		ec.unmarshalInputDeleteWorkoutGroup,
 		ec.unmarshalInputNewUser,
 		ec.unmarshalInputRejectFriendshipRequest,
@@ -1156,6 +1171,29 @@ func (ec *executionContext) field_Mutation_deleteWorkoutGroup_argsInput(
 	}
 
 	var zeroVal model.DeleteWorkoutGroup
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteWorkout_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_deleteWorkout_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_deleteWorkout_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.DeleteWorkout, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNDeleteWorkout2appᚋgraphᚋmodelᚐDeleteWorkout(ctx, tmp)
+	}
+
+	var zeroVal model.DeleteWorkout
 	return zeroVal, nil
 }
 
@@ -2383,6 +2421,61 @@ func (ec *executionContext) fieldContext_Mutation_startWorkout(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_startWorkout_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteWorkout(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteWorkout(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteWorkout(rctx, fc.Args["input"].(model.DeleteWorkout))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteWorkout(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteWorkout_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7665,6 +7758,33 @@ func (ec *executionContext) unmarshalInputDeleteUser(ctx context.Context, obj an
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputDeleteWorkout(ctx context.Context, obj any) (model.DeleteWorkout, error) {
+	var it model.DeleteWorkout
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputDeleteWorkoutGroup(ctx context.Context, obj any) (model.DeleteWorkoutGroup, error) {
 	var it model.DeleteWorkoutGroup
 	asMap := map[string]any{}
@@ -8170,6 +8290,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "startWorkout":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_startWorkout(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteWorkout":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteWorkout(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -9551,6 +9678,11 @@ func (ec *executionContext) unmarshalNDeleteSetLog2appᚋgraphᚋmodelᚐDeleteS
 
 func (ec *executionContext) unmarshalNDeleteUser2appᚋgraphᚋmodelᚐDeleteUser(ctx context.Context, v any) (model.DeleteUser, error) {
 	res, err := ec.unmarshalInputDeleteUser(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNDeleteWorkout2appᚋgraphᚋmodelᚐDeleteWorkout(ctx context.Context, v any) (model.DeleteWorkout, error) {
+	res, err := ec.unmarshalInputDeleteWorkout(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
