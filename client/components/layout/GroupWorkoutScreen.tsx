@@ -1,9 +1,10 @@
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
-import { useAuth } from "../../hooks";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert, Modal } from "react-native";
+import { useAuth, useAvailableWorkoutGroups, useCreateWorkoutGroup } from "../../hooks";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTheme } from "../../theme";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { CreateGroupForm } from "../forms";
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -13,18 +14,50 @@ const createStyles = (theme: any) => StyleSheet.create({
   contentContainer: {
     padding: 20,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  section: {
+    marginBottom: 30,
+  },
+  sectionHeader: {
     marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: theme.text,
   },
-  section: {
+  createGroupCard: {
     backgroundColor: theme.surface,
     padding: 20,
     borderRadius: 12,
-    marginBottom: 20,
+    marginBottom: 16,
+    shadowColor: theme.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: theme.primary,
+    borderStyle: 'dashed',
+  },
+  createGroupCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  createGroupCardText: {
+    fontSize: 16,
+    color: theme.primary,
+    fontWeight: '600',
+  },
+  groupCard: {
+    backgroundColor: theme.surface,
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 16,
     shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
@@ -34,51 +67,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: theme.text,
-  },
-  createGroupButton: {
-    backgroundColor: theme.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  createGroupButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  groupCard: {
-    backgroundColor: theme.surfaceVariant,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: theme.border,
-    shadowColor: theme.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 3,
-  },
   groupCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 8,
   },
   groupTitle: {
@@ -89,11 +78,12 @@ const createStyles = (theme: any) => StyleSheet.create({
   groupDate: {
     fontSize: 14,
     color: theme.textSecondary,
+    marginTop: 4,
   },
   groupInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   groupMemberCount: {
     fontSize: 14,
@@ -103,18 +93,30 @@ const createStyles = (theme: any) => StyleSheet.create({
   groupActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 8,
+    gap: 8,
   },
   actionButton: {
     backgroundColor: theme.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    marginLeft: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
   actionButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  secondaryActionButton: {
+    backgroundColor: theme.surfaceVariant,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  secondaryActionButtonText: {
+    color: theme.text,
+    fontSize: 14,
     fontWeight: '600',
   },
   emptyState: {
@@ -139,6 +141,19 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.error,
     marginBottom: 20,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: theme.overlay,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: theme.surface,
+    padding: 24,
+    borderRadius: 16,
+    width: '80%',
+    maxWidth: 400,
+  },
 });
 
 export function GroupWorkoutScreen() {
@@ -148,6 +163,20 @@ export function GroupWorkoutScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const styles = createStyles(theme);
+
+  // カスタムフックを使用
+  const {
+    availableGroups,
+    joinedGroups,
+    loading,
+    error,
+    refetch
+  } = useAvailableWorkoutGroups();
+
+  const { createGroup, loading: createGroupLoading } = useCreateWorkoutGroup();
+
+  // モーダル状態
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
 
   // ログアウト時にログイン画面に遷移
   useEffect(() => {
@@ -159,10 +188,8 @@ export function GroupWorkoutScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      // TODO: グループワークアウトデータの再取得
-      console.log("グループワークアウトデータを再取得中...");
-      // 実際の実装では、GraphQLクエリのrefetchを呼び出す
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 仮の遅延
+      // 合トレグループデータの再取得
+      await refetch();
     } catch (error) {
       console.error('Refresh error:', error);
     } finally {
@@ -171,8 +198,31 @@ export function GroupWorkoutScreen() {
   };
 
   const handleCreateGroup = () => {
-    // TODO: グループ作成画面に遷移
-    console.log("グループ作成画面に遷移");
+    setShowCreateGroupModal(true);
+  };
+
+  const handleCloseCreateGroupModal = () => {
+    setShowCreateGroupModal(false);
+  };
+
+  const handleSubmitCreateGroup = async (data: { title: string; date?: string }) => {
+    try {
+      const result = await createGroup(data);
+
+      if (result.success) {
+        // 成功時の処理
+        Alert.alert('成功', 'グループを作成しました！');
+        setShowCreateGroupModal(false);
+
+        // データを再取得
+        await refetch();
+      } else {
+        Alert.alert('エラー', 'グループの作成に失敗しました。');
+      }
+    } catch (error) {
+      console.error('Create group error:', error);
+      Alert.alert('エラー', 'グループの作成に失敗しました。');
+    }
   };
 
   const handleJoinGroup = (groupId: string) => {
@@ -203,56 +253,135 @@ export function GroupWorkoutScreen() {
         />
       }
     >
-      {/* グループワークアウトセクション */}
+      {/* 合トレグループセクション */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>グループワークアウト</Text>
-          <TouchableOpacity
-            style={styles.createGroupButton}
-            onPress={handleCreateGroup}
-          >
-            <FontAwesome name="plus" size={12} color="#FFFFFF" />
-            <Text style={styles.createGroupButtonText}>作成</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>合トレグループ</Text>
         </View>
 
-        {/* TODO: グループワークアウトのデータを取得して表示 */}
-        <View style={styles.emptyState}>
-          <FontAwesome name="users" size={48} color={theme.textSecondary} />
-          <Text style={styles.emptyStateText}>
-            まだグループワークアウトがありません。{'\n'}
-            新しいグループを作成して友達と一緒にトレーニングしましょう！
-          </Text>
-        </View>
-
-        {/* サンプルグループカード（開発用） */}
-        <View style={styles.groupCard}>
-          <View style={styles.groupCardHeader}>
-            <Text style={styles.groupTitle}>サンプルグループ</Text>
-            <Text style={styles.groupDate}>
-              {new Date().toLocaleDateString('ja-JP')}
+        {/* 新規作成カード */}
+        <TouchableOpacity
+          style={styles.createGroupCard}
+          onPress={handleCreateGroup}
+        >
+          <View style={styles.createGroupCardContent}>
+            <FontAwesome name="plus-circle" size={24} color={theme.primary} />
+            <Text style={styles.createGroupCardText}>
+              グループを作成
             </Text>
           </View>
-          <View style={styles.groupInfo}>
-            <FontAwesome name="users" size={16} color={theme.textSecondary} />
-            <Text style={styles.groupMemberCount}>3人参加中</Text>
+        </TouchableOpacity>
+
+        {/* ローディング状態 */}
+        {loading && (
+          <Text style={styles.loadingText}>合トレグループを読み込み中...</Text>
+        )}
+
+        {/* エラー状態 */}
+        {error && (
+          <Text style={styles.errorText}>
+            合トレグループの読み込みに失敗しました。
+          </Text>
+        )}
+
+        {/* 参加中のグループ */}
+        {joinedGroups.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>参加中のグループ</Text>
+            </View>
+            {joinedGroups.map((group) => (
+              <TouchableOpacity
+                key={group?.id}
+                style={styles.groupCard}
+                onPress={() => handleViewGroup(group?.id || '')}
+              >
+                <View style={styles.groupCardHeader}>
+                  <Text style={styles.groupTitle}>{group?.title}</Text>
+                  <Text style={styles.groupDate}>
+                    {group?.date ? new Date(group.date).toLocaleDateString('ja-JP') : '日付未設定'}
+                  </Text>
+                </View>
+                <View style={styles.groupInfo}>
+                  <FontAwesome name="users" size={16} color={theme.textSecondary} />
+                  <Text style={styles.groupMemberCount}>
+                    {joinedGroups.filter(g => g?.id === group?.id).length || 0}回参加
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
-          <View style={styles.groupActions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => handleViewGroup("sample-group-id")}
-            >
-              <Text style={styles.actionButtonText}>詳細</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => handleJoinGroup("sample-group-id")}
-            >
-              <Text style={styles.actionButtonText}>参加</Text>
-            </TouchableOpacity>
+        )}
+
+        {/* 参加可能なグループ */}
+        {availableGroups.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>参加可能なグループ</Text>
+            </View>
+            {availableGroups.map((group) => (
+              <View key={group.id} style={styles.groupCard}>
+                <View style={styles.groupCardHeader}>
+                  <Text style={styles.groupTitle}>{group.title}</Text>
+                  <Text style={styles.groupDate}>
+                    {group.date ? new Date(group.date).toLocaleDateString('ja-JP') : '日付未設定'}
+                  </Text>
+                </View>
+                <View style={styles.groupInfo}>
+                  <FontAwesome name="users" size={16} color={theme.textSecondary} />
+                  <Text style={styles.groupMemberCount}>
+                    {group.workouts.length}回のワークアウト
+                  </Text>
+                </View>
+                <View style={styles.groupActions}>
+                  <TouchableOpacity
+                    style={styles.secondaryActionButton}
+                    onPress={() => handleViewGroup(group.id)}
+                  >
+                    <Text style={styles.secondaryActionButtonText}>詳細</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => handleJoinGroup(group.id)}
+                  >
+                    <Text style={styles.actionButtonText}>参加</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* 空の状態 */}
+        {!loading && !error && joinedGroups.length === 0 && availableGroups.length === 0 && (
+          <View style={styles.emptyState}>
+            <FontAwesome name="users" size={48} color={theme.textSecondary} />
+            <Text style={styles.emptyStateText}>
+              まだ合トレグループがありません。{'\n'}
+              新しいグループを作成して友達と一緒にトレーニングしましょう！
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* グループ作成モーダル */}
+      <Modal
+        visible={showCreateGroupModal}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseCreateGroupModal}
+        presentationStyle="overFullScreen"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <CreateGroupForm
+              onSubmit={handleSubmitCreateGroup}
+              onCancel={handleCloseCreateGroupModal}
+              isLoading={createGroupLoading}
+            />
           </View>
         </View>
-      </View>
+      </Modal>
     </ScrollView>
   );
 }

@@ -1,4 +1,4 @@
-.PHONY: gqlgen-generate test test-entity rollback rollback-last rollback-to migrate migrate-all migrate-to seed-data remove-seed-data
+.PHONY: gqlgen-generate test test-entity rollback rollback-last rollback-to migrate migrate-all migrate-to migrate-status rollback-status seed-data remove-seed-data
 
 # GQLスキーマ生成
 gqlgen-generate:
@@ -42,6 +42,14 @@ migrate-all: migrate-build
 migrate-to:
 	@read -p "マイグレーション対象のマイグレーションIDを入力してください: " migration_id; \
 	./migrate -to $$migration_id
+
+# マイグレーション状態を確認
+migrate-status: migrate-build
+	./migrate -status
+
+# ロールバック状態を確認
+rollback-status: rollback-build
+	./rollback -status
 
 # 初期データ管理コマンドのビルド
 seed-build:

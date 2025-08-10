@@ -334,6 +334,13 @@ export type DeleteSetLogMutationVariables = Exact<{
 
 export type DeleteSetLogMutation = { __typename?: 'Mutation', deleteSetLog: boolean };
 
+export type CreateWorkoutGroupMutationVariables = Exact<{
+  input: CreateWorkoutGroup;
+}>;
+
+
+export type CreateWorkoutGroupMutation = { __typename?: 'Mutation', createWorkoutGroup: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string } };
+
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -358,6 +365,23 @@ export type GetProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetProfileQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null, imageURL?: string | null } | null } };
+
+export type WorkoutGroupsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type WorkoutGroupsQuery = { __typename?: 'Query', workoutGroups: Array<{ __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> }> };
+
+export type WorkoutGroupQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type WorkoutGroupQuery = { __typename?: 'Query', workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } | null };
+
+export type CurrentUserWorkoutGroupsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CurrentUserWorkoutGroupsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string } | null, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } };
 
 export type WorkoutsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -514,6 +538,17 @@ export const DeleteSetLogDocument = gql`
   deleteSetLog(input: $input)
 }
     `;
+export const CreateWorkoutGroupDocument = gql`
+    mutation CreateWorkoutGroup($input: CreateWorkoutGroup!) {
+  createWorkoutGroup(input: $input) {
+    id
+    title
+    date
+    createdAt
+    updatedAt
+  }
+}
+    `;
 export const CurrentUserDocument = gql`
     query CurrentUser {
   currentUser {
@@ -620,6 +655,105 @@ export const GetProfileDocument = gql`
   }
 }
     `;
+export const WorkoutGroupsDocument = gql`
+    query WorkoutGroups {
+  workoutGroups {
+    id
+    title
+    date
+    createdAt
+    updatedAt
+    workouts {
+      id
+      date
+      createdAt
+      updatedAt
+      workoutExercises {
+        id
+        exercise {
+          id
+          name
+          category
+          description
+        }
+        setLogs {
+          id
+          weight
+          repCount
+          setNumber
+        }
+      }
+    }
+  }
+}
+    `;
+export const WorkoutGroupDocument = gql`
+    query WorkoutGroup($id: ID!) {
+  workoutGroup(id: $id) {
+    id
+    title
+    date
+    createdAt
+    updatedAt
+    workouts {
+      id
+      date
+      createdAt
+      updatedAt
+      workoutExercises {
+        id
+        exercise {
+          id
+          name
+          category
+          description
+        }
+        setLogs {
+          id
+          weight
+          repCount
+          setNumber
+        }
+      }
+    }
+  }
+}
+    `;
+export const CurrentUserWorkoutGroupsDocument = gql`
+    query CurrentUserWorkoutGroups {
+  currentUser {
+    id
+    workouts {
+      id
+      date
+      createdAt
+      updatedAt
+      workoutGroup {
+        id
+        title
+        date
+        createdAt
+        updatedAt
+      }
+      workoutExercises {
+        id
+        exercise {
+          id
+          name
+          category
+          description
+        }
+        setLogs {
+          id
+          weight
+          repCount
+          setNumber
+        }
+      }
+    }
+  }
+}
+    `;
 export const WorkoutsDocument = gql`
     query Workouts {
   currentUser {
@@ -683,6 +817,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     DeleteSetLog(variables: DeleteSetLogMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<DeleteSetLogMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<DeleteSetLogMutation>({ document: DeleteSetLogDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'DeleteSetLog', 'mutation', variables);
     },
+    CreateWorkoutGroup(variables: CreateWorkoutGroupMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateWorkoutGroupMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CreateWorkoutGroupMutation>({ document: CreateWorkoutGroupDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateWorkoutGroup', 'mutation', variables);
+    },
     CurrentUser(variables?: CurrentUserQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CurrentUserQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<CurrentUserQuery>({ document: CurrentUserDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CurrentUser', 'query', variables);
     },
@@ -697,6 +834,15 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     GetProfile(variables?: GetProfileQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetProfileQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetProfileQuery>({ document: GetProfileDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetProfile', 'query', variables);
+    },
+    WorkoutGroups(variables?: WorkoutGroupsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<WorkoutGroupsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<WorkoutGroupsQuery>({ document: WorkoutGroupsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'WorkoutGroups', 'query', variables);
+    },
+    WorkoutGroup(variables: WorkoutGroupQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<WorkoutGroupQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<WorkoutGroupQuery>({ document: WorkoutGroupDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'WorkoutGroup', 'query', variables);
+    },
+    CurrentUserWorkoutGroups(variables?: CurrentUserWorkoutGroupsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CurrentUserWorkoutGroupsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<CurrentUserWorkoutGroupsQuery>({ document: CurrentUserWorkoutGroupsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CurrentUserWorkoutGroups', 'query', variables);
     },
     Workouts(variables?: WorkoutsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<WorkoutsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<WorkoutsQuery>({ document: WorkoutsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'Workouts', 'query', variables);
