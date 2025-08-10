@@ -93,7 +93,7 @@ steps:
     ]
   - id: deploy-api
     name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    waitFor: ["push-api","run-migrate"]
+    waitFor: ["push-api","run-migrate-job"]
     entrypoint: gcloud
     args:
       - run
