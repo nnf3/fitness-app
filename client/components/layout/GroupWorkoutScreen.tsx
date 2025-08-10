@@ -1,5 +1,9 @@
 import { Text, View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert, Modal, Image } from "react-native";
-import { useAuth, useAvailableWorkoutGroups, useCreateWorkoutGroup } from "../../hooks";
+import {
+  useAuth,
+  useAvailableWorkoutGroups,
+  useCreateWorkoutGroup,
+} from "../../hooks";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTheme } from "../../theme";
@@ -109,35 +113,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontSize: 14,
     color: theme.textSecondary,
     marginLeft: 8,
-  },
-  groupActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
-  },
-  actionButton: {
-    backgroundColor: theme.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  actionButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  secondaryActionButton: {
-    backgroundColor: theme.surfaceVariant,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-  secondaryActionButtonText: {
-    color: theme.text,
-    fontSize: 14,
-    fontWeight: '600',
   },
   emptyState: {
     alignItems: 'center',
@@ -322,8 +297,6 @@ export function GroupWorkoutScreen() {
             </View>
           </TouchableOpacity>
         ))}
-
-
 
         {/* 空の状態 */}
         {!loading && !error && joinedGroups.length === 0 && (

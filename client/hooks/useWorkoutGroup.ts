@@ -4,14 +4,17 @@ import {
   WorkoutGroupsDocument,
   CurrentUserWorkoutGroupsDocument,
   WorkoutGroupDocument,
-  CreateWorkoutGroupDocument
+  CreateWorkoutGroupDocument,
+  UpdateWorkoutGroupDocument
 } from '../documents'
 import {
   WorkoutGroupsQuery,
   CurrentUserWorkoutGroupsQuery,
   WorkoutGroupQuery,
   CreateWorkoutGroupMutation,
-  CreateWorkoutGroupMutationVariables
+  CreateWorkoutGroupMutationVariables,
+  UpdateWorkoutGroupMutation,
+  UpdateWorkoutGroupMutationVariables
 } from '../types/graphql';
 
 export interface Member {
@@ -21,6 +24,7 @@ export interface Member {
   date: string;
   createdAt: string;
   userName: string;
+  profileImageURL?: string;
 }
 
 export function useWorkoutGroups() {
@@ -92,7 +96,8 @@ export function useWorkoutGroup(id: string) {
       userId: workout?.user?.id || '',
       date: workout?.date || '',
       createdAt: workout?.createdAt || '',
-      userName: workout?.user?.profile?.name || '名前未設定'
+      userName: workout?.user?.profile?.name || '名前未設定',
+      profileImageURL: workout?.user?.profile?.imageURL || undefined
     })) || [];
 
   return {
@@ -143,6 +148,36 @@ export function useCreateWorkoutGroup() {
   return {
     createGroup,
     loading: createGroupLoading,
+  };
+}
+
+export function useUpdateWorkoutGroup() {
+  const [updateWorkoutGroup, { loading: updateGroupLoading }] = useMutation<
+    UpdateWorkoutGroupMutation,
+    UpdateWorkoutGroupMutationVariables
+  >(UpdateWorkoutGroupDocument);
+
+  const updateGroup = async (input: { id: string; title?: string; date?: string; imageUrl?: string }) => {
+    try {
+      const result = await updateWorkoutGroup({
+        variables: {
+          input: {
+            id: input.id,
+            title: input.title,
+            date: input.date,
+            imageURL: input.imageUrl,
+          },
+        },
+      });
+      return { success: true, data: result.data?.updateWorkoutGroup };
+    } catch (error) {
+      return { success: false, error };
+    }
+  };
+
+  return {
+    updateGroup,
+    loading: updateGroupLoading,
   };
 }
 

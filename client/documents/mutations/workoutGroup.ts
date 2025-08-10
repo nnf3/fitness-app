@@ -12,3 +12,22 @@ export const CreateWorkoutGroupDocument = gql`
     }
   }
 `;
+
+export const UpdateWorkoutGroupDocument = gql`
+  mutation UpdateWorkoutGroup($input: UpdateWorkoutGroup!) {
+    updateWorkoutGroup(input: $input) {
+      id
+      title
+      date
+      imageURL
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const DeleteWorkoutGroupDocument = gql`
+  mutation DeleteWorkoutGroup($input: DeleteWorkoutGroup!) {
+    deleteWorkoutGroup(input: $input)
+  }
+`;

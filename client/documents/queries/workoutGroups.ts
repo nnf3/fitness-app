@@ -53,6 +53,7 @@ export const WorkoutGroupDocument = gql`
           profile {
             id
             name
+            imageURL
           }
         }
         workoutExercises {

@@ -10,6 +10,12 @@ interface CreateGroupFormProps {
   onSubmit: (data: { title: string; date?: string; imageUrl?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  initialData?: {
+    title: string;
+    date?: string;
+    imageUrl?: string;
+  };
+  isEdit?: boolean;
 }
 
 const createStyles = (theme: any) => StyleSheet.create({
@@ -75,14 +81,16 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
 });
 
-export function CreateGroupForm({ onSubmit, onCancel, isLoading = false }: CreateGroupFormProps) {
+export function CreateGroupForm({ onSubmit, onCancel, isLoading = false, initialData, isEdit = false }: CreateGroupFormProps) {
   const { theme } = useTheme();
   const { user } = useAuth();
   const styles = createStyles(theme);
 
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [date, setDate] = useState<Date | undefined>(
+    initialData?.date ? new Date(initialData.date) : new Date()
+  );
+  const [imageUrl, setImageUrl] = useState<string | null>(initialData?.imageUrl || null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ percentage: number } | null>(null);
 
@@ -103,7 +111,7 @@ export function CreateGroupForm({ onSubmit, onCancel, isLoading = false }: Creat
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>新しいグループを作成</Text>
+      <Text style={styles.title}>{isEdit ? 'グループを編集' : '新しいグループを作成'}</Text>
 
       <GroupImagePicker
         selectedImage={imageUrl}
@@ -152,7 +160,7 @@ export function CreateGroupForm({ onSubmit, onCancel, isLoading = false }: Creat
           disabled={isSubmitDisabled}
         >
           <Text style={styles.submitButtonText}>
-            {isLoading ? '作成中...' : '作成'}
+            {isLoading ? (isEdit ? '更新中...' : '作成中...') : (isEdit ? '更新' : '作成')}
           </Text>
         </TouchableOpacity>
       </View>
