@@ -3,3 +3,4 @@ export * from "./useFirebaseStorage";
 export * from "./useWorkout";
 export * from "./useWorkoutGroup";
 export * from "./useFriends";
+export * from "./useWorkoutStats";

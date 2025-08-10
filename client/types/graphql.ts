@@ -414,6 +414,11 @@ export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, createdAt: string, updatedAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null, recommendedUsers: Array<{ __typename?: 'User', id: string, uid: string, createdAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null }> } };
 
+export type HomeScreenDataQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type HomeScreenDataQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, profile?: { __typename?: 'Profile', id: string, name: string } | null, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string } | null, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } };
+
 export type ExercisesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -675,6 +680,40 @@ export const CurrentUserDocument = gql`
         height
         weight
         activityLevel
+      }
+    }
+  }
+}
+    `;
+export const HomeScreenDataDocument = gql`
+    query HomeScreenData {
+  currentUser {
+    id
+    profile {
+      id
+      name
+    }
+    workouts {
+      id
+      date
+      createdAt
+      workoutGroup {
+        id
+        title
+      }
+      workoutExercises {
+        id
+        exercise {
+          id
+          name
+          category
+        }
+        setLogs {
+          id
+          weight
+          repCount
+          setNumber
+        }
       }
     }
   }
@@ -984,6 +1023,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     CurrentUser(variables?: CurrentUserQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CurrentUserQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<CurrentUserQuery>({ document: CurrentUserDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CurrentUser', 'query', variables);
+    },
+    HomeScreenData(variables?: HomeScreenDataQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<HomeScreenDataQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<HomeScreenDataQuery>({ document: HomeScreenDataDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'HomeScreenData', 'query', variables);
     },
     Exercises(variables?: ExercisesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<ExercisesQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<ExercisesQuery>({ document: ExercisesDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'Exercises', 'query', variables);
