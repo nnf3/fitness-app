@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert, Modal } from "react-native";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert, Modal, Image } from "react-native";
 import { useAuth, useAvailableWorkoutGroups, useCreateWorkoutGroup } from "../../hooks";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -67,7 +67,27 @@ const createStyles = (theme: any) => StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  groupCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  groupImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 16,
+  },
+  groupImagePlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    backgroundColor: theme.surfaceVariant,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
   groupCardHeader: {
+    flex: 1,
     marginBottom: 8,
   },
   groupTitle: {
@@ -166,7 +186,6 @@ export function GroupWorkoutScreen() {
 
   // カスタムフックを使用
   const {
-    availableGroups,
     joinedGroups,
     formatDate,
     loading,
@@ -206,7 +225,7 @@ export function GroupWorkoutScreen() {
     setShowCreateGroupModal(false);
   };
 
-  const handleSubmitCreateGroup = async (data: { title: string; date?: string }) => {
+  const handleSubmitCreateGroup = async (data: { title: string; date?: string; imageUrl?: string }) => {
     try {
       const result = await createGroup(data);
 
@@ -224,11 +243,6 @@ export function GroupWorkoutScreen() {
       console.error('Create group error:', error);
       Alert.alert('エラー', 'グループの作成に失敗しました。');
     }
-  };
-
-  const handleJoinGroup = (groupId: string) => {
-    // TODO: グループ参加処理
-    console.log("グループ参加:", groupId);
   };
 
   const handleViewGroup = (groupId: string) => {
@@ -253,10 +267,10 @@ export function GroupWorkoutScreen() {
         />
       }
     >
-      {/* 合トレグループセクション */}
+      {/* 参加中のグループセクション */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>合トレグループ</Text>
+          <Text style={styles.sectionTitle}>参加中のグループ</Text>
         </View>
 
         {/* 新規作成カード */}
@@ -285,79 +299,38 @@ export function GroupWorkoutScreen() {
         )}
 
         {/* 参加中のグループ */}
-        {joinedGroups.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>参加中のグループ</Text>
-            </View>
-            {joinedGroups.map((group) => (
-              <TouchableOpacity
-                key={group?.id}
-                style={styles.groupCard}
-                onPress={() => handleViewGroup(group?.id || '')}
-              >
-                <View style={styles.groupCardHeader}>
-                  <Text style={styles.groupTitle}>{group?.title}</Text>
-                  <Text style={styles.groupDate}>
-                    {group?.date ? formatDate(group.date) : '日付未設定'}
-                  </Text>
+        {joinedGroups.map((group) => (
+          <TouchableOpacity
+            key={group?.id}
+            style={styles.groupCard}
+            onPress={() => handleViewGroup(group?.id || '')}
+          >
+            <View style={styles.groupCardContent}>
+              {group?.imageURL ? (
+                <Image source={{ uri: group.imageURL }} style={styles.groupImage} />
+              ) : (
+                <View style={styles.groupImagePlaceholder}>
+                  <FontAwesome name="users" size={24} color={theme.textSecondary} />
                 </View>
-                <View style={styles.groupInfo}>
-                  <FontAwesome name="users" size={16} color={theme.textSecondary} />
-                  <Text style={styles.groupMemberCount}>
-                    {joinedGroups.filter(g => g?.id === group?.id).length || 0}回参加
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* 参加可能なグループ */}
-        {availableGroups.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>参加可能なグループ</Text>
-            </View>
-            {availableGroups.map((group) => (
-              <View key={group.id} style={styles.groupCard}>
-                <View style={styles.groupCardHeader}>
-                  <Text style={styles.groupTitle}>{group.title}</Text>
-                  <Text style={styles.groupDate}>
-                    {group.date ? formatDate(group.date) : '日付未設定'}
-                  </Text>
-                </View>
-                <View style={styles.groupInfo}>
-                  <FontAwesome name="users" size={16} color={theme.textSecondary} />
-                  <Text style={styles.groupMemberCount}>
-                    {group.workouts.length}回のワークアウト
-                  </Text>
-                </View>
-                <View style={styles.groupActions}>
-                  <TouchableOpacity
-                    style={styles.secondaryActionButton}
-                    onPress={() => handleViewGroup(group.id)}
-                  >
-                    <Text style={styles.secondaryActionButtonText}>詳細</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => handleJoinGroup(group.id)}
-                  >
-                    <Text style={styles.actionButtonText}>参加</Text>
-                  </TouchableOpacity>
-                </View>
+              )}
+              <View style={styles.groupCardHeader}>
+                <Text style={styles.groupTitle}>{group?.title}</Text>
+                <Text style={styles.groupDate}>
+                  {group?.date ? formatDate(group.date) : '日付未設定'}
+                </Text>
               </View>
-            ))}
-          </View>
-        )}
+            </View>
+          </TouchableOpacity>
+        ))}
+
+
 
         {/* 空の状態 */}
-        {!loading && !error && joinedGroups.length === 0 && availableGroups.length === 0 && (
+        {!loading && !error && joinedGroups.length === 0 && (
           <View style={styles.emptyState}>
             <FontAwesome name="users" size={48} color={theme.textSecondary} />
             <Text style={styles.emptyStateText}>
-              まだ合トレグループがありません。{'\n'}
+              まだ参加中のグループがありません。{'\n'}
               新しいグループを作成して友達と一緒にトレーニングしましょう！
             </Text>
           </View>

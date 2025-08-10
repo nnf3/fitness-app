@@ -58,6 +58,7 @@ export type CreateWorkoutExercise = {
 
 export type CreateWorkoutGroup = {
   date?: InputMaybe<Scalars['String']['input']>;
+  imageURL?: InputMaybe<Scalars['String']['input']>;
   title: Scalars['String']['input'];
 };
 
@@ -278,6 +279,7 @@ export type WorkoutGroup = {
   createdAt: Scalars['String']['output'];
   date?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  imageURL?: Maybe<Scalars['String']['output']>;
   title: Scalars['String']['output'];
   updatedAt: Scalars['String']['output'];
   workouts: Array<Workout>;
@@ -351,7 +353,7 @@ export type CreateWorkoutGroupMutationVariables = Exact<{
 }>;
 
 
-export type CreateWorkoutGroupMutation = { __typename?: 'Mutation', createWorkoutGroup: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string } };
+export type CreateWorkoutGroupMutation = { __typename?: 'Mutation', createWorkoutGroup: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, imageURL?: string | null, createdAt: string, updatedAt: string } };
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -388,19 +390,19 @@ export type GetProfileQuery = { __typename?: 'Query', currentUser: { __typename?
 export type WorkoutGroupsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WorkoutGroupsQuery = { __typename?: 'Query', workoutGroups: Array<{ __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> }> };
+export type WorkoutGroupsQuery = { __typename?: 'Query', workoutGroups: Array<{ __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, imageURL?: string | null, createdAt: string, updatedAt: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> }> };
 
 export type WorkoutGroupQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type WorkoutGroupQuery = { __typename?: 'Query', workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, user: { __typename?: 'User', id: string, profile?: { __typename?: 'Profile', id: string, name: string } | null }, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } | null };
+export type WorkoutGroupQuery = { __typename?: 'Query', workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, imageURL?: string | null, createdAt: string, updatedAt: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, user: { __typename?: 'User', id: string, profile?: { __typename?: 'Profile', id: string, name: string } | null }, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } | null };
 
 export type CurrentUserWorkoutGroupsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentUserWorkoutGroupsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string } | null, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } };
+export type CurrentUserWorkoutGroupsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, imageURL?: string | null, createdAt: string, updatedAt: string } | null, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } };
 
 export type WorkoutsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -563,6 +565,7 @@ export const CreateWorkoutGroupDocument = gql`
     id
     title
     date
+    imageURL
     createdAt
     updatedAt
   }
@@ -719,6 +722,7 @@ export const WorkoutGroupsDocument = gql`
     id
     title
     date
+    imageURL
     createdAt
     updatedAt
     workouts {
@@ -751,6 +755,7 @@ export const WorkoutGroupDocument = gql`
     id
     title
     date
+    imageURL
     createdAt
     updatedAt
     workouts {
@@ -797,6 +802,7 @@ export const CurrentUserWorkoutGroupsDocument = gql`
         id
         title
         date
+        imageURL
         createdAt
         updatedAt
       }

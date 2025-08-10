@@ -123,13 +123,14 @@ export function useCreateWorkoutGroup() {
     CreateWorkoutGroupMutationVariables
   >(CreateWorkoutGroupDocument);
 
-  const createGroup = async (input: { title: string; date?: string }) => {
+  const createGroup = async (input: { title: string; date?: string; imageUrl?: string }) => {
     try {
       const result = await createWorkoutGroup({
         variables: {
           input: {
             title: input.title,
             date: input.date,
+            imageURL: input.imageUrl,
           },
         },
       });
@@ -145,9 +146,8 @@ export function useCreateWorkoutGroup() {
   };
 }
 
-// 参加可能なグループを取得するヘルパー関数
+// 参加中のグループを取得するヘルパー関数
 export function useAvailableWorkoutGroups() {
-  const { workoutGroups, loading: workoutGroupsLoading, error: workoutGroupsError, refetch: refetchWorkoutGroups } = useWorkoutGroups();
   const { joinedGroups, loading: currentUserLoading, error: currentUserError, refetch: refetchCurrentUser } = useCurrentUserWorkoutGroups();
 
   // 日付フォーマット関数
@@ -155,24 +155,11 @@ export function useAvailableWorkoutGroups() {
     return dayjs(dateString).format('YYYY年MM月DD日');
   };
 
-  // 参加可能なグループを取得（参加中のグループを除く）
-  const availableGroups = workoutGroups.filter(group =>
-    !joinedGroups.some(joinedGroup => joinedGroup?.id === group.id)
-  );
-
-  const refetchAll = async () => {
-    await Promise.all([
-      refetchWorkoutGroups(),
-      refetchCurrentUser()
-    ]);
-  };
-
   return {
-    availableGroups,
     joinedGroups,
     formatDate,
-    loading: workoutGroupsLoading || currentUserLoading,
-    error: workoutGroupsError || currentUserError,
-    refetch: refetchAll,
+    loading: currentUserLoading,
+    error: currentUserError,
+    refetch: refetchCurrentUser,
   };
 }

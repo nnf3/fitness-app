@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useTheme } from '../../theme';
 import { DateField } from './DateField';
+import { GroupImagePicker } from './GroupImagePicker';
+import { useAuth } from '../../hooks';
 import dayjs from 'dayjs';
 
 interface CreateGroupFormProps {
-  onSubmit: (data: { title: string; date?: string }) => void;
+  onSubmit: (data: { title: string; date?: string; imageUrl?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -75,10 +77,14 @@ const createStyles = (theme: any) => StyleSheet.create({
 
 export function CreateGroupForm({ onSubmit, onCancel, isLoading = false }: CreateGroupFormProps) {
   const { theme } = useTheme();
+  const { user } = useAuth();
   const styles = createStyles(theme);
 
   const [title, setTitle] = useState('');
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ percentage: number } | null>(null);
 
   const handleSubmit = () => {
     if (!title.trim()) {
@@ -89,14 +95,23 @@ export function CreateGroupForm({ onSubmit, onCancel, isLoading = false }: Creat
     onSubmit({
       title: title.trim(),
       date: date ? dayjs(date).format('YYYY-MM-DD') : undefined,
+      imageUrl: imageUrl || undefined,
     });
   };
 
-  const isSubmitDisabled = !title.trim() || isLoading;
+  const isSubmitDisabled = !title.trim() || isLoading || isUploading;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>新しいグループを作成</Text>
+
+      <GroupImagePicker
+        selectedImage={imageUrl}
+        onImageSelect={setImageUrl}
+        userId={user?.uid}
+        isUploading={isUploading}
+        uploadProgress={uploadProgress}
+      />
 
       <View style={styles.formGroup}>
         <Text style={styles.label}>グループ名 *</Text>

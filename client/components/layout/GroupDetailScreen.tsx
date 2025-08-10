@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks';
 import { useTheme } from '../../theme';
@@ -65,6 +65,28 @@ const createStyles = (theme: any) => StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  groupInfoContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  groupImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    marginRight: 16,
+  },
+  groupImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: theme.surfaceVariant,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  groupInfoText: {
+    flex: 1,
   },
   groupTitle: {
     fontSize: 20,
@@ -246,15 +268,26 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
         </View>
 
         <View style={styles.groupInfoCard}>
-          <Text style={styles.groupTitle}>{workoutGroup.title}</Text>
-          {workoutGroup.date && (
-            <Text style={styles.groupDate}>
-              開催日: {formatDate(workoutGroup.date)}
-            </Text>
-          )}
-          <Text style={styles.groupCreatedAt}>
-            作成日: {formatDateTime(workoutGroup.createdAt)}
-          </Text>
+          <View style={styles.groupInfoContent}>
+            {workoutGroup.imageURL ? (
+              <Image source={{ uri: workoutGroup.imageURL }} style={styles.groupImage} />
+            ) : (
+              <View style={styles.groupImagePlaceholder}>
+                <FontAwesome name="users" size={32} color={theme.textSecondary} />
+              </View>
+            )}
+            <View style={styles.groupInfoText}>
+              <Text style={styles.groupTitle}>{workoutGroup.title}</Text>
+              {workoutGroup.date && (
+                <Text style={styles.groupDate}>
+                  開催日: {formatDate(workoutGroup.date)}
+                </Text>
+              )}
+              <Text style={styles.groupCreatedAt}>
+                作成日: {formatDateTime(workoutGroup.createdAt)}
+              </Text>
+            </View>
+          </View>
         </View>
       </View>
 

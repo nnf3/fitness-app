@@ -6,6 +6,7 @@ export const WorkoutGroupsDocument = gql`
       id
       title
       date
+      imageURL
       createdAt
       updatedAt
       workouts {
@@ -39,6 +40,7 @@ export const WorkoutGroupDocument = gql`
       id
       title
       date
+      imageURL
       createdAt
       updatedAt
       workouts {
@@ -86,6 +88,7 @@ export const CurrentUserWorkoutGroupsDocument = gql`
           id
           title
           date
+          imageURL
           createdAt
           updatedAt
         }

@@ -6,6 +6,7 @@ export const CreateWorkoutGroupDocument = gql`
       id
       title
       date
+      imageURL
       createdAt
       updatedAt
     }
