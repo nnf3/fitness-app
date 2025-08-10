@@ -23,7 +23,7 @@ function StackNavigator() {
         }}
       />
       <Stack.Screen
-        name="profile-edit"
+        name="(profile)/profile-edit"
         options={{
           headerShown: true,
           title: "プロフィール編集",
