@@ -74,7 +74,7 @@ export function HomeScreen() {
   const { theme } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
 
-  const { data, loading, error, refetch } = useQuery<CurrentUserQuery>(CurrentUserDocument, {
+  const { data, refetch } = useQuery<CurrentUserQuery>(CurrentUserDocument, {
     skip: !user, // ユーザーがログインしていない場合はスキップ
   });
 

@@ -27,11 +27,6 @@ export const useWorkout = (user: any) => {
     refetchQueries: [
       { query: WorkoutsDocument },
     ],
-    onCompleted: (data) => {
-      if (data?.startWorkout) {
-        Alert.alert("筋トレ開始", "新しい筋トレセッションを開始しました！");
-      }
-    },
     onError: (error) => {
       Alert.alert("エラー", `筋トレの開始に失敗しました: ${error.message}`);
     },
@@ -49,8 +44,35 @@ export const useWorkout = (user: any) => {
     ],
   });
 
-  const handleStartWorkout = useCallback(() => {
-    startWorkout();
+  const handleStartWorkout = useCallback(async (
+    date?: string,
+    workoutGroupID?: string,
+    userId?: string,
+    onSuccess?: (workoutId: string) => void
+  ) => {
+    const input: any = {};
+
+    if (date) {
+      input.date = date;
+    }
+
+    if (workoutGroupID) {
+      input.workoutGroupID = workoutGroupID;
+    }
+
+    if (userId) {
+      input.userId = userId;
+    }
+
+    try {
+      const result = await startWorkout({ variables: { input } });
+      if (result.data?.startWorkout?.id && onSuccess) {
+        onSuccess(result.data.startWorkout.id);
+      }
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }, [startWorkout]);
 
   const handleAddSetLog = useCallback(async (

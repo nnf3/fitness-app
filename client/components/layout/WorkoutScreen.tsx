@@ -1,12 +1,15 @@
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
-import { useAuth, useWorkout } from "../../hooks";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { useTheme } from "../../theme";
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Modal } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useQuery } from '@apollo/client';
+import { useAuth } from '../../hooks';
+import { useWorkout } from '../../hooks/useWorkout';
+import { useTheme } from '../../theme';
+import { WorkoutsDocument } from '../../documents';
+import { WorkoutsQuery } from '../../types/graphql';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { useQuery } from "@apollo/client";
-import { WorkoutsDocument } from "@/documents";
-import { WorkoutsQuery } from "@/types/graphql";
+import { DateField } from '../forms';
+import dayjs from 'dayjs';
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -16,18 +19,50 @@ const createStyles = (theme: any) => StyleSheet.create({
   contentContainer: {
     padding: 20,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  section: {
+    marginBottom: 30,
+  },
+  sectionHeader: {
     marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: theme.text,
   },
-  section: {
+  createWorkoutCard: {
     backgroundColor: theme.surface,
     padding: 20,
     borderRadius: 12,
-    marginBottom: 20,
+    marginBottom: 16,
+    shadowColor: theme.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: theme.primary,
+    borderStyle: 'dashed',
+  },
+  createWorkoutCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  createWorkoutCardText: {
+    fontSize: 16,
+    color: theme.primary,
+    fontWeight: '600',
+  },
+  workoutCard: {
+    backgroundColor: theme.surface,
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 16,
     shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
@@ -37,51 +72,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: theme.text,
-  },
-  addWorkoutButton: {
-    backgroundColor: theme.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  addWorkoutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  workoutCard: {
-    backgroundColor: theme.surface,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: theme.border,
-    shadowColor: theme.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 3,
-  },
   workoutCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 8,
   },
   workoutDate: {
@@ -118,6 +109,56 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontSize: 14,
     color: theme.textSecondary,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: theme.surface,
+    padding: 24,
+    borderRadius: 16,
+    width: '80%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: theme.text,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  datePickerContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalButtonPrimary: {
+    backgroundColor: theme.primary,
+  },
+  modalButtonSecondary: {
+    backgroundColor: theme.surfaceVariant,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalButtonTextPrimary: {
+    color: '#FFFFFF',
+  },
+  modalButtonTextSecondary: {
+    color: theme.text,
+  },
 });
 
 export function WorkoutScreen() {
@@ -125,6 +166,8 @@ export function WorkoutScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showCreateWorkoutModal, setShowCreateWorkoutModal] = useState(false);
 
   // 直接useQueryを使用してrefetchを取得
   const { refetch } = useQuery(WorkoutsDocument, {
@@ -180,6 +223,42 @@ export function WorkoutScreen() {
     });
   };
 
+  const handleCreateWorkout = async () => {
+    // DateFieldと同じ方法で日付文字列を作成
+    const dateString = dayjs(selectedDate).format('YYYY-MM-DD');
+
+    try {
+      await handleStartWorkout(
+        dateString,
+        undefined, // workoutGroupID
+        undefined, // userId
+        (workoutId: string) => {
+          // 成功時のみ遷移
+          router.push({
+            pathname: '/add-workout-record',
+            params: { workoutId }
+          });
+        }
+      );
+    } catch (error) {
+      // エラーはuseWorkoutフックで処理される
+      console.error('Failed to create workout:', error);
+    }
+  };
+
+  const handleOpenCreateWorkoutModal = () => {
+    setShowCreateWorkoutModal(true);
+  };
+
+  const handleCloseCreateWorkoutModal = () => {
+    setShowCreateWorkoutModal(false);
+  };
+
+  const handleConfirmCreateWorkout = () => {
+    handleCreateWorkout();
+    handleCloseCreateWorkoutModal();
+  };
+
   if (!user) {
     return null;
   }
@@ -198,22 +277,24 @@ export function WorkoutScreen() {
         />
       }
     >
-
       {/* 筋トレ履歴セクション */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>筋トレ履歴</Text>
-          <TouchableOpacity
-            style={styles.addWorkoutButton}
-            onPress={handleStartWorkout}
-            disabled={startingWorkout}
-          >
-            <FontAwesome name="plus" size={12} color="#FFFFFF" />
-            <Text style={styles.addWorkoutButtonText}>
-              {startingWorkout ? "開始中..." : "新規"}
-            </Text>
-          </TouchableOpacity>
         </View>
+
+        {/* 新規追加カード */}
+        <TouchableOpacity
+          style={styles.createWorkoutCard}
+          onPress={handleOpenCreateWorkoutModal}
+        >
+          <View style={styles.createWorkoutCardContent}>
+            <FontAwesome name="plus-circle" size={24} color={theme.primary} />
+            <Text style={styles.createWorkoutCardText}>
+              筋トレをはじめる
+            </Text>
+          </View>
+        </TouchableOpacity>
 
         {loading && (
           <Text style={styles.loadingText}>記録を取得中...</Text>
@@ -262,6 +343,47 @@ export function WorkoutScreen() {
           </View>
         )}
       </View>
+
+      {/* 新規筋トレ追加モーダル */}
+      <Modal
+        visible={showCreateWorkoutModal}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseCreateWorkoutModal}
+        presentationStyle="overFullScreen"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.datePickerContainer}>
+              <DateField
+                label="日付"
+                value={selectedDate}
+                onChange={setSelectedDate}
+                mode="date"
+              />
+            </View>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSecondary]}
+                onPress={handleCloseCreateWorkoutModal}
+              >
+                <Text style={[styles.modalButtonText, styles.modalButtonTextSecondary]}>
+                  キャンセル
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonPrimary]}
+                onPress={handleConfirmCreateWorkout}
+                disabled={startingWorkout}
+              >
+                <Text style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>
+                  {startingWorkout ? "開始中..." : "追加"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
