@@ -54,6 +54,7 @@ input CreateWorkoutExercise {
 input CreateWorkoutGroup {
   title: String!
   date: String
+  imageURL: String
 }
 
 input AddWorkoutGroupMember {

@@ -15,7 +15,6 @@ import (
 type WorkoutGroupService interface {
 	GetWorkoutGroups(ctx context.Context) ([]*model.WorkoutGroup, error)
 	GetWorkoutGroup(ctx context.Context, id string) (*model.WorkoutGroup, error)
-	GetWorkoutGroupMembers(ctx context.Context, groupID string) ([]*model.User, error)
 	CreateWorkoutGroup(ctx context.Context, input model.CreateWorkoutGroup) (*model.WorkoutGroup, error)
 	AddWorkoutGroupMember(ctx context.Context, input model.AddWorkoutGroupMember) (*model.WorkoutGroup, error)
 
@@ -74,14 +73,6 @@ func (s *workoutGroupService) GetWorkoutGroup(ctx context.Context, id string) (*
 	return s.converter.ToModelWorkoutGroup(*group), nil
 }
 
-func (s *workoutGroupService) GetWorkoutGroupMembers(ctx context.Context, groupID string) ([]*model.User, error) {
-	users, err := s.repo.GetWorkoutGroupMembers(ctx, groupID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get workout group members: %w", err)
-	}
-	return s.converter.ToModelUsers(users), nil
-}
-
 func (s *workoutGroupService) CreateWorkoutGroup(ctx context.Context, input model.CreateWorkoutGroup) (*model.WorkoutGroup, error) {
 	var date *time.Time
 	if input.Date != nil {
@@ -92,9 +83,15 @@ func (s *workoutGroupService) CreateWorkoutGroup(ctx context.Context, input mode
 		date = &parsedDate
 	}
 
+	var imageURL *string
+	if input.ImageURL != nil {
+		imageURL = input.ImageURL
+	}
+
 	workoutGroup := &entity.WorkoutGroup{
-		Title: input.Title,
-		Date:  date,
+		Title:    input.Title,
+		Date:     date,
+		ImageURL: imageURL,
 	}
 
 	if err := s.repo.CreateWorkoutGroup(ctx, workoutGroup); err != nil {

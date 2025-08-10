@@ -34,8 +34,9 @@ type CreateWorkoutExercise struct {
 }
 
 type CreateWorkoutGroup struct {
-	Title string  `json:"title"`
-	Date  *string `json:"date,omitempty"`
+	Title    string  `json:"title"`
+	Date     *string `json:"date,omitempty"`
+	ImageURL *string `json:"imageURL,omitempty"`
 }
 
 type DeleteSetLog struct {
@@ -151,6 +152,7 @@ type WorkoutGroup struct {
 	ID        string     `json:"id"`
 	Title     string     `json:"title"`
 	Date      *string    `json:"date,omitempty"`
+	ImageURL  *string    `json:"imageURL,omitempty"`
 	CreatedAt string     `json:"createdAt"`
 	UpdatedAt string     `json:"updatedAt"`
 	Workouts  []*Workout `json:"workouts"`

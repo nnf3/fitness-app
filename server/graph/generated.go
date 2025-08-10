@@ -147,6 +147,7 @@ type ComplexityRoot struct {
 		CreatedAt func(childComplexity int) int
 		Date      func(childComplexity int) int
 		ID        func(childComplexity int) int
+		ImageURL  func(childComplexity int) int
 		Title     func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 		Workouts  func(childComplexity int) int
@@ -752,6 +753,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.WorkoutGroup.ID(childComplexity), true
+
+	case "WorkoutGroup.imageURL":
+		if e.complexity.WorkoutGroup.ImageURL == nil {
+			break
+		}
+
+		return e.complexity.WorkoutGroup.ImageURL(childComplexity), true
 
 	case "WorkoutGroup.title":
 		if e.complexity.WorkoutGroup.Title == nil {
@@ -2415,6 +2423,8 @@ func (ec *executionContext) fieldContext_Mutation_createWorkoutGroup(ctx context
 				return ec.fieldContext_WorkoutGroup_title(ctx, field)
 			case "date":
 				return ec.fieldContext_WorkoutGroup_date(ctx, field)
+			case "imageURL":
+				return ec.fieldContext_WorkoutGroup_imageURL(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_WorkoutGroup_createdAt(ctx, field)
 			case "updatedAt":
@@ -2484,6 +2494,8 @@ func (ec *executionContext) fieldContext_Mutation_addWorkoutGroupMember(ctx cont
 				return ec.fieldContext_WorkoutGroup_title(ctx, field)
 			case "date":
 				return ec.fieldContext_WorkoutGroup_date(ctx, field)
+			case "imageURL":
+				return ec.fieldContext_WorkoutGroup_imageURL(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_WorkoutGroup_createdAt(ctx, field)
 			case "updatedAt":
@@ -3341,6 +3353,8 @@ func (ec *executionContext) fieldContext_Query_workoutGroups(_ context.Context, 
 				return ec.fieldContext_WorkoutGroup_title(ctx, field)
 			case "date":
 				return ec.fieldContext_WorkoutGroup_date(ctx, field)
+			case "imageURL":
+				return ec.fieldContext_WorkoutGroup_imageURL(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_WorkoutGroup_createdAt(ctx, field)
 			case "updatedAt":
@@ -3396,6 +3410,8 @@ func (ec *executionContext) fieldContext_Query_workoutGroup(ctx context.Context,
 				return ec.fieldContext_WorkoutGroup_title(ctx, field)
 			case "date":
 				return ec.fieldContext_WorkoutGroup_date(ctx, field)
+			case "imageURL":
+				return ec.fieldContext_WorkoutGroup_imageURL(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_WorkoutGroup_createdAt(ctx, field)
 			case "updatedAt":
@@ -4595,6 +4611,8 @@ func (ec *executionContext) fieldContext_Workout_workoutGroup(_ context.Context,
 				return ec.fieldContext_WorkoutGroup_title(ctx, field)
 			case "date":
 				return ec.fieldContext_WorkoutGroup_date(ctx, field)
+			case "imageURL":
+				return ec.fieldContext_WorkoutGroup_imageURL(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_WorkoutGroup_createdAt(ctx, field)
 			case "updatedAt":
@@ -4982,6 +5000,47 @@ func (ec *executionContext) _WorkoutGroup_date(ctx context.Context, field graphq
 }
 
 func (ec *executionContext) fieldContext_WorkoutGroup_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "WorkoutGroup",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _WorkoutGroup_imageURL(ctx context.Context, field graphql.CollectedField, obj *model.WorkoutGroup) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_WorkoutGroup_imageURL(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImageURL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_WorkoutGroup_imageURL(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "WorkoutGroup",
 		Field:      field,
@@ -7316,7 +7375,7 @@ func (ec *executionContext) unmarshalInputCreateWorkoutGroup(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "date"}
+	fieldsInOrder := [...]string{"title", "date", "imageURL"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7337,6 +7396,13 @@ func (ec *executionContext) unmarshalInputCreateWorkoutGroup(ctx context.Context
 				return it, err
 			}
 			it.Date = data
+		case "imageURL":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageURL"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ImageURL = data
 		}
 	}
 
@@ -8735,6 +8801,8 @@ func (ec *executionContext) _WorkoutGroup(ctx context.Context, sel ast.Selection
 			}
 		case "date":
 			out.Values[i] = ec._WorkoutGroup_date(ctx, field, obj)
+		case "imageURL":
+			out.Values[i] = ec._WorkoutGroup_imageURL(ctx, field, obj)
 		case "createdAt":
 			out.Values[i] = ec._WorkoutGroup_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

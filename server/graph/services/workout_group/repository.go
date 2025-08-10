@@ -10,7 +10,6 @@ import (
 type WorkoutGroupRepository interface {
 	GetWorkoutGroups(ctx context.Context, userID string) ([]entity.WorkoutGroup, error)
 	GetWorkoutGroupByID(ctx context.Context, id string, userID string) (*entity.WorkoutGroup, error)
-	GetWorkoutGroupMembers(ctx context.Context, groupID string) ([]entity.User, error)
 	CreateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error
 
 	// Batch methods for DataLoader
@@ -48,15 +47,6 @@ func (r *workoutGroupRepository) GetWorkoutGroupByID(ctx context.Context, id str
 		return nil, err
 	}
 	return &group, nil
-}
-
-func (r *workoutGroupRepository) GetWorkoutGroupMembers(ctx context.Context, groupID string) ([]entity.User, error) {
-	var users []entity.User
-	err := r.db.WithContext(ctx).
-		Joins("inner join workout_logs on users.id = workout_logs.user_id").
-		Where("workout_logs.workout_group_id = ?", groupID).
-		Find(&users).Error
-	return users, err
 }
 
 func (r *workoutGroupRepository) CreateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error {

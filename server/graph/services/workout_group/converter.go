@@ -37,6 +37,7 @@ func (c *WorkoutGroupConverter) ToModelWorkoutGroup(group entity.WorkoutGroup) *
 		ID:        fmt.Sprint(group.ID),
 		Title:     group.Title,
 		Date:      formatDate(group.Date),
+		ImageURL:  group.ImageURL,
 		CreatedAt: group.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt: group.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}
