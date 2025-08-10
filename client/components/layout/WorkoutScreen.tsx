@@ -6,7 +6,8 @@ import { useTheme } from "../../theme";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { WorkoutForm } from "@/components/forms";
 import { useQuery } from "@apollo/client";
-import { WorkoutLogsDocument } from "@/documents";
+import { WorkoutsDocument } from "@/documents";
+import { WorkoutsQuery } from "@/types/graphql";
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -134,7 +135,7 @@ export function WorkoutScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   // 直接useQueryを使用してrefetchを取得
-  const { refetch } = useQuery(WorkoutLogsDocument, {
+  const { refetch } = useQuery(WorkoutsDocument, {
     skip: !user,
   });
 
@@ -177,9 +178,13 @@ export function WorkoutScreen() {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
     });
+  };
+
+  const getWorkoutDate = (workout: WorkoutsQuery['currentUser']['workouts'][0]) => {
+    // dateフィールドが存在する場合はそれを使用、存在しない場合はcreatedAtを使用
+    const dateToUse = workout.date || workout.createdAt;
+    return formatDate(dateToUse);
   };
 
   if (!user) {
@@ -235,7 +240,7 @@ export function WorkoutScreen() {
               <View key={workout.id} style={styles.workoutCard}>
                 <View style={styles.workoutCardHeader}>
                   <Text style={styles.workoutDate}>
-                    {formatDate(workout.createdAt)}
+                    {getWorkoutDate(workout)}
                   </Text>
                   <TouchableOpacity
                     style={styles.toggleButton}
@@ -264,7 +269,7 @@ export function WorkoutScreen() {
                 ))}
 
                 {/* 展開していない時で、セット記録が3件を超える場合に「...」を表示 */}
-                {!expandedWorkout.isExpanded && 
+                {!expandedWorkout.isExpanded &&
                  workout.workoutExercises.reduce((total, we) => total + we.setLogs.length, 0) > 3 && (
                   <View style={styles.setLogItem}>
                     <Text style={styles.setLogText}>

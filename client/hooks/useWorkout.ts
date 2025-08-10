@@ -2,14 +2,14 @@ import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { Alert } from 'react-native';
 import {
-  WorkoutLogsDocument,
+  WorkoutsDocument,
   StartWorkoutDocument,
   ExercisesDocument,
   CreateSetLogDocument,
   CreateWorkoutExerciseDocument
 } from '@/documents';
 import {
-  WorkoutLogsQuery,
+  WorkoutsQuery,
   StartWorkoutMutation,
   ExercisesQuery,
   CreateSetLogMutation,
@@ -28,7 +28,7 @@ interface ExpandedWorkout {
 export const useWorkout = (user: any) => {
   const [expandedWorkouts, setExpandedWorkouts] = useState<ExpandedWorkout[]>([]);
 
-  const { data, loading, error } = useQuery<WorkoutLogsQuery>(WorkoutLogsDocument, {
+  const { data, loading, error } = useQuery<WorkoutsQuery>(WorkoutsDocument, {
     skip: !user,
   });
 
@@ -60,7 +60,7 @@ export const useWorkout = (user: any) => {
 
   const [startWorkout, { loading: startingWorkout }] = useMutation<StartWorkoutMutation>(StartWorkoutDocument, {
     refetchQueries: [
-      { query: WorkoutLogsDocument },
+      { query: WorkoutsDocument },
     ],
     onCompleted: (data) => {
       if (data?.startWorkout) {
@@ -84,7 +84,7 @@ export const useWorkout = (user: any) => {
   const [createWorkoutExercise] = useMutation<CreateWorkoutExerciseMutation>(CreateWorkoutExerciseDocument);
   const [createSetLog, { loading: addingSetLog }] = useMutation<CreateSetLogMutation>(CreateSetLogDocument, {
     refetchQueries: [
-      { query: WorkoutLogsDocument },
+      { query: WorkoutsDocument },
     ],
     onCompleted: (data) => {
       if (data?.createSetLog) {
