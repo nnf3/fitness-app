@@ -7,6 +7,7 @@ export const GetFriendsDocument = gql`
       friends {
         id
         uid
+        createdAt
         profile {
           id
           name

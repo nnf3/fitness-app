@@ -108,7 +108,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: theme.surface,
     borderRadius: 12,
-    marginHorizontal: 20,
     marginBottom: 20,
     padding: 4,
   },
@@ -118,6 +117,8 @@ const createStyles = (theme: any) => StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
   },
   tabButtonActive: {
     backgroundColor: theme.primary,
@@ -312,7 +313,7 @@ export function FriendsScreen() {
             <View style={styles.friendInfo}>
               <Text style={styles.friendName}>{friend.profile?.name || 'Unknown'}</Text>
               <Text style={styles.friendStatus}>
-                フレンド登録日: {new Date(friend.createdAt).toLocaleDateString('ja-JP')}
+                フレンド登録日: {friend.createdAt ? new Date(friend.createdAt).toLocaleDateString('ja-JP') : '不明'}
               </Text>
             </View>
             <View style={styles.friendActions}>
@@ -428,8 +429,13 @@ export function FriendsScreen() {
                 styles.tabText,
                 activeTab === 'friends' ? styles.tabTextActive : styles.tabTextInactive
               ]}>
-                フレンド ({friends.length})
+                フレンド
               </Text>
+              {friends.length > 0 && (
+                <View style={styles.requestsBadge}>
+                  <Text style={styles.requestsBadgeText}>{friends.length}</Text>
+                </View>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               style={[
@@ -442,8 +448,13 @@ export function FriendsScreen() {
                 styles.tabText,
                 activeTab === 'requests' ? styles.tabTextActive : styles.tabTextInactive
               ]}>
-                リクエスト ({pendingRequests.length})
+                リクエスト
               </Text>
+              {pendingRequests.length > 0 && (
+                <View style={styles.requestsBadge}>
+                  <Text style={styles.requestsBadgeText}>{pendingRequests.length}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
 

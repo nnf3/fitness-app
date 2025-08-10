@@ -422,7 +422,7 @@ export type ExercisesQuery = { __typename?: 'Query', exercises: Array<{ __typena
 export type GetFriendsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetFriendsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, friends: Array<{ __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }> } };
+export type GetFriendsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, friends: Array<{ __typename?: 'User', id: string, uid: string, createdAt: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }> } };
 
 export type GetFriendshipRequestsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -697,6 +697,7 @@ export const GetFriendsDocument = gql`
     friends {
       id
       uid
+      createdAt
       profile {
         id
         name
