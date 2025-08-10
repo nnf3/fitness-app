@@ -106,14 +106,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.text,
     marginLeft: 12,
   },
-  memberDate: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    marginLeft: 28,
-    marginTop: 4,
-  },
-
-
   emptyState: {
     alignItems: 'center',
     paddingVertical: 40,

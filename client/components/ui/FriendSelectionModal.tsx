@@ -100,12 +100,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.textSecondary,
     marginTop: 2,
   },
-  disabledFriendItem: {
-    opacity: 0.5,
-  },
-  disabledText: {
-    color: theme.textSecondary,
-  },
   emptyState: {
     padding: 40,
     alignItems: 'center',
