@@ -13,3 +13,11 @@ resource "google_artifact_registry_repository" "migrate" {
   description   = "Fitness API Migrate"
   format        = "DOCKER"
 }
+
+resource "google_artifact_registry_repository" "seed" {
+  project       = var.project_id
+  location      = "asia-northeast1"
+  repository_id = "fitness-api-seed"
+  description   = "Fitness API Seed"
+  format        = "DOCKER"
+}
