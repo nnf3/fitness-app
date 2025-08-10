@@ -13,6 +13,7 @@ type WorkoutExercise struct {
 
 	Workout  Workout  `gorm:"constraint:OnDelete:CASCADE;foreignKey:WorkoutID"`
 	Exercise Exercise `gorm:"constraint:OnDelete:CASCADE;foreignKey:ExerciseID"`
+	SetLogs  []SetLog `gorm:"foreignKey:WorkoutExerciseID;constraint:OnDelete:CASCADE"`
 }
 
 func (w *WorkoutExercise) BeforeSave(tx *gorm.DB) error {

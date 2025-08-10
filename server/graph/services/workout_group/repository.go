@@ -60,7 +60,7 @@ func (r *workoutGroupRepository) UpdateWorkoutGroup(ctx context.Context, workout
 }
 
 func (r *workoutGroupRepository) DeleteWorkoutGroup(ctx context.Context, id string) error {
-	return r.db.Delete(&entity.WorkoutGroup{}, id).Error
+	return r.db.Unscoped().Delete(&entity.WorkoutGroup{}, id).Error
 }
 
 // Batch methods for DataLoader

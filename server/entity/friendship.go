@@ -19,10 +19,11 @@ const (
 type Friendship struct {
 	gorm.Model
 	RequesterID uint `gorm:"not null;index:idx_requester_requestee"`
-	Requester   User `gorm:"foreignKey:RequesterID"`
 	RequesteeID uint `gorm:"not null;index:idx_requester_requestee"`
-	Requestee   User `gorm:"foreignKey:RequesteeID"`
 	Status      string
+
+	Requester User `gorm:"constraint:OnDelete:CASCADE;foreignKey:RequesterID"`
+	Requestee User `gorm:"constraint:OnDelete:CASCADE;foreignKey:RequesteeID"`
 }
 
 func (f *Friendship) BeforeCreate(tx *gorm.DB) error {

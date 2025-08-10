@@ -70,6 +70,10 @@ export type DeleteUser = {
   id: Scalars['ID']['input'];
 };
 
+export type DeleteWorkout = {
+  id: Scalars['ID']['input'];
+};
+
 export type DeleteWorkoutGroup = {
   id: Scalars['ID']['input'];
 };
@@ -114,6 +118,7 @@ export type Mutation = {
   createWorkoutGroup: WorkoutGroup;
   deleteSetLog: Scalars['Boolean']['output'];
   deleteUser: Scalars['Boolean']['output'];
+  deleteWorkout: Scalars['Boolean']['output'];
   deleteWorkoutGroup: Scalars['Boolean']['output'];
   rejectFriendshipRequest: Friendship;
   sendFriendshipRequest: Friendship;
@@ -160,6 +165,11 @@ export type MutationDeleteSetLogArgs = {
 
 export type MutationDeleteUserArgs = {
   input: DeleteUser;
+};
+
+
+export type MutationDeleteWorkoutArgs = {
+  input: DeleteWorkout;
 };
 
 
@@ -350,6 +360,13 @@ export type StartWorkoutMutationVariables = Exact<{
 
 export type StartWorkoutMutation = { __typename?: 'Mutation', startWorkout: { __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string } };
 
+export type DeleteWorkoutMutationVariables = Exact<{
+  input: DeleteWorkout;
+}>;
+
+
+export type DeleteWorkoutMutation = { __typename?: 'Mutation', deleteWorkout: boolean };
+
 export type CreateWorkoutExerciseMutationVariables = Exact<{
   input: CreateWorkoutExercise;
 }>;
@@ -444,7 +461,7 @@ export type CurrentUserWorkoutGroupsQuery = { __typename?: 'Query', currentUser:
 export type WorkoutsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WorkoutsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } };
+export type WorkoutsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string } | null, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } };
 
 
 export const AcceptFriendshipRequestDocument = gql`
@@ -561,6 +578,11 @@ export const StartWorkoutDocument = gql`
     createdAt
     updatedAt
   }
+}
+    `;
+export const DeleteWorkoutDocument = gql`
+    mutation DeleteWorkout($input: DeleteWorkout!) {
+  deleteWorkout(input: $input)
 }
     `;
 export const CreateWorkoutExerciseDocument = gql`
@@ -889,6 +911,10 @@ export const WorkoutsDocument = gql`
       date
       createdAt
       updatedAt
+      workoutGroup {
+        id
+        title
+      }
       workoutExercises {
         id
         exercise {
@@ -933,6 +959,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     StartWorkout(variables: StartWorkoutMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<StartWorkoutMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<StartWorkoutMutation>({ document: StartWorkoutDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'StartWorkout', 'mutation', variables);
+    },
+    DeleteWorkout(variables: DeleteWorkoutMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<DeleteWorkoutMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<DeleteWorkoutMutation>({ document: DeleteWorkoutDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'DeleteWorkout', 'mutation', variables);
     },
     CreateWorkoutExercise(variables: CreateWorkoutExerciseMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateWorkoutExerciseMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<CreateWorkoutExerciseMutation>({ document: CreateWorkoutExerciseDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateWorkoutExercise', 'mutation', variables);

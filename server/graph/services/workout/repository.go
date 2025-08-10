@@ -66,7 +66,7 @@ func (r *workoutRepository) CreateWorkout(ctx context.Context, workout *entity.W
 }
 
 func (r *workoutRepository) DeleteWorkout(ctx context.Context, id string) error {
-	return r.db.Delete(&entity.Workout{}, id).Error
+	return r.db.Unscoped().Delete(&entity.Workout{}, id).Error
 }
 
 // Batch methods for DataLoader

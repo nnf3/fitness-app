@@ -8,6 +8,7 @@ import {
   useWorkoutGroup,
   useAddWorkoutGroupMember,
   useUpdateWorkoutGroup,
+  useDeleteWorkoutGroup,
 } from '../../hooks';
 import { useTheme } from '../../theme';
 import { FriendSelectionModal } from '../ui/FriendSelectionModal';
@@ -202,6 +203,19 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.error,
     marginBottom: 20,
   },
+  deleteButton: {
+    backgroundColor: theme.error,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  deleteButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
@@ -225,6 +239,7 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
   // メンバー追加機能
   const { addMember, loading: addMemberLoading } = useAddWorkoutGroupMember();
   const { updateGroup, loading: updateGroupLoading } = useUpdateWorkoutGroup();
+  const { deleteGroup, loading: deleteGroupLoading } = useDeleteWorkoutGroup();
   const { uploadImage } = useFirebaseStorage();
 
   // モーダル状態
@@ -349,6 +364,44 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
       console.error('Update group error:', error);
       Alert.alert('エラー', '画像の保存に失敗しました。');
     }
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!workoutGroup) return;
+
+    Alert.alert(
+      'グループを削除',
+      `「${workoutGroup.title}」を削除しますか？\nこの操作は取り消せません。`,
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '削除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const result = await deleteGroup(workoutGroup.id);
+
+              if (result.success) {
+                Alert.alert('成功', 'グループを削除しました', [
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      // 前の画面に戻る
+                      router.back();
+                    }
+                  }
+                ]);
+              } else {
+                Alert.alert('エラー', 'グループの削除に失敗しました');
+              }
+            } catch (error) {
+              console.error('Delete group error:', error);
+              Alert.alert('エラー', 'グループの削除に失敗しました');
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (loading) {
@@ -491,6 +544,17 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
           </View>
         )}
       </View>
+
+      {/* 削除ボタン */}
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={handleDeleteGroup}
+        disabled={deleteGroupLoading}
+      >
+        <Text style={styles.deleteButtonText}>
+          {deleteGroupLoading ? '削除中...' : 'グループを削除'}
+        </Text>
+      </TouchableOpacity>
 
       {/* フレンド選択モーダル */}
       <FriendSelectionModal

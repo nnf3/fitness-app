@@ -111,6 +111,19 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.textSecondary,
     textAlign: 'center',
   },
+  deleteButton: {
+    backgroundColor: theme.error,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  deleteButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 export function AddWorkoutRecordScreen({ workoutId, groupId }: AddWorkoutRecordScreenProps) {
@@ -132,6 +145,8 @@ export function AddWorkoutRecordScreen({ workoutId, groupId }: AddWorkoutRecordS
   const {
     exercisesData,
     handleAddSetLog,
+    handleDeleteWorkout,
+    deletingWorkout,
     getAvailableExercises,
     getSelectedExerciseSetLogs,
     getNextSetNumber,
@@ -230,6 +245,42 @@ export function AddWorkoutRecordScreen({ workoutId, groupId }: AddWorkoutRecordS
     }
   };
 
+  const handleDeleteWorkoutRecord = async () => {
+    Alert.alert(
+      'ワークアウトを削除',
+      'このワークアウトを削除しますか？\nこの操作は取り消せません。',
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '削除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const result = await handleDeleteWorkout(workoutId);
+
+              if (result.success) {
+                Alert.alert('成功', 'ワークアウトを削除しました', [
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      // 前の画面に戻る
+                      router.back();
+                    }
+                  }
+                ]);
+              } else {
+                Alert.alert('エラー', 'ワークアウトの削除に失敗しました');
+              }
+            } catch (error) {
+              console.error('Delete workout error:', error);
+              Alert.alert('エラー', 'ワークアウトの削除に失敗しました');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (!user) {
     return null;
   }
@@ -308,6 +359,28 @@ export function AddWorkoutRecordScreen({ workoutId, groupId }: AddWorkoutRecordS
             </Text>
           )}
         </View>
+
+        {/* 削除ボタン - 所有者のみ表示、かつグループに属していない場合のみ */}
+        {isOwner && !groupId && (
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={handleDeleteWorkoutRecord}
+            disabled={deletingWorkout}
+          >
+            <Text style={styles.deleteButtonText}>
+              {deletingWorkout ? '削除中...' : 'ワークアウトを削除'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* グループに属している場合の説明 */}
+        {isOwner && groupId && (
+          <View style={styles.readOnlyMessage}>
+            <Text style={styles.readOnlyText}>
+              グループワークアウトのため、個別に削除することはできません。
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );

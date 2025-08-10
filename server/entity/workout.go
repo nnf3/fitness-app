@@ -13,8 +13,8 @@ type Workout struct {
 	UserID         uint  `gorm:"not null;index"`
 	WorkoutGroupID *uint `gorm:"index"`
 
-	User             User `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
-	WorkoutGroup     *WorkoutGroup
+	User             User              `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
+	WorkoutGroup     *WorkoutGroup     `gorm:"constraint:OnDelete:SET NULL;foreignKey:WorkoutGroupID"`
 	WorkoutExercises []WorkoutExercise `gorm:"foreignKey:WorkoutID;constraint:OnDelete:CASCADE"`
 }
 
