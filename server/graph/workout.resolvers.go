@@ -21,12 +21,17 @@ func (r *workoutResolver) WorkoutExercises(ctx context.Context, obj *model.Worko
 	return workoutExerciseService.GetWorkoutExercisesByWorkoutIDWithDataLoader(ctx, obj.ID)
 }
 
+func (r *workoutResolver) WorkoutGroup(ctx context.Context, obj *model.Workout) (*model.WorkoutGroup, error) {
+	workoutGroupService := services.NewWorkoutGroupServiceWithSeparation(r.DB)
+	return workoutGroupService.GetWorkoutGroupWithDataLoader(ctx, obj.WorkoutGroup.ID)
+}
+
 // ================================
 // Mutation
 // ================================
 
 // StartWorkout is the resolver for the startWorkout field.
-func (r *mutationResolver) StartWorkout(ctx context.Context) (*model.Workout, error) {
+func (r *mutationResolver) StartWorkout(ctx context.Context, input *model.StartWorkoutInput) (*model.Workout, error) {
 	workoutService := services.NewWorkoutServiceWithSeparation(r.DB)
-	return workoutService.StartWorkout(ctx)
+	return workoutService.StartWorkout(ctx, *input)
 }

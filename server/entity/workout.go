@@ -8,9 +8,11 @@ import (
 
 type Workout struct {
 	gorm.Model
-	UserID uint `gorm:"not null;index"`
+	UserID         uint  `gorm:"not null;index"`
+	WorkoutGroupID *uint `gorm:"index"`
 
-	User             User              `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
+	User             User `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
+	WorkoutGroup     *WorkoutGroup
 	WorkoutExercises []WorkoutExercise `gorm:"foreignKey:WorkoutID;constraint:OnDelete:CASCADE"`
 }
 

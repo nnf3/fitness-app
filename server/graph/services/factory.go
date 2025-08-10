@@ -9,6 +9,7 @@ import (
 	"app/graph/services/user"
 	"app/graph/services/workout"
 	"app/graph/services/workout_exercise"
+	"app/graph/services/workout_group"
 
 	"gorm.io/gorm"
 )
@@ -52,6 +53,14 @@ func NewWorkoutServiceWithSeparation(db *gorm.DB) workout.WorkoutService {
 	converter := workout.NewWorkoutConverter()
 	dataLoader := workout.NewWorkoutDataLoader(repo)
 	return workout.NewWorkoutService(repo, converter, dataLoader)
+}
+
+// NewWorkoutGroupServiceWithSeparation は分離されたWorkoutGroupServiceを作成します
+func NewWorkoutGroupServiceWithSeparation(db *gorm.DB) workout_group.WorkoutGroupService {
+	repo := workout_group.NewWorkoutGroupRepository(db)
+	converter := workout_group.NewWorkoutGroupConverter()
+	dataLoader := workout_group.NewWorkoutGroupDataLoader(repo)
+	return workout_group.NewWorkoutGroupService(repo, converter, dataLoader)
 }
 
 // NewWorkoutExerciseServiceWithSeparation は分離されたWorkoutExerciseServiceを作成します

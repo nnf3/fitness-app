@@ -41,6 +41,10 @@ input RejectFriendshipRequest {
   friendshipID: ID!
 }
 
+input StartWorkoutInput {
+  workoutGroupID: ID
+}
+
 input CreateWorkoutExercise {
   workoutID: ID!
   exerciseID: ID!
@@ -67,7 +71,7 @@ type Mutation {
   acceptFriendshipRequest(input: AcceptFriendshipRequest!): Friendship!
   rejectFriendshipRequest(input: RejectFriendshipRequest!): Friendship!
 
-  startWorkout: Workout!
+  startWorkout(input: StartWorkoutInput): Workout!
 
   createWorkoutExercise(input: CreateWorkoutExercise!): WorkoutExercise!
 

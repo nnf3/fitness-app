@@ -6,4 +6,7 @@ type Query {
   currentUser: User!
 
   exercises: [Exercise!]!
+
+  workoutGroups: [WorkoutGroup!]!
+  workoutGroup(id: ID!): WorkoutGroup
 }
