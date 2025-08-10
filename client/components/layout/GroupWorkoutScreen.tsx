@@ -318,15 +318,23 @@ export function GroupWorkoutScreen() {
         onRequestClose={handleCloseCreateGroupModal}
         presentationStyle="overFullScreen"
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={handleCloseCreateGroupModal}
+        >
+          <TouchableOpacity 
+            style={styles.modalContent}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
             <CreateGroupForm
               onSubmit={handleSubmitCreateGroup}
               onCancel={handleCloseCreateGroupModal}
               isLoading={createGroupLoading}
             />
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </ScrollView>
   );
