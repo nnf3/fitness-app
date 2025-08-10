@@ -16,17 +16,10 @@ import {
 
 export interface Member {
   id: string;
+  workoutId: string;
   date: string;
   createdAt: string;
   userName: string;
-}
-
-export interface WorkoutSummary {
-  id: string;
-  date: string;
-  createdAt: string;
-  memberName: string;
-  exercises: string[];
 }
 
 export function useWorkoutGroups() {
@@ -94,30 +87,31 @@ export function useWorkoutGroup(id: string) {
   const members: Member[] = workoutGroupData?.workoutGroup?.workouts
     .map(workout => ({
       id: workout?.id || '',
+      workoutId: workout?.id || '',
       date: workout?.date || '',
       createdAt: workout?.createdAt || '',
       userName: workout?.user?.profile?.name || '名前未設定'
     })) || [];
 
-  // ワークアウトサマリー情報を取得
-  const workoutSummaries: WorkoutSummary[] = workoutGroupData?.workoutGroup?.workouts
-    .map(workout => ({
-      id: workout?.id || '',
-      date: workout?.date || '',
-      createdAt: workout?.createdAt || '',
-      memberName: workout?.user?.profile?.name || '名前未設定',
-      exercises: workout?.workoutExercises?.map(we => we.exercise.name) || []
-    })) || [];
-
   return {
     workoutGroup: workoutGroupData?.workoutGroup,
     members,
-    workoutSummaries,
     formatDate,
     formatDateTime,
     loading: workoutGroupLoading,
     error: workoutGroupError,
     refetch: refetchWorkoutGroup,
+  };
+}
+
+// グループ名のみを取得するためのヘルパー関数
+export function useWorkoutGroupTitle(id: string) {
+  const { workoutGroup, loading, error } = useWorkoutGroup(id);
+
+  return {
+    groupTitle: workoutGroup?.title,
+    loading,
+    error,
   };
 }
 

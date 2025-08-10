@@ -8,6 +8,7 @@ import { SetLogForm } from '../forms';
 
 interface AddWorkoutRecordScreenProps {
   workoutId: string;
+  groupId?: string;
 }
 
 const createStyles = (theme: any) => StyleSheet.create({
@@ -100,7 +101,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
 });
 
-export function AddWorkoutRecordScreen({ workoutId }: AddWorkoutRecordScreenProps) {
+export function AddWorkoutRecordScreen({ workoutId, groupId }: AddWorkoutRecordScreenProps) {
   const { user } = useAuth();
   const router = useRouter();
   const { theme } = useTheme();

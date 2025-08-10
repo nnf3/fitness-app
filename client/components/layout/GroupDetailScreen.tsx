@@ -89,39 +89,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     marginLeft: 28,
     marginTop: 4,
   },
-  workoutCard: {
-    backgroundColor: theme.surface,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: theme.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  workoutHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  workoutDate: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: theme.text,
-  },
-  workoutMember: {
-    fontSize: 14,
-    color: theme.textSecondary,
-  },
-  workoutExercises: {
-    fontSize: 14,
-    color: theme.textSecondary,
-  },
+
 
   emptyState: {
     alignItems: 'center',
@@ -159,7 +127,6 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
   const {
     workoutGroup,
     members,
-    workoutSummaries,
     formatDate,
     formatDateTime,
     loading,
@@ -185,8 +152,8 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
   };
 
   const handleViewWorkout = (workoutId: string) => {
-    // TODO: ワークアウト詳細画面に遷移
-    console.log('ワークアウト詳細:', workoutId);
+    // セット記録ページに遷移
+    router.push(`/add-workout-record?workoutId=${workoutId}&groupId=${groupId}`);
   };
 
   if (loading) {
@@ -256,12 +223,16 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
 
         {members.length > 0 ? (
           members.map((member) => (
-            <View key={member.id} style={styles.memberCard}>
+            <TouchableOpacity
+              key={member.id}
+              style={styles.memberCard}
+              onPress={() => handleViewWorkout(member.workoutId)}
+            >
               <View style={styles.memberHeader}>
                 <FontAwesome name="user" size={16} color={theme.textSecondary} />
                 <Text style={styles.memberName}>{member.userName}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           ))
         ) : (
           <View style={styles.emptyState}>
@@ -269,45 +240,6 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
             <Text style={styles.emptyStateText}>
               まだメンバーがいません。{'\n'}
               グループに参加してワークアウトを開始しましょう！
-            </Text>
-          </View>
-        )}
-      </View>
-
-      {/* ワークアウト履歴セクション */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>ワークアウト履歴</Text>
-        </View>
-
-        {workoutSummaries.length > 0 ? (
-          workoutSummaries.map((workout) => (
-            <TouchableOpacity
-              key={workout.id}
-              style={styles.workoutCard}
-              onPress={() => handleViewWorkout(workout.id)}
-            >
-              <View style={styles.workoutHeader}>
-                <Text style={styles.workoutDate}>
-                  {workout.date ? formatDate(workout.date) : formatDateTime(workout.createdAt)}
-                </Text>
-                <Text style={styles.workoutMember}>
-                  {workout.memberName}
-                </Text>
-              </View>
-              {workout.exercises.length > 0 && (
-                <Text style={styles.workoutExercises}>
-                  {workout.exercises.join('、')}
-                </Text>
-              )}
-            </TouchableOpacity>
-          ))
-        ) : (
-          <View style={styles.emptyState}>
-            <FontAwesome name="list" size={48} color={theme.textSecondary} />
-            <Text style={styles.emptyStateText}>
-              まだワークアウト履歴がありません。{'\n'}
-              グループでワークアウトを開始しましょう！
             </Text>
           </View>
         )}
