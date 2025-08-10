@@ -9,6 +9,10 @@ export const WorkoutsDocument = gql`
         date
         createdAt
         updatedAt
+        workoutGroup {
+          id
+          title
+        }
         workoutExercises {
           id
           exercise {

@@ -13,6 +13,7 @@ type WorkoutRepository interface {
 	GetWorkoutByID(ctx context.Context, id string) (*entity.Workout, error)
 	GetWorkoutsByUserID(ctx context.Context, userID string) ([]*entity.Workout, error)
 	CreateWorkout(ctx context.Context, workout *entity.Workout) error
+	DeleteWorkout(ctx context.Context, id string) error
 	// Batch methods for DataLoader
 	GetWorkoutsByIDs(workoutIDs []uint) ([]*entity.Workout, error)
 	GetWorkoutsByUserIDs(userIDs []uint) ([]*entity.Workout, error)
@@ -62,6 +63,10 @@ func (r *workoutRepository) GetWorkoutsByUserID(ctx context.Context, userID stri
 
 func (r *workoutRepository) CreateWorkout(ctx context.Context, workout *entity.Workout) error {
 	return r.db.Create(workout).Error
+}
+
+func (r *workoutRepository) DeleteWorkout(ctx context.Context, id string) error {
+	return r.db.Unscoped().Delete(&entity.Workout{}, id).Error
 }
 
 // Batch methods for DataLoader

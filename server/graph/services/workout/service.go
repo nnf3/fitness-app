@@ -14,6 +14,7 @@ type WorkoutService interface {
 	GetWorkoutByID(ctx context.Context, workoutID string) (*model.Workout, error)
 	GetWorkoutsByUserID(ctx context.Context, userID string) ([]*model.Workout, error)
 	StartWorkout(ctx context.Context, input model.StartWorkout) (*model.Workout, error)
+	DeleteWorkout(ctx context.Context, input model.DeleteWorkout) (bool, error)
 	// DataLoader使用メソッド
 	GetWorkoutByIDWithDataLoader(ctx context.Context, workoutID string) (*model.Workout, error)
 	GetWorkoutsByUserIDWithDataLoader(ctx context.Context, userID string) ([]*model.Workout, error)
@@ -90,6 +91,28 @@ func (s *workoutService) StartWorkout(ctx context.Context, input model.StartWork
 	}
 
 	return s.converter.ToModelWorkout(workout), nil
+}
+
+func (s *workoutService) DeleteWorkout(ctx context.Context, input model.DeleteWorkout) (bool, error) {
+	currentUser, err := s.common.GetCurrentUser(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to get current user: %w", err)
+	}
+
+	workout, err := s.repo.GetWorkoutByID(ctx, input.ID)
+	if err != nil {
+		return false, fmt.Errorf("failed to get workout: %w", err)
+	}
+
+	if workout.UserID != currentUser.ID {
+		return false, fmt.Errorf("unauthorized")
+	}
+
+	if err := s.repo.DeleteWorkout(ctx, input.ID); err != nil {
+		return false, fmt.Errorf("failed to delete workout: %w", err)
+	}
+
+	return true, nil
 }
 
 // DataLoader使用メソッド

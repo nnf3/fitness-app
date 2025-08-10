@@ -22,7 +22,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       NSPhotoLibraryUsageDescription: "プロフィール写真を選択するためにカメラロールへのアクセスが必要です。",
-      NSCameraUsageDescription: "プロフィール写真を撮影するためにカメラへのアクセスが必要です。"
+      NSCameraUsageDescription: "プロフィール写真の撮影とQRコードのスキャンにカメラへのアクセスが必要です。"
     }
   },
   android: {
@@ -63,7 +63,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       }
     ],
     "expo-router",
-    "expo-image-picker"
+    "expo-image-picker",
+    "expo-camera"
   ],
   experiments: {
     typedRoutes: true

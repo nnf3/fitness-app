@@ -50,6 +50,7 @@ type WorkoutGroup {
   id: ID!
   title: String!
   date: String
+  imageURL: String
   createdAt: String!
   updatedAt: String!
   workouts: [Workout!]!

@@ -41,9 +41,17 @@ input RejectFriendshipRequest {
   friendshipID: ID!
 }
 
+input AddFriendByQRCode {
+  targetUserID: ID!
+}
+
 input StartWorkout {
   date: String
   workoutGroupID: ID
+}
+
+input DeleteWorkout {
+  id: ID!
 }
 
 input CreateWorkoutExercise {
@@ -54,6 +62,18 @@ input CreateWorkoutExercise {
 input CreateWorkoutGroup {
   title: String!
   date: String
+  imageURL: String
+}
+
+input UpdateWorkoutGroup {
+  id: ID!
+  title: String
+  date: String
+  imageURL: String
+}
+
+input DeleteWorkoutGroup {
+  id: ID!
 }
 
 input AddWorkoutGroupMember {
@@ -81,12 +101,16 @@ type Mutation {
   sendFriendshipRequest(input: SendFriendshipRequest!): Friendship!
   acceptFriendshipRequest(input: AcceptFriendshipRequest!): Friendship!
   rejectFriendshipRequest(input: RejectFriendshipRequest!): Friendship!
+  addFriendByQRCode(input: AddFriendByQRCode!): Friendship!
 
   startWorkout(input: StartWorkout): Workout!
+  deleteWorkout(input: DeleteWorkout!): Boolean!
 
   createWorkoutExercise(input: CreateWorkoutExercise!): WorkoutExercise!
 
   createWorkoutGroup(input: CreateWorkoutGroup!): WorkoutGroup!
+  updateWorkoutGroup(input: UpdateWorkoutGroup!): WorkoutGroup!
+  deleteWorkoutGroup(input: DeleteWorkoutGroup!): Boolean!
   addWorkoutGroupMember(input: AddWorkoutGroupMember!): WorkoutGroup!
 
   createSetLog(input: CreateSetLog!): SetLog!

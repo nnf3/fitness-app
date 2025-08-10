@@ -29,8 +29,7 @@ const (
 
 type Profile struct {
 	gorm.Model
-	UserID        uint `gorm:"not null;uniqueIndex"`
-	User          User
+	UserID        uint       `gorm:"not null;uniqueIndex"`
 	Name          string     `gorm:"not null;size:255"`
 	BirthDate     *time.Time `gorm:"type:date"`
 	Gender        Gender
@@ -38,6 +37,8 @@ type Profile struct {
 	Weight        *float64
 	ActivityLevel ActivityLevel
 	ImageURL      string
+
+	User User `gorm:"constraint:OnDelete:CASCADE;foreignKey:UserID"`
 }
 
 // GenderToGraphQL GraphQL enumに変換

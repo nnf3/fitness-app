@@ -109,6 +109,19 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontSize: 14,
     color: theme.textSecondary,
   },
+  workoutGroupBadge: {
+    backgroundColor: theme.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  workoutGroupBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -216,10 +229,10 @@ export function WorkoutScreen() {
     return formatDate(dateToUse);
   };
 
-  const handleWorkoutCardPress = (workoutId: string) => {
+  const handleWorkoutCardPress = (workoutId: string, groupId?: string) => {
     router.push({
       pathname: '/add-workout-record',
-      params: { workoutId }
+      params: { workoutId, groupId }
     });
   };
 
@@ -231,7 +244,6 @@ export function WorkoutScreen() {
       await handleStartWorkout(
         dateString,
         undefined, // workoutGroupID
-        undefined, // userId
         (workoutId: string) => {
           // 成功時のみ遷移
           router.push({
@@ -312,13 +324,22 @@ export function WorkoutScreen() {
               <TouchableOpacity
                 key={workout.id}
                 style={styles.workoutCard}
-                onPress={() => handleWorkoutCardPress(workout.id)}
+                onPress={() => handleWorkoutCardPress(workout.id, workout.workoutGroup?.id)}
               >
                 <View style={styles.workoutCardHeader}>
                   <Text style={styles.workoutDate}>
                     {getWorkoutDate(workout)}
                   </Text>
                 </View>
+
+                {/* グループバッジを表示 */}
+                {workout.workoutGroup && (
+                  <View style={styles.workoutGroupBadge}>
+                    <Text style={styles.workoutGroupBadgeText}>
+                      🏋️ {workout.workoutGroup.title}
+                    </Text>
+                  </View>
+                )}
 
                 {/* 種目一覧を表示 */}
                 <View style={styles.exerciseListContainer}>
@@ -352,8 +373,16 @@ export function WorkoutScreen() {
         onRequestClose={handleCloseCreateWorkoutModal}
         presentationStyle="overFullScreen"
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={handleCloseCreateWorkoutModal}
+        >
+          <TouchableOpacity 
+            style={styles.modalContent}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
             <View style={styles.datePickerContainer}>
               <DateField
                 label="日付"
@@ -381,8 +410,8 @@ export function WorkoutScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </ScrollView>
   );

@@ -11,6 +11,12 @@ export const StartWorkoutDocument = gql`
   }
 `;
 
+export const DeleteWorkoutDocument = gql`
+  mutation DeleteWorkout($input: DeleteWorkout!) {
+    deleteWorkout(input: $input)
+  }
+`;
+
 export const CreateWorkoutExerciseDocument = gql`
   mutation CreateWorkoutExercise($input: CreateWorkoutExercise!) {
     createWorkoutExercise(input: $input) {

@@ -6,6 +6,10 @@ type AcceptFriendshipRequest struct {
 	FriendshipID string `json:"friendshipID"`
 }
 
+type AddFriendByQRCode struct {
+	TargetUserID string `json:"targetUserID"`
+}
+
 type AddWorkoutGroupMember struct {
 	WorkoutGroupID string `json:"workoutGroupID"`
 	UserID         string `json:"userID"`
@@ -34,8 +38,9 @@ type CreateWorkoutExercise struct {
 }
 
 type CreateWorkoutGroup struct {
-	Title string  `json:"title"`
-	Date  *string `json:"date,omitempty"`
+	Title    string  `json:"title"`
+	Date     *string `json:"date,omitempty"`
+	ImageURL *string `json:"imageURL,omitempty"`
 }
 
 type DeleteSetLog struct {
@@ -43,6 +48,14 @@ type DeleteSetLog struct {
 }
 
 type DeleteUser struct {
+	ID string `json:"id"`
+}
+
+type DeleteWorkout struct {
+	ID string `json:"id"`
+}
+
+type DeleteWorkoutGroup struct {
 	ID string `json:"id"`
 }
 
@@ -116,6 +129,13 @@ type UpdateProfile struct {
 	ImageURL      *string        `json:"imageURL,omitempty"`
 }
 
+type UpdateWorkoutGroup struct {
+	ID       string  `json:"id"`
+	Title    *string `json:"title,omitempty"`
+	Date     *string `json:"date,omitempty"`
+	ImageURL *string `json:"imageURL,omitempty"`
+}
+
 type User struct {
 	ID                 string        `json:"id"`
 	UID                string        `json:"uid"`
@@ -151,6 +171,7 @@ type WorkoutGroup struct {
 	ID        string     `json:"id"`
 	Title     string     `json:"title"`
 	Date      *string    `json:"date,omitempty"`
+	ImageURL  *string    `json:"imageURL,omitempty"`
 	CreatedAt string     `json:"createdAt"`
 	UpdatedAt string     `json:"updatedAt"`
 	Workouts  []*Workout `json:"workouts"`

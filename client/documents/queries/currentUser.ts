@@ -33,3 +33,38 @@ export const CurrentUserDocument = gql(`
     }
   }
 `);
+
+export const HomeScreenDataDocument = gql(`
+  query HomeScreenData {
+    currentUser {
+      id
+      profile {
+        id
+        name
+      }
+      workouts {
+        id
+        date
+        createdAt
+        workoutGroup {
+          id
+          title
+        }
+        workoutExercises {
+          id
+          exercise {
+            id
+            name
+            category
+          }
+          setLogs {
+            id
+            weight
+            repCount
+            setNumber
+          }
+        }
+      }
+    }
+  }
+`);

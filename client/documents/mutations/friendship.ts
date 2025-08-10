@@ -80,3 +80,30 @@ export const SendFriendshipRequestDocument = gql`
     }
   }
 `;
+
+export const AddFriendByQRCodeDocument = gql`
+  mutation AddFriendByQRCode($input: AddFriendByQRCode!) {
+    addFriendByQRCode(input: $input) {
+      id
+      status
+      requester {
+        id
+        uid
+        profile {
+          id
+          name
+          imageURL
+        }
+      }
+      requestee {
+        id
+        uid
+        profile {
+          id
+          name
+          imageURL
+        }
+      }
+    }
+  }
+`;

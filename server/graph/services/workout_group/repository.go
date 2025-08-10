@@ -10,8 +10,9 @@ import (
 type WorkoutGroupRepository interface {
 	GetWorkoutGroups(ctx context.Context, userID string) ([]entity.WorkoutGroup, error)
 	GetWorkoutGroupByID(ctx context.Context, id string, userID string) (*entity.WorkoutGroup, error)
-	GetWorkoutGroupMembers(ctx context.Context, groupID string) ([]entity.User, error)
 	CreateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error
+	UpdateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error
+	DeleteWorkoutGroup(ctx context.Context, id string) error
 
 	// Batch methods for DataLoader
 	GetWorkoutGroupsByIDs(workoutGroupIDs []uint) ([]*entity.WorkoutGroup, error)
@@ -50,17 +51,16 @@ func (r *workoutGroupRepository) GetWorkoutGroupByID(ctx context.Context, id str
 	return &group, nil
 }
 
-func (r *workoutGroupRepository) GetWorkoutGroupMembers(ctx context.Context, groupID string) ([]entity.User, error) {
-	var users []entity.User
-	err := r.db.WithContext(ctx).
-		Joins("inner join workout_logs on users.id = workout_logs.user_id").
-		Where("workout_logs.workout_group_id = ?", groupID).
-		Find(&users).Error
-	return users, err
-}
-
 func (r *workoutGroupRepository) CreateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error {
 	return r.db.Create(workoutGroup).Error
+}
+
+func (r *workoutGroupRepository) UpdateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error {
+	return r.db.Save(workoutGroup).Error
+}
+
+func (r *workoutGroupRepository) DeleteWorkoutGroup(ctx context.Context, id string) error {
+	return r.db.Unscoped().Delete(&entity.WorkoutGroup{}, id).Error
 }
 
 // Batch methods for DataLoader

@@ -1,12 +1,13 @@
 import { Text, View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
-import { useAuth } from "../../hooks";
+import { useAuth, useWorkoutStats } from "../../hooks";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { useQuery } from "@apollo/client";
-import { CurrentUserDocument } from "@/documents";
-import { CurrentUserQuery } from "@/types/graphql";
 import { useTheme } from "../../theme";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -14,22 +15,105 @@ const createStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.background,
   },
   contentContainer: {
-    justifyContent: "center",
     padding: 20,
   },
-  title: {
-    fontSize: 28,
+  welcomeSection: {
+    marginBottom: 24,
+  },
+  welcomeTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
+    color: theme.text,
+    marginBottom: 4,
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: theme.textSecondary,
+  },
+  summarySection: {
+    backgroundColor: theme.surface,
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+    shadowColor: theme.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: theme.text,
+    marginBottom: 16,
+  },
+  summaryGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  summaryItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    backgroundColor: theme.surfaceVariant,
+    borderRadius: 8,
+    marginHorizontal: 4,
+  },
+  summaryValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: theme.primary,
+    marginBottom: 4,
+  },
+  summaryLabel: {
+    fontSize: 12,
+    color: theme.textSecondary,
     textAlign: 'center',
-    marginBottom: 10,
+  },
+  recentWorkoutSection: {
+    backgroundColor: theme.surface,
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+    shadowColor: theme.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  recentWorkoutTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: theme.text,
+    marginBottom: 12,
+  },
+  recentWorkoutItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  recentWorkoutIcon: {
+    marginRight: 12,
+  },
+  recentWorkoutInfo: {
+    flex: 1,
+  },
+  recentWorkoutDate: {
+    fontSize: 14,
+    fontWeight: '600',
     color: theme.text,
   },
-  subtitle: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 40,
+  recentWorkoutExercises: {
+    fontSize: 12,
     color: theme.textSecondary,
-    opacity: 0.8,
+    marginTop: 2,
   },
   quickActionsSection: {
     backgroundColor: theme.surface,
@@ -50,7 +134,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontWeight: 'bold',
     color: theme.text,
     marginBottom: 12,
-    textAlign: 'center',
   },
   quickActionButton: {
     backgroundColor: theme.surfaceVariant,
@@ -66,6 +149,16 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontSize: 14,
     marginLeft: 8,
   },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: theme.textSecondary,
+    textAlign: 'center',
+    marginTop: 8,
+  },
 });
 
 export function HomeScreen() {
@@ -74,9 +167,7 @@ export function HomeScreen() {
   const { theme } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
 
-  const { data, refetch } = useQuery<CurrentUserQuery>(CurrentUserDocument, {
-    skip: !user, // ユーザーがログインしていない場合はスキップ
-  });
+  const { userData, refetch, ...workoutStats } = useWorkoutStats(user?.uid);
 
   const styles = createStyles(theme);
 
@@ -98,7 +189,7 @@ export function HomeScreen() {
     }
   };
 
-  if (!user || !data?.currentUser) {
+  if (!user || !userData) {
     return null; // ログイン画面に遷移中
   }
 
@@ -116,30 +207,71 @@ export function HomeScreen() {
         />
       }
     >
-      {/* クイックアクションセクション */}
-      <View style={styles.quickActionsSection}>
-        <Text style={styles.quickActionsTitle}>クイックアクション</Text>
-        <TouchableOpacity
-          style={styles.quickActionButton}
-          onPress={() => router.push("/(tabs)/workout")}
-        >
-          <FontAwesome name="user" size={16} color={theme.text} />
-          <Text style={styles.quickActionButtonText}>個人トレを開始</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.quickActionButton}
-          onPress={() => router.push("/(tabs)/group-workout")}
-        >
-          <FontAwesome name="users" size={16} color={theme.text} />
-          <Text style={styles.quickActionButtonText}>合トレに参加</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.quickActionButton}
-          onPress={() => router.push("/(tabs)/friends")}
-        >
-          <FontAwesome name="user-plus" size={16} color={theme.text} />
-          <Text style={styles.quickActionButtonText}>フレンドを追加</Text>
-        </TouchableOpacity>
+      {/* ウェルカムセクション */}
+      <View style={styles.welcomeSection}>
+        <Text style={styles.welcomeTitle}>ようこそ、{userData.profile?.name || 'ユーザー'}さん</Text>
+        <Text style={styles.welcomeSubtitle}>今日も筋トレを頑張りましょう！</Text>
+      </View>
+
+      {/* 今週の活動サマリーセクション */}
+      <View style={styles.summarySection}>
+        <Text style={styles.summaryTitle}>今週の活動サマリー</Text>
+        <View style={styles.summaryGrid}>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryValue}>{workoutStats.thisWeekCount}</Text>
+            <Text style={styles.summaryLabel}>今週のトレ</Text>
+          </View>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryValue}>{workoutStats.thisWeekSets}</Text>
+            <Text style={styles.summaryLabel}>今週のセット</Text>
+          </View>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryValue}>{workoutStats.streakDays}</Text>
+            <Text style={styles.summaryLabel}>連続日数</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* 最近のトレーニングセクション */}
+      <View style={styles.recentWorkoutSection}>
+        <Text style={styles.recentWorkoutTitle}>最近のトレーニング</Text>
+        {workoutStats.recentWorkouts.length > 0 ? (
+          workoutStats.recentWorkouts.map((workout, index) => (
+            <TouchableOpacity
+              key={workout.id}
+              style={styles.recentWorkoutItem}
+              onPress={() => router.push("/(tabs)/workout")}
+            >
+              <FontAwesome name="bar-chart" size={16} color={theme.text} style={styles.recentWorkoutIcon} />
+              <View style={styles.recentWorkoutInfo}>
+                <Text style={styles.recentWorkoutDate}>
+                  {(() => {
+                    try {
+                      if (workout.date) {
+                        return `${dayjs(workout.date, 'YYYY-MM-DD').format('MM/DD')} (${dayjs(workout.date, 'YYYY-MM-DD').fromNow()})`;
+                      } else if (workout.createdAt) {
+                        return `${dayjs(workout.createdAt).format('MM/DD')} (${dayjs(workout.createdAt).fromNow()})`;
+                      }
+                      return '日付不明';
+                    } catch (error) {
+                      console.error('Date parsing error:', error);
+                      return '日付エラー';
+                    }
+                  })()}
+                </Text>
+                <Text style={styles.recentWorkoutExercises}>
+                  {workout.workoutExercises.length}種目
+                  {workout.workoutGroup && ` • ${workout.workoutGroup.title}`}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View style={styles.emptyState}>
+            <FontAwesome name="calendar" size={24} color={theme.textSecondary} />
+            <Text style={styles.emptyStateText}>まだトレーニング記録がありません</Text>
+          </View>
+        )}
       </View>
     </ScrollView>
   );

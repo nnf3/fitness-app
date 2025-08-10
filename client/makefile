@@ -27,11 +27,11 @@ env:
 # EAS Buildコマンド（expo.devの環境変数を自動参照）
 build-ios-dev:
 	@echo "🍎 iOS Development Buildを作成中..."
-	eas build --platform ios --profile development
+	eas build --platform ios --profile development-device
 
 build-android-dev:
 	@echo "🤖 Android Development Buildを作成中..."
-	eas build --platform android --profile development
+	eas build --platform android --profile development-device
 
 build-ios-prd:
 	@echo "🍎 iOS Production Buildを作成中..."

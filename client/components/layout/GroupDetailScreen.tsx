@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../hooks';
+import {
+  useAuth,
+  useFirebaseStorage,
+  useWorkoutGroup,
+  useAddWorkoutGroupMember,
+  useUpdateWorkoutGroup,
+  useDeleteWorkoutGroup,
+} from '../../hooks';
 import { useTheme } from '../../theme';
-import { useWorkoutGroup } from '../../hooks/useWorkoutGroup';
-import { useAddWorkoutGroupMember } from '../../hooks/useFriends';
 import { FriendSelectionModal } from '../ui/FriendSelectionModal';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -66,6 +72,47 @@ const createStyles = (theme: any) => StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  groupInfoContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 80,
+  },
+  groupImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    marginRight: 16,
+  },
+  groupImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: theme.surfaceVariant,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  uploadOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  uploadText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  groupInfoText: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
   groupTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -80,6 +127,20 @@ const createStyles = (theme: any) => StyleSheet.create({
   groupCreatedAt: {
     fontSize: 14,
     color: theme.textTertiary,
+  },
+  saveButton: {
+    backgroundColor: theme.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginTop: 12,
+    width: 100,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   memberCard: {
     backgroundColor: theme.surface,
@@ -100,11 +161,25 @@ const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
+  memberAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  memberAvatarPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.surfaceVariant,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   memberName: {
     fontSize: 16,
     fontWeight: '600',
     color: theme.text,
-    marginLeft: 12,
   },
   emptyState: {
     alignItems: 'center',
@@ -128,6 +203,19 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.error,
     marginBottom: 20,
   },
+  deleteButton: {
+    backgroundColor: theme.error,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  deleteButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
@@ -143,7 +231,6 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
     workoutGroup,
     members,
     formatDate,
-    formatDateTime,
     loading,
     error,
     refetch
@@ -151,7 +238,17 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
 
   // メンバー追加機能
   const { addMember, loading: addMemberLoading } = useAddWorkoutGroupMember();
+  const { updateGroup, loading: updateGroupLoading } = useUpdateWorkoutGroup();
+  const { deleteGroup, loading: deleteGroupLoading } = useDeleteWorkoutGroup();
+  const { uploadImage } = useFirebaseStorage();
+
+  // モーダル状態
   const [showFriendSelectionModal, setShowFriendSelectionModal] = useState(false);
+
+  // 画像変更状態
+  const [editedImageUrl, setEditedImageUrl] = useState<string | null>(null);
+  const [hasImageChanges, setHasImageChanges] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // 既存メンバーのIDリスト（ユーザーID）
   const existingMemberIds = members.map(member => member.userId);
@@ -197,6 +294,114 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
       console.error('Add member error:', error);
       Alert.alert('エラー', 'メンバーの追加に失敗しました。');
     }
+  };
+
+  const handleImageSelect = async () => {
+    // カメラロールへのアクセス許可をリクエスト
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== 'granted') {
+      Alert.alert('権限が必要です', '写真を選択するにはカメラロールへのアクセス許可が必要です。');
+      return;
+    }
+
+    // 画像選択を実行
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const imageUri = result.assets[0].uri;
+
+      try {
+        setIsUploading(true);
+        // Firebase Storageにアップロード
+        const uploadResult = await uploadImage(
+          imageUri,
+          `groups/${user?.uid}/group-images`,
+          {
+            customMetadata: {
+              uploadedAt: new Date().toISOString(),
+              userId: user?.uid || '',
+            },
+          }
+        );
+
+        // アップロード成功後、URLを編集データに設定
+        setEditedImageUrl(uploadResult.url);
+        setHasImageChanges(true);
+        Alert.alert('成功', '画像をアップロードしました');
+      } catch (error) {
+        console.error('Image upload failed:', error);
+        Alert.alert('エラー', '画像のアップロードに失敗しました');
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
+  const handleSaveImage = async () => {
+    if (!workoutGroup) return;
+
+    try {
+      const result = await updateGroup({
+        id: workoutGroup.id,
+        imageUrl: editedImageUrl || undefined,
+      });
+
+      if (result.success) {
+        Alert.alert('成功', '画像を保存しました！');
+        setHasImageChanges(false);
+        // データを再取得
+        await refetch();
+      } else {
+        Alert.alert('エラー', '画像の保存に失敗しました。');
+      }
+    } catch (error) {
+      console.error('Update group error:', error);
+      Alert.alert('エラー', '画像の保存に失敗しました。');
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!workoutGroup) return;
+
+    Alert.alert(
+      'グループを削除',
+      `「${workoutGroup.title}」を削除しますか？\nこの操作は取り消せません。`,
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '削除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const result = await deleteGroup(workoutGroup.id);
+
+              if (result.success) {
+                Alert.alert('成功', 'グループを削除しました', [
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      // 前の画面に戻る
+                      router.back();
+                    }
+                  }
+                ]);
+              } else {
+                Alert.alert('エラー', 'グループの削除に失敗しました');
+              }
+            } catch (error) {
+              console.error('Delete group error:', error);
+              Alert.alert('エラー', 'グループの削除に失敗しました');
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (loading) {
@@ -246,15 +451,51 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
         </View>
 
         <View style={styles.groupInfoCard}>
-          <Text style={styles.groupTitle}>{workoutGroup.title}</Text>
-          {workoutGroup.date && (
-            <Text style={styles.groupDate}>
-              開催日: {formatDate(workoutGroup.date)}
-            </Text>
-          )}
-          <Text style={styles.groupCreatedAt}>
-            作成日: {formatDateTime(workoutGroup.createdAt)}
-          </Text>
+          <View style={styles.groupInfoContent}>
+            <TouchableOpacity onPress={handleImageSelect} disabled={isUploading}>
+              {(editedImageUrl || workoutGroup.imageURL) ? (
+                <Image
+                  source={{ uri: (editedImageUrl || workoutGroup.imageURL) || '' }}
+                  style={styles.groupImage}
+                />
+              ) : (
+                <View style={styles.groupImagePlaceholder}>
+                  <FontAwesome name="users" size={32} color={theme.textSecondary} />
+                </View>
+              )}
+              {isUploading && (
+                <View style={styles.uploadOverlay}>
+                  <FontAwesome name="spinner" size={20} color="#FFFFFF" />
+                  <Text style={styles.uploadText}>アップロード中...</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            <View style={styles.groupInfoText}>
+              <Text
+                style={styles.groupTitle}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {workoutGroup.title}
+              </Text>
+              {workoutGroup.date && (
+                <Text style={styles.groupDate}>
+                  開催日: {formatDate(workoutGroup.date)}
+                </Text>
+              )}
+            </View>
+            {hasImageChanges && (
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleSaveImage}
+                disabled={updateGroupLoading}
+              >
+                <Text style={styles.saveButtonText}>
+                  {updateGroupLoading ? '保存中...' : '保存する'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
 
@@ -282,7 +523,13 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
               onPress={() => handleViewWorkout(member.workoutId)}
             >
               <View style={styles.memberHeader}>
-                <FontAwesome name="user" size={16} color={theme.textSecondary} />
+                {member.profileImageURL ? (
+                  <Image source={{ uri: member.profileImageURL }} style={styles.memberAvatar} />
+                ) : (
+                  <View style={styles.memberAvatarPlaceholder}>
+                    <FontAwesome name="user" size={16} color={theme.textSecondary} />
+                  </View>
+                )}
                 <Text style={styles.memberName}>{member.userName}</Text>
               </View>
             </TouchableOpacity>
@@ -297,6 +544,17 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
           </View>
         )}
       </View>
+
+      {/* 削除ボタン */}
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={handleDeleteGroup}
+        disabled={deleteGroupLoading}
+      >
+        <Text style={styles.deleteButtonText}>
+          {deleteGroupLoading ? '削除中...' : 'グループを削除'}
+        </Text>
+      </TouchableOpacity>
 
       {/* フレンド選択モーダル */}
       <FriendSelectionModal

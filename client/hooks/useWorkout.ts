@@ -7,6 +7,8 @@ import {
   ExercisesDocument,
   CreateWorkoutExerciseDocument,
   CreateSetLogDocument,
+  DeleteWorkoutDocument,
+  CurrentUserWorkoutGroupsDocument,
 } from '@/documents';
 import {
   WorkoutsQuery,
@@ -14,6 +16,7 @@ import {
   ExercisesQuery,
   CreateWorkoutExerciseMutation,
   CreateSetLogMutation,
+  DeleteWorkoutMutation,
 } from '@/types/graphql';
 
 export const useWorkout = (user: any) => {
@@ -53,6 +56,13 @@ export const useWorkout = (user: any) => {
   const [createSetLog] = useMutation<CreateSetLogMutation>(CreateSetLogDocument, {
     refetchQueries: [
       { query: WorkoutsDocument },
+    ],
+  });
+
+  const [deleteWorkout, { loading: deletingWorkout }] = useMutation<DeleteWorkoutMutation>(DeleteWorkoutDocument, {
+    refetchQueries: [
+      { query: WorkoutsDocument },
+      { query: CurrentUserWorkoutGroupsDocument },
     ],
   });
 
@@ -155,14 +165,32 @@ export const useWorkout = (user: any) => {
     return maxSetNumber + 1;
   }, [getSelectedExerciseSetLogs]);
 
+  // ワークアウト削除機能
+  const handleDeleteWorkout = useCallback(async (workoutId: string) => {
+    try {
+      const result = await deleteWorkout({
+        variables: {
+          input: {
+            id: workoutId,
+          },
+        },
+      });
+      return { success: true, data: result.data?.deleteWorkout };
+    } catch (error) {
+      return { success: false, error };
+    }
+  }, [deleteWorkout]);
+
   return {
     data,
     loading,
     error,
     exercisesData,
     startingWorkout,
+    deletingWorkout,
     handleStartWorkout,
     handleAddSetLog,
+    handleDeleteWorkout,
     getCurrentWorkoutSetLogs,
     getAvailableExercises,
     getSelectedExerciseSetLogs,

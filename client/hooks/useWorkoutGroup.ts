@@ -4,14 +4,20 @@ import {
   WorkoutGroupsDocument,
   CurrentUserWorkoutGroupsDocument,
   WorkoutGroupDocument,
-  CreateWorkoutGroupDocument
+  CreateWorkoutGroupDocument,
+  UpdateWorkoutGroupDocument,
+  DeleteWorkoutGroupDocument
 } from '../documents'
 import {
   WorkoutGroupsQuery,
   CurrentUserWorkoutGroupsQuery,
   WorkoutGroupQuery,
   CreateWorkoutGroupMutation,
-  CreateWorkoutGroupMutationVariables
+  CreateWorkoutGroupMutationVariables,
+  UpdateWorkoutGroupMutation,
+  UpdateWorkoutGroupMutationVariables,
+  DeleteWorkoutGroupMutation,
+  DeleteWorkoutGroupMutationVariables
 } from '../types/graphql';
 
 export interface Member {
@@ -21,6 +27,7 @@ export interface Member {
   date: string;
   createdAt: string;
   userName: string;
+  profileImageURL?: string;
 }
 
 export function useWorkoutGroups() {
@@ -92,7 +99,8 @@ export function useWorkoutGroup(id: string) {
       userId: workout?.user?.id || '',
       date: workout?.date || '',
       createdAt: workout?.createdAt || '',
-      userName: workout?.user?.profile?.name || '名前未設定'
+      userName: workout?.user?.profile?.name || '名前未設定',
+      profileImageURL: workout?.user?.profile?.imageURL || undefined
     })) || [];
 
   return {
@@ -123,13 +131,14 @@ export function useCreateWorkoutGroup() {
     CreateWorkoutGroupMutationVariables
   >(CreateWorkoutGroupDocument);
 
-  const createGroup = async (input: { title: string; date?: string }) => {
+  const createGroup = async (input: { title: string; date?: string; imageUrl?: string }) => {
     try {
       const result = await createWorkoutGroup({
         variables: {
           input: {
             title: input.title,
             date: input.date,
+            imageURL: input.imageUrl,
           },
         },
       });
@@ -145,9 +154,70 @@ export function useCreateWorkoutGroup() {
   };
 }
 
-// 参加可能なグループを取得するヘルパー関数
+export function useUpdateWorkoutGroup() {
+  const [updateWorkoutGroup, { loading: updateGroupLoading }] = useMutation<
+    UpdateWorkoutGroupMutation,
+    UpdateWorkoutGroupMutationVariables
+  >(UpdateWorkoutGroupDocument);
+
+  const updateGroup = async (input: { id: string; title?: string; date?: string; imageUrl?: string }) => {
+    try {
+      const result = await updateWorkoutGroup({
+        variables: {
+          input: {
+            id: input.id,
+            title: input.title,
+            date: input.date,
+            imageURL: input.imageUrl,
+          },
+        },
+      });
+      return { success: true, data: result.data?.updateWorkoutGroup };
+    } catch (error) {
+      return { success: false, error };
+    }
+  };
+
+  return {
+    updateGroup,
+    loading: updateGroupLoading,
+  };
+}
+
+export function useDeleteWorkoutGroup() {
+  const [deleteWorkoutGroup, { loading: deleteGroupLoading }] = useMutation<
+    DeleteWorkoutGroupMutation,
+    DeleteWorkoutGroupMutationVariables
+  >(DeleteWorkoutGroupDocument, {
+    refetchQueries: [
+      { query: WorkoutGroupsDocument },
+      { query: CurrentUserWorkoutGroupsDocument },
+    ],
+  });
+
+  const deleteGroup = async (groupId: string) => {
+    try {
+      const result = await deleteWorkoutGroup({
+        variables: {
+          input: {
+            id: groupId,
+          },
+        },
+      });
+      return { success: true, data: result.data?.deleteWorkoutGroup };
+    } catch (error) {
+      return { success: false, error };
+    }
+  };
+
+  return {
+    deleteGroup,
+    loading: deleteGroupLoading,
+  };
+}
+
+// 参加中のグループを取得するヘルパー関数
 export function useAvailableWorkoutGroups() {
-  const { workoutGroups, loading: workoutGroupsLoading, error: workoutGroupsError, refetch: refetchWorkoutGroups } = useWorkoutGroups();
   const { joinedGroups, loading: currentUserLoading, error: currentUserError, refetch: refetchCurrentUser } = useCurrentUserWorkoutGroups();
 
   // 日付フォーマット関数
@@ -155,24 +225,11 @@ export function useAvailableWorkoutGroups() {
     return dayjs(dateString).format('YYYY年MM月DD日');
   };
 
-  // 参加可能なグループを取得（参加中のグループを除く）
-  const availableGroups = workoutGroups.filter(group =>
-    !joinedGroups.some(joinedGroup => joinedGroup?.id === group.id)
-  );
-
-  const refetchAll = async () => {
-    await Promise.all([
-      refetchWorkoutGroups(),
-      refetchCurrentUser()
-    ]);
-  };
-
   return {
-    availableGroups,
     joinedGroups,
     formatDate,
-    loading: workoutGroupsLoading || currentUserLoading,
-    error: workoutGroupsError || currentUserError,
-    refetch: refetchAll,
+    loading: currentUserLoading,
+    error: currentUserError,
+    refetch: refetchCurrentUser,
   };
 }
