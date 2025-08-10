@@ -12,9 +12,11 @@ import {
 import { useTheme } from '../../theme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useQuery, useMutation } from '@apollo/client';
-import { GetFriendsDocument, GetFriendshipRequestsDocument } from '../../documents/queries';
+import { GetFriendsDocument, GetFriendshipRequestsDocument, CurrentUserDocument } from '../../documents/queries';
 import { AcceptFriendshipRequestDocument, RejectFriendshipRequestDocument } from '../../documents/mutations';
-import { GetFriendsQuery, GetFriendsQueryVariables, GetFriendshipRequestsQuery, GetFriendshipRequestsQueryVariables } from '../../types/graphql';
+import { GetFriendsQuery, GetFriendsQueryVariables, GetFriendshipRequestsQuery, GetFriendshipRequestsQueryVariables, CurrentUserQuery } from '../../types/graphql';
+import { FriendQRModal } from '../ui/FriendQRModal';
+import { useFriendRequest } from '../../hooks';
 
 type TabType = 'friends' | 'requests';
 
@@ -34,6 +36,26 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontWeight: 'bold',
     color: theme.text,
     marginBottom: 12,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  addFriendButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  addFriendButtonText: {
+    color: theme.background,
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
   },
   friendItem: {
     flexDirection: 'row',
@@ -174,10 +196,13 @@ export function FriendsScreen() {
   const styles = createStyles(theme);
   const [activeTab, setActiveTab] = useState<TabType>('friends');
   const [refreshing, setRefreshing] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const { addFriendByQR } = useFriendRequest();
 
   // GraphQLクエリでフレンドデータを取得
   const { data: friendsData, loading: friendsLoading, error: friendsError, refetch: refetchFriends } = useQuery<GetFriendsQuery, GetFriendsQueryVariables>(GetFriendsDocument);
   const { data: requestsData, loading: requestsLoading, error: requestsError, refetch: refetchRequests } = useQuery<GetFriendshipRequestsQuery, GetFriendshipRequestsQueryVariables>(GetFriendshipRequestsDocument);
+  const { data: userData } = useQuery<CurrentUserQuery>(CurrentUserDocument);
 
   // GraphQLミューテーション
   const [acceptRequest, { loading: acceptLoading }] = useMutation(AcceptFriendshipRequestDocument, {
@@ -214,7 +239,7 @@ export function FriendsScreen() {
         refetchRequests()
       ]);
     } catch (error) {
-      console.error('Refresh error:', error);
+      // エラーは静かに処理
     } finally {
       setRefreshing(false);
     }
@@ -281,9 +306,27 @@ export function FriendsScreen() {
     );
   };
 
+  const handleSendFriendRequest = async (targetUserId: string) => {
+    try {
+      await addFriendByQR(targetUserId);
+    } catch (error: any) {
+      Alert.alert('エラー', error.message);
+      throw error;
+    }
+  };
+
   const renderFriendsTab = () => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>フレンド一覧</Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>フレンド一覧</Text>
+        <TouchableOpacity
+          style={styles.addFriendButton}
+          onPress={() => setShowQRModal(true)}
+        >
+          <FontAwesome name="qrcode" size={16} color={theme.background} />
+          <Text style={styles.addFriendButtonText}>友達追加</Text>
+        </TouchableOpacity>
+      </View>
 
       {friendsLoading ? (
         <View style={styles.emptyState}>
@@ -460,6 +503,15 @@ export function FriendsScreen() {
 
           {activeTab === 'friends' ? renderFriendsTab() : renderRequestsTab()}
         </ScrollView>
+
+        {/* QRコードモーダル */}
+        <FriendQRModal
+          visible={showQRModal}
+          onClose={() => setShowQRModal(false)}
+          userId={userData?.currentUser?.id || ''}
+          userName={userData?.currentUser?.profile?.name}
+          onSendFriendRequest={handleSendFriendRequest}
+        />
       </View>
     );
 }

@@ -48,3 +48,9 @@ func (r *mutationResolver) RejectFriendshipRequest(ctx context.Context, input mo
 	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB)
 	return friendshipService.RejectFriendshipRequest(ctx, input)
 }
+
+// AddFriendByQRCode is the resolver for the addFriendByQRCode field.
+func (r *mutationResolver) AddFriendByQRCode(ctx context.Context, input model.AddFriendByQRCode) (*model.Friendship, error) {
+	friendshipService := services.NewFriendshipServiceWithSeparation(r.DB)
+	return friendshipService.AddFriendByQRCode(ctx, input)
+}

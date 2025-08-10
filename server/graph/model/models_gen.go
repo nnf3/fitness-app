@@ -6,6 +6,10 @@ type AcceptFriendshipRequest struct {
 	FriendshipID string `json:"friendshipID"`
 }
 
+type AddFriendByQRCode struct {
+	TargetUserID string `json:"targetUserID"`
+}
+
 type AddWorkoutGroupMember struct {
 	WorkoutGroupID string `json:"workoutGroupID"`
 	UserID         string `json:"userID"`

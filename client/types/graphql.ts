@@ -29,6 +29,10 @@ export enum ActivityLevel {
   VeryActive = 'VERY_ACTIVE'
 }
 
+export type AddFriendByQrCode = {
+  targetUserID: Scalars['ID']['input'];
+};
+
 export type AddWorkoutGroupMember = {
   userID: Scalars['ID']['input'];
   workoutGroupID: Scalars['ID']['input'];
@@ -111,6 +115,7 @@ export enum Gender {
 export type Mutation = {
   __typename?: 'Mutation';
   acceptFriendshipRequest: Friendship;
+  addFriendByQRCode: Friendship;
   addWorkoutGroupMember: WorkoutGroup;
   createProfile: Profile;
   createSetLog: SetLog;
@@ -130,6 +135,11 @@ export type Mutation = {
 
 export type MutationAcceptFriendshipRequestArgs = {
   input: AcceptFriendshipRequest;
+};
+
+
+export type MutationAddFriendByQrCodeArgs = {
+  input: AddFriendByQrCode;
 };
 
 
@@ -339,6 +349,13 @@ export type SendFriendshipRequestMutationVariables = Exact<{
 
 export type SendFriendshipRequestMutation = { __typename?: 'Mutation', sendFriendshipRequest: { __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } } };
 
+export type AddFriendByQrCodeMutationVariables = Exact<{
+  input: AddFriendByQrCode;
+}>;
+
+
+export type AddFriendByQrCodeMutation = { __typename?: 'Mutation', addFriendByQRCode: { __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } } };
+
 export type CreateProfileMutationVariables = Exact<{
   input: CreateProfile;
 }>;
@@ -524,6 +541,32 @@ export const RejectFriendshipRequestDocument = gql`
 export const SendFriendshipRequestDocument = gql`
     mutation SendFriendshipRequest($input: SendFriendshipRequest!) {
   sendFriendshipRequest(input: $input) {
+    id
+    status
+    requester {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+    requestee {
+      id
+      uid
+      profile {
+        id
+        name
+        imageURL
+      }
+    }
+  }
+}
+    `;
+export const AddFriendByQrCodeDocument = gql`
+    mutation AddFriendByQRCode($input: AddFriendByQRCode!) {
+  addFriendByQRCode(input: $input) {
     id
     status
     requester {
@@ -990,6 +1033,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     SendFriendshipRequest(variables: SendFriendshipRequestMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SendFriendshipRequestMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<SendFriendshipRequestMutation>({ document: SendFriendshipRequestDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SendFriendshipRequest', 'mutation', variables);
+    },
+    AddFriendByQRCode(variables: AddFriendByQrCodeMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddFriendByQrCodeMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<AddFriendByQrCodeMutation>({ document: AddFriendByQrCodeDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddFriendByQRCode', 'mutation', variables);
     },
     CreateProfile(variables: CreateProfileMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CreateProfileMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<CreateProfileMutation>({ document: CreateProfileDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CreateProfile', 'mutation', variables);

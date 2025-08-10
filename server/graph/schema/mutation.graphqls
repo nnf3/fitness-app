@@ -41,6 +41,10 @@ input RejectFriendshipRequest {
   friendshipID: ID!
 }
 
+input AddFriendByQRCode {
+  targetUserID: ID!
+}
+
 input StartWorkout {
   date: String
   workoutGroupID: ID
@@ -97,6 +101,7 @@ type Mutation {
   sendFriendshipRequest(input: SendFriendshipRequest!): Friendship!
   acceptFriendshipRequest(input: AcceptFriendshipRequest!): Friendship!
   rejectFriendshipRequest(input: RejectFriendshipRequest!): Friendship!
+  addFriendByQRCode(input: AddFriendByQRCode!): Friendship!
 
   startWorkout(input: StartWorkout): Workout!
   deleteWorkout(input: DeleteWorkout!): Boolean!

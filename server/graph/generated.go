@@ -70,6 +70,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AcceptFriendshipRequest func(childComplexity int, input model.AcceptFriendshipRequest) int
+		AddFriendByQRCode       func(childComplexity int, input model.AddFriendByQRCode) int
 		AddWorkoutGroupMember   func(childComplexity int, input model.AddWorkoutGroupMember) int
 		CreateProfile           func(childComplexity int, input model.CreateProfile) int
 		CreateSetLog            func(childComplexity int, input model.CreateSetLog) int
@@ -168,6 +169,7 @@ type MutationResolver interface {
 	SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error)
 	AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error)
 	RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error)
+	AddFriendByQRCode(ctx context.Context, input model.AddFriendByQRCode) (*model.Friendship, error)
 	StartWorkout(ctx context.Context, input *model.StartWorkout) (*model.Workout, error)
 	DeleteWorkout(ctx context.Context, input model.DeleteWorkout) (bool, error)
 	CreateWorkoutExercise(ctx context.Context, input model.CreateWorkoutExercise) (*model.WorkoutExercise, error)
@@ -307,6 +309,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.AcceptFriendshipRequest(childComplexity, args["input"].(model.AcceptFriendshipRequest)), true
+
+	case "Mutation.addFriendByQRCode":
+		if e.complexity.Mutation.AddFriendByQRCode == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addFriendByQRCode_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddFriendByQRCode(childComplexity, args["input"].(model.AddFriendByQRCode)), true
 
 	case "Mutation.addWorkoutGroupMember":
 		if e.complexity.Mutation.AddWorkoutGroupMember == nil {
@@ -833,6 +847,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAcceptFriendshipRequest,
+		ec.unmarshalInputAddFriendByQRCode,
 		ec.unmarshalInputAddWorkoutGroupMember,
 		ec.unmarshalInputCreateProfile,
 		ec.unmarshalInputCreateSetLog,
@@ -987,6 +1002,29 @@ func (ec *executionContext) field_Mutation_acceptFriendshipRequest_argsInput(
 	}
 
 	var zeroVal model.AcceptFriendshipRequest
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_addFriendByQRCode_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_addFriendByQRCode_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_addFriendByQRCode_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.AddFriendByQRCode, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNAddFriendByQRCode2appᚋgraphᚋmodelᚐAddFriendByQRCode(ctx, tmp)
+	}
+
+	var zeroVal model.AddFriendByQRCode
 	return zeroVal, nil
 }
 
@@ -2346,6 +2384,75 @@ func (ec *executionContext) fieldContext_Mutation_rejectFriendshipRequest(ctx co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_rejectFriendshipRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addFriendByQRCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addFriendByQRCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddFriendByQRCode(rctx, fc.Args["input"].(model.AddFriendByQRCode))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Friendship)
+	fc.Result = res
+	return ec.marshalNFriendship2ᚖappᚋgraphᚋmodelᚐFriendship(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addFriendByQRCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Friendship_id(ctx, field)
+			case "requester":
+				return ec.fieldContext_Friendship_requester(ctx, field)
+			case "requestee":
+				return ec.fieldContext_Friendship_requestee(ctx, field)
+			case "requesterID":
+				return ec.fieldContext_Friendship_requesterID(ctx, field)
+			case "requesteeID":
+				return ec.fieldContext_Friendship_requesteeID(ctx, field)
+			case "status":
+				return ec.fieldContext_Friendship_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addFriendByQRCode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7478,6 +7585,33 @@ func (ec *executionContext) unmarshalInputAcceptFriendshipRequest(ctx context.Co
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputAddFriendByQRCode(ctx context.Context, obj any) (model.AddFriendByQRCode, error) {
+	var it model.AddFriendByQRCode
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"targetUserID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "targetUserID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("targetUserID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TargetUserID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputAddWorkoutGroupMember(ctx context.Context, obj any) (model.AddWorkoutGroupMember, error) {
 	var it model.AddWorkoutGroupMember
 	asMap := map[string]any{}
@@ -8283,6 +8417,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "rejectFriendshipRequest":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_rejectFriendshipRequest(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "addFriendByQRCode":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addFriendByQRCode(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -9627,6 +9768,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 func (ec *executionContext) unmarshalNAcceptFriendshipRequest2appᚋgraphᚋmodelᚐAcceptFriendshipRequest(ctx context.Context, v any) (model.AcceptFriendshipRequest, error) {
 	res, err := ec.unmarshalInputAcceptFriendshipRequest(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNAddFriendByQRCode2appᚋgraphᚋmodelᚐAddFriendByQRCode(ctx context.Context, v any) (model.AddFriendByQRCode, error) {
+	res, err := ec.unmarshalInputAddFriendByQRCode(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

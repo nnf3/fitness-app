@@ -17,6 +17,7 @@ type FriendshipService interface {
 	SendFriendshipRequest(ctx context.Context, input model.SendFriendshipRequest) (*model.Friendship, error)
 	AcceptFriendshipRequest(ctx context.Context, input model.AcceptFriendshipRequest) (*model.Friendship, error)
 	RejectFriendshipRequest(ctx context.Context, input model.RejectFriendshipRequest) (*model.Friendship, error)
+	AddFriendByQRCode(ctx context.Context, input model.AddFriendByQRCode) (*model.Friendship, error)
 	// DataLoader使用メソッド
 	GetFriendsWithDataLoader(ctx context.Context, userID string) ([]*model.User, error)
 	GetFriendshipRequestsWithDataLoader(ctx context.Context, userID string) ([]*model.Friendship, error)
@@ -136,6 +137,56 @@ func (s *friendshipService) RejectFriendshipRequest(ctx context.Context, input m
 	}
 
 	return s.converter.ToModelFriendship(*friendRequest), nil
+}
+
+func (s *friendshipService) AddFriendByQRCode(ctx context.Context, input model.AddFriendByQRCode) (*model.Friendship, error) {
+	// 現在のユーザーを取得
+	currentUser, err := s.common.GetCurrentUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
+	}
+
+	targetUserID, err := strconv.ParseUint(input.TargetUserID, 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("invalid target user ID: %s", input.TargetUserID)
+	}
+
+	// 自分自身との友達関係は作成しない
+	if currentUser.ID == uint(targetUserID) {
+		return nil, fmt.Errorf("cannot add yourself as a friend")
+	}
+
+	// 既存の友達関係をチェック
+	var existingFriendship entity.Friendship
+	if err := s.repo.GetDB().Where(
+		"(requester_id = ? AND requestee_id = ?) OR (requester_id = ? AND requestee_id = ?)",
+		currentUser.ID, uint(targetUserID), uint(targetUserID), currentUser.ID,
+	).First(&existingFriendship).Error; err == nil {
+		// 既存の友達関係が存在する場合
+		if existingFriendship.Status == string(entity.Accepted) {
+			return nil, fmt.Errorf("already friends")
+		} else if existingFriendship.Status == string(entity.Pending) {
+			// 保留中のリクエストがある場合は承認する
+			existingFriendship.Status = string(entity.Accepted)
+			if err := s.repo.UpdateFriendship(ctx, &existingFriendship); err != nil {
+				return nil, fmt.Errorf("failed to update friendship: %w", err)
+			}
+			return s.converter.ToModelFriendship(existingFriendship), nil
+		}
+	}
+
+	// 新しい友達関係を作成（直接Acceptedステータスで）
+	friendship := entity.Friendship{
+		RequesterID: currentUser.ID,
+		RequesteeID: uint(targetUserID),
+		Status:      string(entity.Accepted),
+	}
+
+	if err := s.repo.CreateFriendship(ctx, &friendship); err != nil {
+		return nil, fmt.Errorf("failed to create friendship: %w", err)
+	}
+
+	return s.converter.ToModelFriendship(friendship), nil
 }
 
 // ヘルパー関数
