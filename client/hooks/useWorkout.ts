@@ -23,6 +23,18 @@ export const useWorkout = (user: any) => {
 
   const { data: exercisesData } = useQuery<ExercisesQuery>(ExercisesDocument);
 
+  // 特定のワークアウトを取得する関数
+  const getWorkoutById = useCallback((workoutId: string) => {
+    return data?.currentUser?.workouts?.find(workout => workout?.id === workoutId);
+  }, [data]);
+
+  // ワークアウトの所有者をチェックする関数
+  // currentUserのworkoutsに含まれている場合は所有者
+  const isWorkoutOwner = useCallback((workoutId: string) => {
+    const workout = getWorkoutById(workoutId);
+    return !!workout; // currentUserのworkoutsに含まれている場合は所有者
+  }, [getWorkoutById]);
+
   const [startWorkout, { loading: startingWorkout }] = useMutation<StartWorkoutMutation>(StartWorkoutDocument, {
     refetchQueries: [
       { query: WorkoutsDocument },
@@ -160,5 +172,7 @@ export const useWorkout = (user: any) => {
     getAvailableExercises,
     getSelectedExerciseSetLogs,
     getNextSetNumber,
+    getWorkoutById,
+    isWorkoutOwner,
   };
 };

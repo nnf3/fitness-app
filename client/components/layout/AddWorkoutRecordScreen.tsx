@@ -99,6 +99,18 @@ const createStyles = (theme: any) => StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
   },
+  readOnlyMessage: {
+    backgroundColor: theme.surfaceVariant,
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  readOnlyText: {
+    fontSize: 16,
+    color: theme.textSecondary,
+    textAlign: 'center',
+  },
 });
 
 export function AddWorkoutRecordScreen({ workoutId, groupId }: AddWorkoutRecordScreenProps) {
@@ -123,7 +135,11 @@ export function AddWorkoutRecordScreen({ workoutId, groupId }: AddWorkoutRecordS
     getAvailableExercises,
     getSelectedExerciseSetLogs,
     getNextSetNumber,
+    isWorkoutOwner,
   } = useWorkout(user);
+
+  // ワークアウトの所有者かどうかをチェック
+  const isOwner = isWorkoutOwner(workoutId);
 
   // ログアウト時にログイン画面に遷移
   useEffect(() => {
@@ -252,16 +268,24 @@ export function AddWorkoutRecordScreen({ workoutId, groupId }: AddWorkoutRecordS
           </ScrollView>
         </View>
 
-        {/* セット記録入力フォーム */}
-        <SetLogForm
-          formData={formData}
-          onUpdateForm={updateForm}
-          onSubmit={handleSubmit}
-          loading={loading}
-          selectedExercise={selectedExercise}
-          nextSetNumber={nextSetNumber}
-          disabled={!selectedExercise}
-        />
+        {/* セット記録入力フォーム - 所有者のみ表示 */}
+        {isOwner ? (
+          <SetLogForm
+            formData={formData}
+            onUpdateForm={updateForm}
+            onSubmit={handleSubmit}
+            loading={loading}
+            selectedExercise={selectedExercise}
+            nextSetNumber={nextSetNumber}
+            disabled={!selectedExercise}
+          />
+        ) : (
+          <View style={styles.readOnlyMessage}>
+            <Text style={styles.readOnlyText}>
+              このワークアウトのセット記録を追加する権限がありません。
+            </Text>
+          </View>
+        )}
 
         {/* 過去のセット記録セクション */}
         <View style={styles.historySection}>
