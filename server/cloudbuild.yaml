@@ -3,10 +3,12 @@ substitutions:
   _REGION: asia-northeast1
   _REPO_API: fitness-api
   _REPO_MIGRATE: fitness-api-migrate
-  _JOB_NAME: fitness-api-migrate
+  _REPO_SEED: fitness-api-seed
+  _JOB_NAME_MIGRATE: fitness-api-migrate
+  _JOB_NAME_SEED: fitness-api-seed
 
 steps:
-  # 1. migrate用 Dockerイメージをビルド
+  # migrate
   - name: 'gcr.io/cloud-builders/docker'
     id: build-migrate
     args: [
@@ -15,27 +17,21 @@ steps:
       '-t', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_MIGRATE/fitness-api-migrate:latest',
       'server'
     ]
-
-  # push
   - name: 'gcr.io/cloud-builders/docker'
     id: push-migrate
     args: [
       'push', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_MIGRATE/fitness-api-migrate:latest'
     ]
-
-  # Cloud Run Job を update
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: update-migrate-job
     entrypoint: bash
     args:
       - -c
       - >
-        gcloud run jobs update $_JOB_NAME \
+        gcloud run jobs update $_JOB_NAME_MIGRATE \
           --image=$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_MIGRATE/fitness-api-migrate:latest \
           --region=$_REGION \
           --quiet
-
-  # 4. Cloud Run Job を実行
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: run-migrate-job
     entrypoint: gcloud
@@ -43,11 +39,36 @@ steps:
       - run
       - jobs
       - execute
-      - $_JOB_NAME
+      - $_JOB_NAME_MIGRATE
       - --region=$_REGION
       - --wait
 
-  # 5. アプリケーションの Docker イメージをビルド
+  # seed
+  - name: 'gcr.io/cloud-builders/docker'
+    id: build-seed
+    args: [
+      'build',
+      '-f', 'server/Dockerfile.seed',
+      '-t', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_SEED/fitness-api-seed:latest',
+      'server'
+    ]
+  - name: 'gcr.io/cloud-builders/docker'
+    id: push-seed
+    args: [
+      'push', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_SEED/fitness-api-seed:latest'
+    ]
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: update-seed-job
+    entrypoint: bash
+    args:
+      - -c
+      - >
+        gcloud run jobs update $_JOB_NAME_SEED \
+          --image=$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_SEED/fitness-api-seed:latest \
+          --region=$_REGION \
+          --quiet
+
+  # api
   - name: 'gcr.io/cloud-builders/docker'
     id: build-api
     args: [
@@ -56,15 +77,11 @@ steps:
       '-t', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_API/fitness-api:latest',
       'server'
     ]
-
-  # push
   - name: 'gcr.io/cloud-builders/docker'
     id: push-api
     args: [
       'push', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_API/fitness-api:latest'
     ]
-
-  # 7. Cloud Run サービスにデプロイ
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: deploy-api
     entrypoint: gcloud

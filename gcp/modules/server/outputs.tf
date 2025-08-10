@@ -13,5 +13,6 @@ output "google_service_account" {
 output "google_cloud_run_v2_job" {
   value = {
     migrate = google_cloud_run_v2_job.migrate
+    seed = google_cloud_run_v2_job.seed
   }
 }
