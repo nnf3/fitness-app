@@ -2,6 +2,7 @@ package entity
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -9,8 +10,9 @@ import (
 
 type WorkoutGroup struct {
 	gorm.Model
-	Title string `gorm:"size:255;not null"`
-	Date  *time.Time
+	Title    string `gorm:"size:255;not null"`
+	Date     *time.Time
+	ImageURL *string
 
 	Workouts []Workout `gorm:"foreignKey:WorkoutGroupID;constraint:OnDelete:SET NULL"`
 }
@@ -29,6 +31,11 @@ func (g *WorkoutGroup) Validate() error {
 	}
 	if len(g.Title) > 255 {
 		return fmt.Errorf("グループ名は255文字以内で入力してください")
+	}
+	if g.ImageURL != nil && *g.ImageURL != "" {
+		if !strings.HasPrefix(*g.ImageURL, "https://") {
+			return fmt.Errorf("画像URLはhttpsから始まる必要があります")
+		}
 	}
 	return nil
 }

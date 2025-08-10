@@ -349,5 +349,20 @@ func getMigrations() []*gormigrate.Migration {
 				return nil
 			},
 		},
+		{
+			ID: "202508111110_add_image_url_to_workout_groups",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&entity.WorkoutGroup{}, "ImageURL") {
+					return tx.Migrator().AddColumn(&entity.WorkoutGroup{}, "ImageURL")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&entity.WorkoutGroup{}, "ImageURL") {
+					return tx.Migrator().DropColumn(&entity.WorkoutGroup{}, "ImageURL")
+				}
+				return nil
+			},
+		},
 	}
 }
