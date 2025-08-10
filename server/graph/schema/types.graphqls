@@ -36,6 +36,7 @@ type Exercise {
 
 type Workout {
   id: ID!
+  date: String
   createdAt: String!
   updatedAt: String!
   workoutExercises: [WorkoutExercise!]!

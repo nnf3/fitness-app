@@ -3,6 +3,7 @@ package workout
 import (
 	"app/entity"
 	"app/graph/model"
+	"app/graph/services/common"
 	"fmt"
 	"time"
 )
@@ -20,8 +21,17 @@ func (c *WorkoutConverter) ToModelWorkout(workout entity.Workout) *model.Workout
 		workoutGroupID = &id
 	}
 
+	formatDate := func(t *time.Time) *string {
+		if t == nil {
+			return nil
+		}
+		formatted := t.Format(common.DateFormat)
+		return &formatted
+	}
+
 	return &model.Workout{
 		ID:             fmt.Sprintf("%d", workout.ID),
+		Date:           formatDate(workout.Date),
 		CreatedAt:      workout.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:      workout.UpdatedAt.Format(time.RFC3339),
 		WorkoutGroupID: workoutGroupID,

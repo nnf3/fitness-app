@@ -42,7 +42,9 @@ input RejectFriendshipRequest {
 }
 
 input StartWorkoutInput {
+  date: String
   workoutGroupID: ID
+  userID: ID
 }
 
 input CreateWorkoutExercise {

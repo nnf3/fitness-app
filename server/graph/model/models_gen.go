@@ -92,7 +92,9 @@ type SetLog struct {
 }
 
 type StartWorkoutInput struct {
+	Date           *string `json:"date,omitempty"`
 	WorkoutGroupID *string `json:"workoutGroupID,omitempty"`
+	UserID         *string `json:"userID,omitempty"`
 }
 
 type UpdateProfile struct {
@@ -119,6 +121,7 @@ type User struct {
 
 type Workout struct {
 	ID               string             `json:"id"`
+	Date             *string            `json:"date,omitempty"`
 	CreatedAt        string             `json:"createdAt"`
 	UpdatedAt        string             `json:"updatedAt"`
 	WorkoutExercises []*WorkoutExercise `json:"workoutExercises"`

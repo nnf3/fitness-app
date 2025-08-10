@@ -124,6 +124,7 @@ type ComplexityRoot struct {
 
 	Workout struct {
 		CreatedAt        func(childComplexity int) int
+		Date             func(childComplexity int) int
 		ID               func(childComplexity int) int
 		UpdatedAt        func(childComplexity int) int
 		WorkoutExercises func(childComplexity int) int
@@ -613,6 +614,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Workout.CreatedAt(childComplexity), true
+
+	case "Workout.date":
+		if e.complexity.Workout.Date == nil {
+			break
+		}
+
+		return e.complexity.Workout.Date(childComplexity), true
 
 	case "Workout.id":
 		if e.complexity.Workout.ID == nil {
@@ -2161,6 +2169,8 @@ func (ec *executionContext) fieldContext_Mutation_startWorkout(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Workout_id(ctx, field)
+			case "date":
+				return ec.fieldContext_Workout_date(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Workout_createdAt(ctx, field)
 			case "updatedAt":
@@ -3751,6 +3761,8 @@ func (ec *executionContext) fieldContext_User_workouts(_ context.Context, field 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Workout_id(ctx, field)
+			case "date":
+				return ec.fieldContext_Workout_date(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Workout_createdAt(ctx, field)
 			case "updatedAt":
@@ -3993,6 +4005,47 @@ func (ec *executionContext) fieldContext_Workout_id(_ context.Context, field gra
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Workout_date(ctx context.Context, field graphql.CollectedField, obj *model.Workout) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Workout_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Workout_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Workout",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4319,6 +4372,8 @@ func (ec *executionContext) fieldContext_WorkoutExercise_workout(_ context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Workout_id(ctx, field)
+			case "date":
+				return ec.fieldContext_Workout_date(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Workout_createdAt(ctx, field)
 			case "updatedAt":
@@ -4661,6 +4716,8 @@ func (ec *executionContext) fieldContext_WorkoutGroup_workouts(_ context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Workout_id(ctx, field)
+			case "date":
+				return ec.fieldContext_Workout_date(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Workout_createdAt(ctx, field)
 			case "updatedAt":
@@ -6949,13 +7006,20 @@ func (ec *executionContext) unmarshalInputStartWorkoutInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"workoutGroupID"}
+	fieldsInOrder := [...]string{"date", "workoutGroupID", "userID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Date = data
 		case "workoutGroupID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("workoutGroupID"))
 			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
@@ -6963,6 +7027,13 @@ func (ec *executionContext) unmarshalInputStartWorkoutInput(ctx context.Context,
 				return it, err
 			}
 			it.WorkoutGroupID = data
+		case "userID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
 		}
 	}
 
@@ -7861,6 +7932,8 @@ func (ec *executionContext) _Workout(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "date":
+			out.Values[i] = ec._Workout_date(ctx, field, obj)
 		case "createdAt":
 			out.Values[i] = ec._Workout_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

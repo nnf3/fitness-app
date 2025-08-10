@@ -2,12 +2,14 @@ package entity
 
 import (
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 type Workout struct {
 	gorm.Model
+	Date           *time.Time
 	UserID         uint  `gorm:"not null;index"`
 	WorkoutGroupID *uint `gorm:"index"`
 

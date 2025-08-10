@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 )
 
 type WorkoutService interface {
@@ -52,9 +53,21 @@ func (s *workoutService) GetWorkoutsByUserID(ctx context.Context, userID string)
 }
 
 func (s *workoutService) StartWorkout(ctx context.Context, input model.StartWorkoutInput) (*model.Workout, error) {
-	currentUser, err := s.common.GetCurrentUser(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get current user: %w", err)
+	var userID uint
+	if input.UserID != nil {
+		// ユーザーIDが指定されている場合はそれを使用
+		userIDUint64, err := strconv.ParseUint(*input.UserID, 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("invalid user ID: %s", *input.UserID)
+		}
+		userID = uint(userIDUint64)
+	} else {
+		// ユーザーIDが指定されていない場合はログインユーザーを使用
+		currentUser, err := s.common.GetCurrentUser(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get current user: %w", err)
+		}
+		userID = currentUser.ID
 	}
 
 	workoutGroupIDUint64, err := strconv.ParseUint(*input.WorkoutGroupID, 10, 32)
@@ -63,9 +76,15 @@ func (s *workoutService) StartWorkout(ctx context.Context, input model.StartWork
 	}
 	workoutGroupID := uint(workoutGroupIDUint64)
 
+	date, err := time.Parse(time.RFC3339, *input.Date)
+	if err != nil {
+		return nil, fmt.Errorf("invalid date: %s", *input.Date)
+	}
+
 	workout := entity.Workout{
-		UserID:         currentUser.ID,
+		UserID:         userID,
 		WorkoutGroupID: &workoutGroupID,
+		Date:           &date,
 	}
 
 	if err := s.repo.CreateWorkout(ctx, &workout); err != nil {
