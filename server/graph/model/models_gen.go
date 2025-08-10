@@ -123,6 +123,7 @@ type Workout struct {
 	UpdatedAt        string             `json:"updatedAt"`
 	WorkoutExercises []*WorkoutExercise `json:"workoutExercises"`
 	WorkoutGroup     *WorkoutGroup      `json:"workoutGroup,omitempty"`
+	WorkoutGroupID   *string            `json:"workoutGroupID,omitempty"`
 }
 
 type WorkoutExercise struct {

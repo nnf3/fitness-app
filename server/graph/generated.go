@@ -128,6 +128,7 @@ type ComplexityRoot struct {
 		UpdatedAt        func(childComplexity int) int
 		WorkoutExercises func(childComplexity int) int
 		WorkoutGroup     func(childComplexity int) int
+		WorkoutGroupID   func(childComplexity int) int
 	}
 
 	WorkoutExercise struct {
@@ -640,6 +641,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Workout.WorkoutGroup(childComplexity), true
+
+	case "Workout.workoutGroupID":
+		if e.complexity.Workout.WorkoutGroupID == nil {
+			break
+		}
+
+		return e.complexity.Workout.WorkoutGroupID(childComplexity), true
 
 	case "WorkoutExercise.exercise":
 		if e.complexity.WorkoutExercise.Exercise == nil {
@@ -2161,6 +2169,8 @@ func (ec *executionContext) fieldContext_Mutation_startWorkout(ctx context.Conte
 				return ec.fieldContext_Workout_workoutExercises(ctx, field)
 			case "workoutGroup":
 				return ec.fieldContext_Workout_workoutGroup(ctx, field)
+			case "workoutGroupID":
+				return ec.fieldContext_Workout_workoutGroupID(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Workout", field.Name)
 		},
@@ -3749,6 +3759,8 @@ func (ec *executionContext) fieldContext_User_workouts(_ context.Context, field 
 				return ec.fieldContext_Workout_workoutExercises(ctx, field)
 			case "workoutGroup":
 				return ec.fieldContext_Workout_workoutGroup(ctx, field)
+			case "workoutGroupID":
+				return ec.fieldContext_Workout_workoutGroupID(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Workout", field.Name)
 		},
@@ -4181,6 +4193,47 @@ func (ec *executionContext) fieldContext_Workout_workoutGroup(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Workout_workoutGroupID(ctx context.Context, field graphql.CollectedField, obj *model.Workout) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Workout_workoutGroupID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.WorkoutGroupID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Workout_workoutGroupID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Workout",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _WorkoutExercise_id(ctx context.Context, field graphql.CollectedField, obj *model.WorkoutExercise) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_WorkoutExercise_id(ctx, field)
 	if err != nil {
@@ -4274,6 +4327,8 @@ func (ec *executionContext) fieldContext_WorkoutExercise_workout(_ context.Conte
 				return ec.fieldContext_Workout_workoutExercises(ctx, field)
 			case "workoutGroup":
 				return ec.fieldContext_Workout_workoutGroup(ctx, field)
+			case "workoutGroupID":
+				return ec.fieldContext_Workout_workoutGroupID(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Workout", field.Name)
 		},
@@ -4614,6 +4669,8 @@ func (ec *executionContext) fieldContext_WorkoutGroup_workouts(_ context.Context
 				return ec.fieldContext_Workout_workoutExercises(ctx, field)
 			case "workoutGroup":
 				return ec.fieldContext_Workout_workoutGroup(ctx, field)
+			case "workoutGroupID":
+				return ec.fieldContext_Workout_workoutGroupID(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Workout", field.Name)
 		},
@@ -7883,6 +7940,8 @@ func (ec *executionContext) _Workout(ctx context.Context, sel ast.SelectionSet, 
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "workoutGroupID":
+			out.Values[i] = ec._Workout_workoutGroupID(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

@@ -22,8 +22,13 @@ func (r *workoutResolver) WorkoutExercises(ctx context.Context, obj *model.Worko
 }
 
 func (r *workoutResolver) WorkoutGroup(ctx context.Context, obj *model.Workout) (*model.WorkoutGroup, error) {
+	// workoutGroupIDがnilの場合はWorkoutGroupもnilを返す
+	if obj.WorkoutGroupID == nil {
+		return nil, nil
+	}
+
 	workoutGroupService := services.NewWorkoutGroupServiceWithSeparation(r.DB)
-	return workoutGroupService.GetWorkoutGroupWithDataLoader(ctx, obj.WorkoutGroup.ID)
+	return workoutGroupService.GetWorkoutGroupWithDataLoader(ctx, *obj.WorkoutGroupID)
 }
 
 // ================================

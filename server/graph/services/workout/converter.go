@@ -14,10 +14,17 @@ func NewWorkoutConverter() *WorkoutConverter {
 }
 
 func (c *WorkoutConverter) ToModelWorkout(workout entity.Workout) *model.Workout {
+	var workoutGroupID *string
+	if workout.WorkoutGroupID != nil {
+		id := fmt.Sprintf("%d", *workout.WorkoutGroupID)
+		workoutGroupID = &id
+	}
+
 	return &model.Workout{
-		ID:        fmt.Sprintf("%d", workout.ID),
-		CreatedAt: workout.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: workout.UpdatedAt.Format(time.RFC3339),
+		ID:             fmt.Sprintf("%d", workout.ID),
+		CreatedAt:      workout.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:      workout.UpdatedAt.Format(time.RFC3339),
+		WorkoutGroupID: workoutGroupID,
 	}
 }
 
