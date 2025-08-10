@@ -9,21 +9,24 @@ substitutions:
 
 steps:
   # migrate
-  - name: 'gcr.io/cloud-builders/docker'
-    id: build-migrate
+  - id: build-migrate
+    name: 'gcr.io/cloud-builders/docker'
+    waitFor: ["-"]
     args: [
       'build',
       '-f', 'server/Dockerfile.migrate',
       '-t', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_MIGRATE/fitness-api-migrate:latest',
       'server'
     ]
-  - name: 'gcr.io/cloud-builders/docker'
-    id: push-migrate
+  - id: push-migrate
+    name: 'gcr.io/cloud-builders/docker'
+    waitFor: ["build-migrate"]
     args: [
       'push', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_MIGRATE/fitness-api-migrate:latest'
     ]
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: update-migrate-job
+  - id: update-migrate-job
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    waitFor: ["push-migrate"]
     entrypoint: bash
     args:
       - -c
@@ -32,8 +35,9 @@ steps:
           --image=$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_MIGRATE/fitness-api-migrate:latest \
           --region=$_REGION \
           --quiet
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: run-migrate-job
+  - id: run-migrate-job
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    waitFor: ["update-migrate-job"]
     entrypoint: gcloud
     args:
       - run
@@ -44,21 +48,24 @@ steps:
       - --wait
 
   # seed
-  - name: 'gcr.io/cloud-builders/docker'
-    id: build-seed
+  - id: build-seed
+    name: 'gcr.io/cloud-builders/docker'
+    waitFor: ["-"]
     args: [
       'build',
       '-f', 'server/Dockerfile.seed',
       '-t', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_SEED/fitness-api-seed:latest',
       'server'
     ]
-  - name: 'gcr.io/cloud-builders/docker'
-    id: push-seed
+  - id: push-seed
+    name: 'gcr.io/cloud-builders/docker'
+    waitFor: ["build-seed"]
     args: [
       'push', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_SEED/fitness-api-seed:latest'
     ]
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: update-seed-job
+  - id: update-seed-job
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    waitFor: ["push-seed"]
     entrypoint: bash
     args:
       - -c
@@ -69,21 +76,24 @@ steps:
           --quiet
 
   # api
-  - name: 'gcr.io/cloud-builders/docker'
-    id: build-api
+  - id: build-api
+    name: 'gcr.io/cloud-builders/docker'
+    waitFor: ["-"]
     args: [
       'build',
       '-f', 'server/Dockerfile',
       '-t', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_API/fitness-api:latest',
       'server'
     ]
-  - name: 'gcr.io/cloud-builders/docker'
-    id: push-api
+  - id: push-api
+    name: 'gcr.io/cloud-builders/docker'
+    waitFor: ["build-api"]
     args: [
       'push', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_API/fitness-api:latest'
     ]
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: deploy-api
+  - id: deploy-api
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    waitFor: ["push-api","run-migrate"]
     entrypoint: gcloud
     args:
       - run
