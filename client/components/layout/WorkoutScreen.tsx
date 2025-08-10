@@ -1,10 +1,12 @@
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
 import { useAuth, useWorkout } from "../../hooks";
 import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useTheme } from "../../theme";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { WorkoutForm } from "@/components/forms";
+import { useQuery } from "@apollo/client";
+import { WorkoutLogsDocument } from "@/documents";
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -129,6 +131,12 @@ export function WorkoutScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const { theme } = useTheme();
+  const [refreshing, setRefreshing] = useState(false);
+
+  // 直接useQueryを使用してrefetchを取得
+  const { refetch } = useQuery(WorkoutLogsDocument, {
+    skip: !user,
+  });
 
   const {
     data,
@@ -153,6 +161,17 @@ export function WorkoutScreen() {
     }
   }, [user, router]);
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } catch (error) {
+      console.error('Refresh error:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
       year: 'numeric',
@@ -172,6 +191,14 @@ export function WorkoutScreen() {
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={[theme.primary]}
+          tintColor={theme.primary}
+        />
+      }
     >
 
       {/* 筋トレ履歴セクション */}
