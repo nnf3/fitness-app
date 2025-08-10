@@ -53,21 +53,9 @@ func (s *workoutService) GetWorkoutsByUserID(ctx context.Context, userID string)
 }
 
 func (s *workoutService) StartWorkout(ctx context.Context, input model.StartWorkout) (*model.Workout, error) {
-	var userID uint
-	if input.UserID != nil {
-		// ユーザーIDが指定されている場合はそれを使用
-		userIDUint64, err := strconv.ParseUint(*input.UserID, 10, 32)
-		if err != nil {
-			return nil, fmt.Errorf("invalid user ID: %s", *input.UserID)
-		}
-		userID = uint(userIDUint64)
-	} else {
-		// ユーザーIDが指定されていない場合はログインユーザーを使用
-		currentUser, err := s.common.GetCurrentUser(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get current user: %w", err)
-		}
-		userID = currentUser.ID
+	currentUser, err := s.common.GetCurrentUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
 	}
 
 	// ワークアウトグループIDの処理（オプショナル）
@@ -92,7 +80,7 @@ func (s *workoutService) StartWorkout(ctx context.Context, input model.StartWork
 	}
 
 	workout := entity.Workout{
-		UserID:         userID,
+		UserID:         currentUser.ID,
 		WorkoutGroupID: workoutGroupID,
 		Date:           date,
 	}

@@ -44,7 +44,6 @@ input RejectFriendshipRequest {
 input StartWorkout {
   date: String
   workoutGroupID: ID
-  userID: ID
 }
 
 input CreateWorkoutExercise {
@@ -55,6 +54,11 @@ input CreateWorkoutExercise {
 input CreateWorkoutGroup {
   title: String!
   date: String
+}
+
+input AddWorkoutGroupMember {
+  workoutGroupID: ID!
+  userID: ID!
 }
 
 input CreateSetLog {
@@ -83,6 +87,7 @@ type Mutation {
   createWorkoutExercise(input: CreateWorkoutExercise!): WorkoutExercise!
 
   createWorkoutGroup(input: CreateWorkoutGroup!): WorkoutGroup!
+  addWorkoutGroupMember(input: AddWorkoutGroupMember!): WorkoutGroup!
 
   createSetLog(input: CreateSetLog!): SetLog!
   deleteSetLog(input: DeleteSetLog!): Boolean!

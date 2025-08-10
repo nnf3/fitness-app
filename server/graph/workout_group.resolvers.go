@@ -44,3 +44,8 @@ func (r *mutationResolver) CreateWorkoutGroup(ctx context.Context, input model.C
 	workoutGroupService := services.NewWorkoutGroupServiceWithSeparation(r.DB)
 	return workoutGroupService.CreateWorkoutGroup(ctx, input)
 }
+
+func (r *mutationResolver) AddWorkoutGroupMember(ctx context.Context, input model.AddWorkoutGroupMember) (*model.WorkoutGroup, error) {
+	workoutGroupService := services.NewWorkoutGroupServiceWithSeparation(r.DB)
+	return workoutGroupService.AddWorkoutGroupMember(ctx, input)
+}

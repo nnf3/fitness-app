@@ -29,6 +29,11 @@ export enum ActivityLevel {
   VeryActive = 'VERY_ACTIVE'
 }
 
+export type AddWorkoutGroupMember = {
+  userID: Scalars['ID']['input'];
+  workoutGroupID: Scalars['ID']['input'];
+};
+
 export type CreateProfile = {
   activityLevel?: InputMaybe<ActivityLevel>;
   birthDate: Scalars['String']['input'];
@@ -97,6 +102,7 @@ export enum Gender {
 export type Mutation = {
   __typename?: 'Mutation';
   acceptFriendshipRequest: Friendship;
+  addWorkoutGroupMember: WorkoutGroup;
   createProfile: Profile;
   createSetLog: SetLog;
   createWorkoutExercise: WorkoutExercise;
@@ -112,6 +118,11 @@ export type Mutation = {
 
 export type MutationAcceptFriendshipRequestArgs = {
   input: AcceptFriendshipRequest;
+};
+
+
+export type MutationAddWorkoutGroupMemberArgs = {
+  input: AddWorkoutGroupMember;
 };
 
 
@@ -215,7 +226,6 @@ export type SetLog = {
 
 export type StartWorkout = {
   date?: InputMaybe<Scalars['String']['input']>;
-  userID?: InputMaybe<Scalars['ID']['input']>;
   workoutGroupID?: InputMaybe<Scalars['ID']['input']>;
 };
 
@@ -249,6 +259,7 @@ export type Workout = {
   id: Scalars['ID']['output'];
   updatedAt: Scalars['String']['output'];
   user: User;
+  userID: Scalars['ID']['output'];
   workoutExercises: Array<WorkoutExercise>;
   workoutGroup?: Maybe<WorkoutGroup>;
   workoutGroupID?: Maybe<Scalars['ID']['output']>;
@@ -361,6 +372,13 @@ export type GetFriendshipRequestsQueryVariables = Exact<{ [key: string]: never; 
 
 
 export type GetFriendshipRequestsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, friendshipRequests: Array<{ __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } }> } };
+
+export type AddWorkoutGroupMemberMutationVariables = Exact<{
+  input: AddWorkoutGroupMember;
+}>;
+
+
+export type AddWorkoutGroupMemberMutation = { __typename?: 'Mutation', addWorkoutGroupMember: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, user: { __typename?: 'User', id: string, profile?: { __typename?: 'Profile', id: string, name: string } | null }, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } };
 
 export type GetProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -638,6 +656,45 @@ export const GetFriendshipRequestsDocument = gql`
   }
 }
     `;
+export const AddWorkoutGroupMemberDocument = gql`
+    mutation AddWorkoutGroupMember($input: AddWorkoutGroupMember!) {
+  addWorkoutGroupMember(input: $input) {
+    id
+    title
+    date
+    createdAt
+    updatedAt
+    workouts {
+      id
+      date
+      createdAt
+      updatedAt
+      user {
+        id
+        profile {
+          id
+          name
+        }
+      }
+      workoutExercises {
+        id
+        exercise {
+          id
+          name
+          category
+          description
+        }
+        setLogs {
+          id
+          weight
+          repCount
+          setNumber
+        }
+      }
+    }
+  }
+}
+    `;
 export const GetProfileDocument = gql`
     query GetProfile {
   currentUser {
@@ -839,6 +896,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     GetFriendshipRequests(variables?: GetFriendshipRequestsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetFriendshipRequestsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetFriendshipRequestsQuery>({ document: GetFriendshipRequestsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetFriendshipRequests', 'query', variables);
+    },
+    AddWorkoutGroupMember(variables: AddWorkoutGroupMemberMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddWorkoutGroupMemberMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<AddWorkoutGroupMemberMutation>({ document: AddWorkoutGroupMemberDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddWorkoutGroupMember', 'mutation', variables);
     },
     GetProfile(variables?: GetProfileQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetProfileQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetProfileQuery>({ document: GetProfileDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetProfile', 'query', variables);

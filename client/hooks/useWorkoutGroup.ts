@@ -17,6 +17,7 @@ import {
 export interface Member {
   id: string;
   workoutId: string;
+  userId: string;
   date: string;
   createdAt: string;
   userName: string;
@@ -88,6 +89,7 @@ export function useWorkoutGroup(id: string) {
     .map(workout => ({
       id: workout?.id || '',
       workoutId: workout?.id || '',
+      userId: workout?.user?.id || '',
       date: workout?.date || '',
       createdAt: workout?.createdAt || '',
       userName: workout?.user?.profile?.name || '名前未設定'

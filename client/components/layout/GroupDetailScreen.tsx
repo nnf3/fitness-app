@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks';
 import { useTheme } from '../../theme';
 import { useWorkoutGroup } from '../../hooks/useWorkoutGroup';
+import { useAddWorkoutGroupMember } from '../../hooks/useFriends';
+import { FriendSelectionModal } from '../ui/FriendSelectionModal';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 interface GroupDetailScreenProps {
@@ -24,10 +26,31 @@ const createStyles = (theme: any) => StyleSheet.create({
   sectionHeader: {
     marginBottom: 20,
   },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   sectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: theme.text,
+  },
+  addMemberButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.surfaceVariant,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.primary,
+  },
+  addMemberButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.primary,
+    marginLeft: 4,
   },
   groupInfoCard: {
     backgroundColor: theme.surface,
@@ -134,6 +157,13 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
     refetch
   } = useWorkoutGroup(groupId);
 
+  // メンバー追加機能
+  const { addMember, loading: addMemberLoading } = useAddWorkoutGroupMember();
+  const [showFriendSelectionModal, setShowFriendSelectionModal] = useState(false);
+
+  // 既存メンバーのIDリスト（ユーザーID）
+  const existingMemberIds = members.map(member => member.userId);
+
   // ログアウト時にログイン画面に遷移
   if (!user) {
     router.replace("/login");
@@ -154,6 +184,27 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
   const handleViewWorkout = (workoutId: string) => {
     // セット記録ページに遷移
     router.push(`/add-workout-record?workoutId=${workoutId}&groupId=${groupId}`);
+  };
+
+  const handleAddMember = () => {
+    setShowFriendSelectionModal(true);
+  };
+
+  const handleSelectFriend = async (friend: any) => {
+    try {
+      const result = await addMember(groupId, friend.id);
+
+      if (result.success) {
+        Alert.alert('成功', `${friend.profile?.name || '名前未設定'}をグループに追加しました！`);
+        // データを再取得
+        await refetch();
+      } else {
+        Alert.alert('エラー', 'メンバーの追加に失敗しました。');
+      }
+    } catch (error) {
+      console.error('Add member error:', error);
+      Alert.alert('エラー', 'メンバーの追加に失敗しました。');
+    }
   };
 
   if (loading) {
@@ -218,7 +269,17 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
       {/* メンバーセクション */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>メンバー</Text>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>メンバー</Text>
+            <TouchableOpacity
+              style={styles.addMemberButton}
+              onPress={handleAddMember}
+              disabled={addMemberLoading}
+            >
+              <FontAwesome name="user-plus" size={16} color={theme.primary} />
+              <Text style={styles.addMemberButtonText}>追加</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {members.length > 0 ? (
@@ -244,6 +305,15 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
           </View>
         )}
       </View>
+
+      {/* フレンド選択モーダル */}
+      <FriendSelectionModal
+        visible={showFriendSelectionModal}
+        onClose={() => setShowFriendSelectionModal(false)}
+        onSelectFriend={handleSelectFriend}
+        groupId={groupId}
+        existingMemberIds={existingMemberIds}
+      />
     </ScrollView>
   );
 }

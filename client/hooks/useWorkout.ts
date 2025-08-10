@@ -59,7 +59,6 @@ export const useWorkout = (user: any) => {
   const handleStartWorkout = useCallback(async (
     date?: string,
     workoutGroupID?: string,
-    userId?: string,
     onSuccess?: (workoutId: string) => void
   ) => {
     const input: any = {};
@@ -70,10 +69,6 @@ export const useWorkout = (user: any) => {
 
     if (workoutGroupID) {
       input.workoutGroupID = workoutGroupID;
-    }
-
-    if (userId) {
-      input.userId = userId;
     }
 
     try {

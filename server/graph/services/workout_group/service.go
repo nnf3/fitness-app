@@ -4,6 +4,7 @@ import (
 	"app/entity"
 	"app/graph/model"
 	"app/graph/services/common"
+	"app/graph/services/user"
 	"app/graph/services/workout"
 	"context"
 	"fmt"
@@ -16,6 +17,7 @@ type WorkoutGroupService interface {
 	GetWorkoutGroup(ctx context.Context, id string) (*model.WorkoutGroup, error)
 	GetWorkoutGroupMembers(ctx context.Context, groupID string) ([]*model.User, error)
 	CreateWorkoutGroup(ctx context.Context, input model.CreateWorkoutGroup) (*model.WorkoutGroup, error)
+	AddWorkoutGroupMember(ctx context.Context, input model.AddWorkoutGroupMember) (*model.WorkoutGroup, error)
 
 	// DataLoader使用メソッド
 	GetWorkoutGroupWithDataLoader(ctx context.Context, id string) (*model.WorkoutGroup, error)
@@ -24,6 +26,7 @@ type WorkoutGroupService interface {
 type workoutGroupService struct {
 	repo        WorkoutGroupRepository
 	workoutRepo workout.WorkoutRepository
+	userRepo    user.UserRepository
 	converter   *WorkoutGroupConverter
 	common      common.CommonRepository
 	dataLoader  *WorkoutGroupDataLoader // DataLoaderを統合
@@ -33,6 +36,7 @@ func NewWorkoutGroupService(repo WorkoutGroupRepository, converter *WorkoutGroup
 	return &workoutGroupService{
 		repo:        repo,
 		workoutRepo: workout.NewWorkoutRepository(repo.(*workoutGroupRepository).db),
+		userRepo:    user.NewUserRepository(repo.(*workoutGroupRepository).db),
 		converter:   converter,
 		common:      common.NewCommonRepository(repo.(*workoutGroupRepository).db),
 		dataLoader:  loader,
@@ -105,6 +109,34 @@ func (s *workoutGroupService) CreateWorkoutGroup(ctx context.Context, input mode
 	workout := entity.Workout{
 		UserID:         currentUser.ID,
 		WorkoutGroupID: &workoutGroup.ID,
+	}
+	if err := s.workoutRepo.CreateWorkout(ctx, &workout); err != nil {
+		return nil, fmt.Errorf("failed to create workout: %w", err)
+	}
+
+	return s.converter.ToModelWorkoutGroup(*workoutGroup), nil
+}
+
+func (s *workoutGroupService) AddWorkoutGroupMember(ctx context.Context, input model.AddWorkoutGroupMember) (*model.WorkoutGroup, error) {
+	currentUser, err := s.common.GetCurrentUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
+	}
+
+	workoutGroup, err := s.repo.GetWorkoutGroupByID(ctx, input.WorkoutGroupID, strconv.FormatUint(uint64(currentUser.ID), 10))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workout group: %w", err)
+	}
+
+	user, err := s.userRepo.GetUserByID(ctx, input.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	workout := entity.Workout{
+		UserID:         user.ID,
+		WorkoutGroupID: &workoutGroup.ID,
+		Date:           workoutGroup.Date,
 	}
 	if err := s.workoutRepo.CreateWorkout(ctx, &workout); err != nil {
 		return nil, fmt.Errorf("failed to create workout: %w", err)

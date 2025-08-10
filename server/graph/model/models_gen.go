@@ -6,6 +6,11 @@ type AcceptFriendshipRequest struct {
 	FriendshipID string `json:"friendshipID"`
 }
 
+type AddWorkoutGroupMember struct {
+	WorkoutGroupID string `json:"workoutGroupID"`
+	UserID         string `json:"userID"`
+}
+
 type CreateProfile struct {
 	Name          string         `json:"name"`
 	BirthDate     string         `json:"birthDate"`
@@ -99,7 +104,6 @@ type SetLog struct {
 type StartWorkout struct {
 	Date           *string `json:"date,omitempty"`
 	WorkoutGroupID *string `json:"workoutGroupID,omitempty"`
-	UserID         *string `json:"userID,omitempty"`
 }
 
 type UpdateProfile struct {
