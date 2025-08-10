@@ -45,6 +45,18 @@ func (r *mutationResolver) CreateWorkoutGroup(ctx context.Context, input model.C
 	return workoutGroupService.CreateWorkoutGroup(ctx, input)
 }
 
+// UpdateWorkoutGroup is the resolver for the updateWorkoutGroup field.
+func (r *mutationResolver) UpdateWorkoutGroup(ctx context.Context, input model.UpdateWorkoutGroup) (*model.WorkoutGroup, error) {
+	workoutGroupService := services.NewWorkoutGroupServiceWithSeparation(r.DB)
+	return workoutGroupService.UpdateWorkoutGroup(ctx, input)
+}
+
+// DeleteWorkoutGroup is the resolver for the deleteWorkoutGroup field.
+func (r *mutationResolver) DeleteWorkoutGroup(ctx context.Context, input model.DeleteWorkoutGroup) (bool, error) {
+	workoutGroupService := services.NewWorkoutGroupServiceWithSeparation(r.DB)
+	return workoutGroupService.DeleteWorkoutGroup(ctx, input)
+}
+
 func (r *mutationResolver) AddWorkoutGroupMember(ctx context.Context, input model.AddWorkoutGroupMember) (*model.WorkoutGroup, error) {
 	workoutGroupService := services.NewWorkoutGroupServiceWithSeparation(r.DB)
 	return workoutGroupService.AddWorkoutGroupMember(ctx, input)

@@ -11,6 +11,8 @@ type WorkoutGroupRepository interface {
 	GetWorkoutGroups(ctx context.Context, userID string) ([]entity.WorkoutGroup, error)
 	GetWorkoutGroupByID(ctx context.Context, id string, userID string) (*entity.WorkoutGroup, error)
 	CreateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error
+	UpdateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error
+	DeleteWorkoutGroup(ctx context.Context, id string) error
 
 	// Batch methods for DataLoader
 	GetWorkoutGroupsByIDs(workoutGroupIDs []uint) ([]*entity.WorkoutGroup, error)
@@ -51,6 +53,14 @@ func (r *workoutGroupRepository) GetWorkoutGroupByID(ctx context.Context, id str
 
 func (r *workoutGroupRepository) CreateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error {
 	return r.db.Create(workoutGroup).Error
+}
+
+func (r *workoutGroupRepository) UpdateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error {
+	return r.db.Save(workoutGroup).Error
+}
+
+func (r *workoutGroupRepository) DeleteWorkoutGroup(ctx context.Context, id string) error {
+	return r.db.Delete(&entity.WorkoutGroup{}, id).Error
 }
 
 // Batch methods for DataLoader

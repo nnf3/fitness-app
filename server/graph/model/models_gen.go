@@ -47,6 +47,10 @@ type DeleteUser struct {
 	ID string `json:"id"`
 }
 
+type DeleteWorkoutGroup struct {
+	ID string `json:"id"`
+}
+
 type Exercise struct {
 	ID          string  `json:"id"`
 	Name        string  `json:"name"`
@@ -115,6 +119,13 @@ type UpdateProfile struct {
 	Weight        *float64       `json:"weight,omitempty"`
 	ActivityLevel *ActivityLevel `json:"activityLevel,omitempty"`
 	ImageURL      *string        `json:"imageURL,omitempty"`
+}
+
+type UpdateWorkoutGroup struct {
+	ID       string  `json:"id"`
+	Title    *string `json:"title,omitempty"`
+	Date     *string `json:"date,omitempty"`
+	ImageURL *string `json:"imageURL,omitempty"`
 }
 
 type User struct {

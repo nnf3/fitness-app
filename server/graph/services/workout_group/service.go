@@ -16,6 +16,8 @@ type WorkoutGroupService interface {
 	GetWorkoutGroups(ctx context.Context) ([]*model.WorkoutGroup, error)
 	GetWorkoutGroup(ctx context.Context, id string) (*model.WorkoutGroup, error)
 	CreateWorkoutGroup(ctx context.Context, input model.CreateWorkoutGroup) (*model.WorkoutGroup, error)
+	UpdateWorkoutGroup(ctx context.Context, input model.UpdateWorkoutGroup) (*model.WorkoutGroup, error)
+	DeleteWorkoutGroup(ctx context.Context, input model.DeleteWorkoutGroup) (bool, error)
 	AddWorkoutGroupMember(ctx context.Context, input model.AddWorkoutGroupMember) (*model.WorkoutGroup, error)
 
 	// DataLoader使用メソッド
@@ -112,6 +114,64 @@ func (s *workoutGroupService) CreateWorkoutGroup(ctx context.Context, input mode
 	}
 
 	return s.converter.ToModelWorkoutGroup(*workoutGroup), nil
+}
+
+func (s *workoutGroupService) UpdateWorkoutGroup(ctx context.Context, input model.UpdateWorkoutGroup) (*model.WorkoutGroup, error) {
+	currentUser, err := s.common.GetCurrentUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current user: %w", err)
+	}
+
+	workoutGroup, err := s.repo.GetWorkoutGroupByID(ctx, input.ID, strconv.FormatUint(uint64(currentUser.ID), 10))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workout group: %w", err)
+	}
+
+	if workoutGroup == nil {
+		return nil, fmt.Errorf("workout group not found")
+	}
+
+	if input.Title != nil {
+		workoutGroup.Title = *input.Title
+	}
+	if input.Date != nil {
+		parsedDate, err := time.Parse(common.DateFormat, *input.Date)
+		if err != nil {
+			return nil, fmt.Errorf("invalid date: %s", *input.Date)
+		}
+		workoutGroup.Date = &parsedDate
+	}
+	if input.ImageURL != nil {
+		workoutGroup.ImageURL = input.ImageURL
+	}
+
+	if err := s.repo.UpdateWorkoutGroup(ctx, workoutGroup); err != nil {
+		return nil, fmt.Errorf("failed to update workout group: %w", err)
+	}
+
+	return s.converter.ToModelWorkoutGroup(*workoutGroup), nil
+}
+
+func (s *workoutGroupService) DeleteWorkoutGroup(ctx context.Context, input model.DeleteWorkoutGroup) (bool, error) {
+	currentUser, err := s.common.GetCurrentUser(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to get current user: %w", err)
+	}
+
+	workoutGroup, err := s.repo.GetWorkoutGroupByID(ctx, input.ID, strconv.FormatUint(uint64(currentUser.ID), 10))
+	if err != nil {
+		return false, fmt.Errorf("failed to get workout group: %w", err)
+	}
+
+	if workoutGroup == nil {
+		return false, fmt.Errorf("workout group not found")
+	}
+
+	if err := s.repo.DeleteWorkoutGroup(ctx, strconv.FormatUint(uint64(workoutGroup.ID), 10)); err != nil {
+		return false, fmt.Errorf("failed to delete workout group: %w", err)
+	}
+
+	return true, nil
 }
 
 func (s *workoutGroupService) AddWorkoutGroupMember(ctx context.Context, input model.AddWorkoutGroupMember) (*model.WorkoutGroup, error) {

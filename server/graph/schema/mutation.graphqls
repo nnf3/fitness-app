@@ -57,6 +57,17 @@ input CreateWorkoutGroup {
   imageURL: String
 }
 
+input UpdateWorkoutGroup {
+  id: ID!
+  title: String
+  date: String
+  imageURL: String
+}
+
+input DeleteWorkoutGroup {
+  id: ID!
+}
+
 input AddWorkoutGroupMember {
   workoutGroupID: ID!
   userID: ID!
@@ -88,6 +99,8 @@ type Mutation {
   createWorkoutExercise(input: CreateWorkoutExercise!): WorkoutExercise!
 
   createWorkoutGroup(input: CreateWorkoutGroup!): WorkoutGroup!
+  updateWorkoutGroup(input: UpdateWorkoutGroup!): WorkoutGroup!
+  deleteWorkoutGroup(input: DeleteWorkoutGroup!): Boolean!
   addWorkoutGroupMember(input: AddWorkoutGroupMember!): WorkoutGroup!
 
   createSetLog(input: CreateSetLog!): SetLog!
