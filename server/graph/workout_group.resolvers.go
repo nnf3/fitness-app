@@ -34,3 +34,13 @@ func (r *queryResolver) WorkoutGroup(ctx context.Context, id string) (*model.Wor
 	workoutGroupService := services.NewWorkoutGroupServiceWithSeparation(r.DB)
 	return workoutGroupService.GetWorkoutGroup(ctx, id)
 }
+
+// ================================
+// Mutation
+// ================================
+
+// CreateWorkoutGroup is the resolver for the createWorkoutGroup field.
+func (r *mutationResolver) CreateWorkoutGroup(ctx context.Context, input model.CreateWorkoutGroup) (*model.WorkoutGroup, error) {
+	workoutGroupService := services.NewWorkoutGroupServiceWithSeparation(r.DB)
+	return workoutGroupService.CreateWorkoutGroup(ctx, input)
+}

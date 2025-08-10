@@ -52,6 +52,11 @@ input CreateWorkoutExercise {
   exerciseID: ID!
 }
 
+input CreateWorkoutGroup {
+  title: String!
+  date: String
+}
+
 input CreateSetLog {
   workoutExerciseID: ID!
   setNumber: Int!
@@ -76,6 +81,8 @@ type Mutation {
   startWorkout(input: StartWorkoutInput): Workout!
 
   createWorkoutExercise(input: CreateWorkoutExercise!): WorkoutExercise!
+
+  createWorkoutGroup(input: CreateWorkoutGroup!): WorkoutGroup!
 
   createSetLog(input: CreateSetLog!): SetLog!
   deleteSetLog(input: DeleteSetLog!): Boolean!

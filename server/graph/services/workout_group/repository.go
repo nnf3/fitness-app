@@ -11,6 +11,7 @@ type WorkoutGroupRepository interface {
 	GetWorkoutGroups(ctx context.Context, userID string) ([]entity.WorkoutGroup, error)
 	GetWorkoutGroupByID(ctx context.Context, id string, userID string) (*entity.WorkoutGroup, error)
 	GetWorkoutGroupMembers(ctx context.Context, groupID string) ([]entity.User, error)
+	CreateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error
 
 	// Batch methods for DataLoader
 	GetWorkoutGroupsByIDs(workoutGroupIDs []uint) ([]*entity.WorkoutGroup, error)
@@ -55,6 +56,10 @@ func (r *workoutGroupRepository) GetWorkoutGroupMembers(ctx context.Context, gro
 		Where("workout_logs.workout_group_id = ?", groupID).
 		Find(&users).Error
 	return users, err
+}
+
+func (r *workoutGroupRepository) CreateWorkoutGroup(ctx context.Context, workoutGroup *entity.WorkoutGroup) error {
+	return r.db.Create(workoutGroup).Error
 }
 
 // Batch methods for DataLoader

@@ -2,14 +2,15 @@ package entity
 
 import (
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 type WorkoutGroup struct {
 	gorm.Model
-	ID    uint   `gorm:"primaryKey"`
 	Title string `gorm:"size:255;not null"`
+	Date  *time.Time
 
 	Workouts []Workout `gorm:"foreignKey:WorkoutGroupID;constraint:OnDelete:SET NULL"`
 }
