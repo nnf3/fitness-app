@@ -3,6 +3,8 @@ package workout_group
 import (
 	"app/entity"
 	"context"
+	"fmt"
+	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -27,10 +29,15 @@ func NewWorkoutGroupRepository(db *gorm.DB) WorkoutGroupRepository {
 }
 
 func (r *workoutGroupRepository) GetWorkoutGroups(ctx context.Context, userID string) ([]entity.WorkoutGroup, error) {
+	userIDUint, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %s", userID)
+	}
+
 	var groups []entity.WorkoutGroup
-	err := r.db.WithContext(ctx).
+	err = r.db.WithContext(ctx).
 		Joins("inner join workouts on workout_groups.id = workouts.workout_group_id").
-		Where("workouts.user_id = ?", userID).
+		Where("workouts.user_id = ?", userIDUint).
 		Find(&groups).Error
 	if err != nil {
 		return nil, err
@@ -39,10 +46,15 @@ func (r *workoutGroupRepository) GetWorkoutGroups(ctx context.Context, userID st
 }
 
 func (r *workoutGroupRepository) GetWorkoutGroupByID(ctx context.Context, id string, userID string) (*entity.WorkoutGroup, error) {
+	userIDUint, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %s", userID)
+	}
+
 	var group entity.WorkoutGroup
-	err := r.db.WithContext(ctx).
+	err = r.db.WithContext(ctx).
 		Joins("inner join workouts on workout_groups.id = workouts.workout_group_id").
-		Where("workouts.user_id = ?", userID).
+		Where("workouts.user_id = ?", userIDUint).
 		Where("workout_groups.id = ?", id).
 		First(&group).Error
 	if err != nil {

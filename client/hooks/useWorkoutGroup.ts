@@ -6,7 +6,8 @@ import {
   WorkoutGroupDocument,
   CreateWorkoutGroupDocument,
   UpdateWorkoutGroupDocument,
-  DeleteWorkoutGroupDocument
+  DeleteWorkoutGroupDocument,
+  AddWorkoutGroupMemberDocument
 } from '../documents'
 import {
   WorkoutGroupsQuery,
@@ -17,7 +18,9 @@ import {
   UpdateWorkoutGroupMutation,
   UpdateWorkoutGroupMutationVariables,
   DeleteWorkoutGroupMutation,
-  DeleteWorkoutGroupMutationVariables
+  DeleteWorkoutGroupMutationVariables,
+  AddWorkoutGroupMemberMutation,
+  AddWorkoutGroupMemberMutationVariables
 } from '../types/graphql';
 
 export interface Member {
@@ -231,5 +234,38 @@ export function useAvailableWorkoutGroups() {
     loading: currentUserLoading,
     error: currentUserError,
     refetch: refetchCurrentUser,
+  };
+}
+
+export function useAddWorkoutGroupMember() {
+  const [addWorkoutGroupMember, { loading: addMemberLoading }] = useMutation<
+    AddWorkoutGroupMemberMutation,
+    AddWorkoutGroupMemberMutationVariables
+  >(AddWorkoutGroupMemberDocument, {
+    refetchQueries: [
+      { query: WorkoutGroupsDocument },
+      { query: CurrentUserWorkoutGroupsDocument },
+    ],
+  });
+
+  const addMember = async (groupId: string, userId: string) => {
+    try {
+      const result = await addWorkoutGroupMember({
+        variables: {
+          input: {
+            workoutGroupID: groupId,
+            userID: userId,
+          },
+        },
+      });
+      return { success: true, data: result.data?.addWorkoutGroupMember };
+    } catch (error) {
+      return { success: false, error };
+    }
+  };
+
+  return {
+    addMember,
+    loading: addMemberLoading,
   };
 }
