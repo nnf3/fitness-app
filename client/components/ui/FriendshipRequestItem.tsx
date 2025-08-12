@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useTheme } from '../../theme';
 
 interface FriendshipRequestItemProps {
@@ -30,11 +30,20 @@ export function FriendshipRequestItem({
 
   const requesterName = request.requester.profile?.name || 'Unknown';
   const initial = requesterName.charAt(0);
+  const profileImageURL = request.requester.profile?.imageURL;
 
   return (
     <View style={styles.requestItem}>
       <View style={styles.friendAvatar}>
-        <Text style={styles.friendAvatarText}>{initial}</Text>
+        {profileImageURL ? (
+          <Image
+            source={{ uri: profileImageURL }}
+            style={styles.friendAvatarImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <Text style={styles.friendAvatarText}>{initial}</Text>
+        )}
       </View>
       <View style={styles.friendInfo}>
         <Text style={styles.friendName}>{requesterName}</Text>
@@ -84,6 +93,12 @@ const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  friendAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   friendAvatarText: {
     color: '#FFFFFF',

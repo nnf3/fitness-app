@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
+  Image,
 } from 'react-native';
 import { useTheme } from '../../theme';
 import { useFriendSelection } from '../../hooks/useFriends';
@@ -81,6 +82,12 @@ const createStyles = (theme: any) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  friendAvatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   friendAvatarText: {
     color: '#FFFFFF',
@@ -216,9 +223,17 @@ export function FriendSelectionModal({
                 onPress={() => handleSelectFriend(friend)}
               >
                 <View style={styles.friendAvatar}>
-                  <Text style={styles.friendAvatarText}>
-                    {getInitials(friend.profile?.name || '名前未設定')}
-                  </Text>
+                  {friend.profile?.imageURL ? (
+                    <Image
+                      source={{ uri: friend.profile.imageURL }}
+                      style={styles.friendAvatarImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Text style={styles.friendAvatarText}>
+                      {getInitials(friend.profile?.name || '名前未設定')}
+                    </Text>
+                  )}
                 </View>
                 <View style={styles.friendInfo}>
                   <Text style={styles.friendName}>

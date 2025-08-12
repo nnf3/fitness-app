@@ -318,12 +318,12 @@ export function GroupWorkoutScreen() {
         onRequestClose={handleCloseCreateGroupModal}
         presentationStyle="overFullScreen"
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
           onPress={handleCloseCreateGroupModal}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.modalContent}
             activeOpacity={1}
             onPress={(e) => e.stopPropagation()}
