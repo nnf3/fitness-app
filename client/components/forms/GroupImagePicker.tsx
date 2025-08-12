@@ -28,7 +28,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   imageContainer: {
     width: 100,
     height: 100,
-    borderRadius: 12,
+    borderRadius: 50,
     backgroundColor: theme.surfaceVariant,
     justifyContent: 'center',
     alignItems: 'center',
@@ -36,6 +36,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     borderWidth: 2,
     borderColor: theme.border,
     borderStyle: 'dashed',
+    overflow: 'hidden',
   },
   imageContainerDisabled: {
     opacity: 0.6,
@@ -43,7 +44,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   groupImage: {
     width: 100,
     height: 100,
-    borderRadius: 12,
+    borderRadius: 50,
   },
   imagePlaceholder: {
     fontSize: 32,
@@ -55,13 +56,13 @@ const createStyles = (theme: any) => StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    borderRadius: 12,
+    backgroundColor: theme.overlay,
+    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
   },
   uploadText: {
-    color: '#FFFFFF',
+    color: theme.surface,
     fontSize: 10,
     marginTop: 4,
   },
@@ -149,7 +150,6 @@ export function GroupImagePicker({
 
   return (
     <View style={styles.imageSection}>
-      <Text style={styles.label}>グループ画像</Text>
       <TouchableOpacity
         style={[styles.imageContainer, isUploading && styles.imageContainerDisabled]}
         onPress={pickImage}

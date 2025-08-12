@@ -59,9 +59,10 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   groupCard: {
     backgroundColor: theme.surface,
-    padding: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 8,
     shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
@@ -75,43 +76,46 @@ const createStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  groupImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 16,
-  },
-  groupImagePlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: theme.surfaceVariant,
-    justifyContent: 'center',
+  groupAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: theme.primaryVariant,
     alignItems: 'center',
-    marginRight: 16,
+    justifyContent: 'center',
+    marginRight: 12,
+    overflow: 'hidden',
   },
-  groupCardHeader: {
+  groupAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  groupAvatarText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  groupInfo: {
     flex: 1,
-    marginBottom: 8,
   },
   groupTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: theme.text,
+    marginBottom: 4,
   },
   groupDate: {
     fontSize: 14,
     color: theme.textSecondary,
-    marginTop: 4,
   },
-  groupInfo: {
+  groupActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
   },
-  groupMemberCount: {
-    fontSize: 14,
-    color: theme.textSecondary,
+  actionButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     marginLeft: 8,
   },
   emptyState: {
@@ -282,13 +286,15 @@ export function GroupWorkoutScreen() {
           >
             <View style={styles.groupCardContent}>
               {group?.imageURL ? (
-                <Image source={{ uri: group.imageURL }} style={styles.groupImage} />
+                <View style={styles.groupAvatar}>
+                  <Image source={{ uri: group.imageURL }} style={styles.groupAvatarImage} />
+                </View>
               ) : (
-                <View style={styles.groupImagePlaceholder}>
-                  <FontAwesome name="users" size={24} color={theme.textSecondary} />
+                <View style={styles.groupAvatar}>
+                  <Text style={styles.groupAvatarText}>{group?.title?.charAt(0)}</Text>
                 </View>
               )}
-              <View style={styles.groupCardHeader}>
+              <View style={styles.groupInfo}>
                 <Text style={styles.groupTitle}>{group?.title}</Text>
                 <Text style={styles.groupDate}>
                   {group?.date ? formatDate(group.date) : '日付未設定'}

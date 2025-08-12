@@ -134,10 +134,11 @@ export function CreateGroupForm({ onSubmit, onCancel, isLoading = false, initial
       </View>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>開催日</Text>
         <DateField
+          label='開催日'
           value={date}
           onChange={setDate}
+          returnType='date'
         />
       </View>
 
