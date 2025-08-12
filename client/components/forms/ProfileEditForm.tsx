@@ -14,6 +14,7 @@ import { useQuery, useMutation } from '@apollo/client';
 import { GetProfileDocument, CreateProfileDocument, UpdateProfileDocument } from '@/documents';
 import { GetProfileQuery, CreateProfileMutation, UpdateProfileMutation } from '@/types/graphql';
 import { FormField } from './FormField';
+import { DateField } from './DateField';
 import { ImagePickerComponent } from './ImagePicker';
 import { useTheme } from '../../theme';
 
@@ -314,13 +315,13 @@ export const ProfileEditForm = () => {
           required
         />
 
-        <FormField
+        <DateField
           label="生年月日"
           value={formData.birthDate}
-          onChangeText={(text) => setFormData({ ...formData, birthDate: text })}
-          type="date"
+          onChange={(value) => setFormData({ ...formData, birthDate: value })}
           placeholder="YYYY-MM-DD"
           required
+          returnType="string"
         />
 
         <FormField
@@ -364,8 +365,8 @@ export const ProfileEditForm = () => {
           disabled={!isFormValid || mutationLoading}
         >
           <Text style={styles.saveButtonText}>
-            {mutationLoading 
-              ? (hasProfile ? '更新中...' : '作成中...') 
+            {mutationLoading
+              ? (hasProfile ? '更新中...' : '作成中...')
               : (hasProfile ? '更新' : '作成')
             }
           </Text>

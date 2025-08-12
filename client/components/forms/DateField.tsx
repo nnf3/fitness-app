@@ -1,25 +1,69 @@
-import React, { useState } from "react";
-import { View, Text, TextInput } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, Text, TextInput, StyleSheet } from "react-native";
 import dayjs from "dayjs";
+import { useTheme } from "../../theme";
 
-type Props = {
+// 文字列用のDateField
+type StringDateFieldProps = {
+  label?: string;
+  value?: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
+  error?: string;
+  returnType: 'string';
+};
+
+// Date型用のDateField
+type DateDateFieldProps = {
   label?: string;
   value?: Date;
-  onChange: (d: Date) => void;
-  mode?: "date" | "time";
+  onChange: (value: Date) => void;
+  placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
+  error?: string;
+  returnType: 'date';
 };
+
+type Props = StringDateFieldProps | DateDateFieldProps;
 
 export function DateField({
   label = "日付",
   value,
   onChange,
-  mode = "date",
+  placeholder = "YYYY-MM-DD",
+  required = false,
+  disabled = false,
+  error,
+  returnType,
 }: Props) {
-  const [textValue, setTextValue] = useState(
-    value ? dayjs(value).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD")
-  );
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
+  // 内部では常に文字列として管理
+  const getInitialTextValue = useCallback(() => {
+    if (typeof value === 'string' && value) {
+      return value;
+    }
+    if (value instanceof Date) {
+      return dayjs(value).format("YYYY-MM-DD");
+    }
+    return "";
+  }, [value]);
+
+  const [textValue, setTextValue] = useState(getInitialTextValue());
+
+  // valueが外部から変更された場合の処理
+  useEffect(() => {
+    const newTextValue = getInitialTextValue();
+    setTextValue(newTextValue);
+  }, [getInitialTextValue]);
 
   const handleTextChange = (text: string) => {
+    if (disabled) return;
+
     // 数字以外の文字を除去
     const numbersOnly = text.replace(/\D/g, '');
 
@@ -39,38 +83,88 @@ export function DateField({
 
     // YYYY-MM-DD形式の日付文字列をパース
     if (formattedText.length === 10 && /^\d{4}-\d{2}-\d{2}$/.test(formattedText)) {
-      // 時間を00:00に設定（タイムゾーン変換なし）
-      const date = dayjs(formattedText + 'T00:00:00').toDate();
-      onChange(date);
+      try {
+        const date = dayjs(formattedText + 'T00:00:00').toDate();
+        // returnTypeに応じて戻り値を変更
+        if (returnType === 'date') {
+          (onChange as (value: Date) => void)(date);
+        } else {
+          (onChange as (value: string) => void)(formattedText);
+        }
+      } catch {
+        // 無効な日付の場合は文字列として渡す
+        (onChange as (value: string) => void)(formattedText);
+      }
+    } else {
+      // 不完全な日付の場合は文字列として渡す
+      (onChange as (value: string) => void)(formattedText);
     }
   };
 
-  const displayText = value
-    ? dayjs(value).format("YYYY-MM-DD")
-    : "YYYY-MM-DD";
-
   return (
-    <View style={{ gap: 6 }}>
-      {label ? <Text style={{ color: "#9AA0A6" }}>{label}</Text> : null}
+    <View style={styles.container}>
+      {label && (
+        <Text style={styles.label}>
+          {label}
+          {required && <Text style={styles.required}> *</Text>}
+        </Text>
+      )}
 
       <TextInput
         value={textValue}
         onChangeText={handleTextChange}
-        placeholder={displayText}
-        placeholderTextColor="#666"
-        style={{
-          padding: 16,
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: "#3C4043",
-          backgroundColor: "#202124",
-          color: "white",
-          fontSize: 18,
-          minHeight: 56,
-        }}
+        placeholder={placeholder}
+        placeholderTextColor={theme.textTertiary}
+        style={[
+          styles.input,
+          disabled && styles.inputDisabled,
+          error && styles.inputError
+        ]}
         keyboardType="numeric"
         maxLength={10}
+        editable={!disabled}
       />
+
+      {error && (
+        <Text style={styles.errorText}>{error}</Text>
+      )}
     </View>
   );
 }
+
+const createStyles = (theme: any) => StyleSheet.create({
+  container: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.text,
+    marginBottom: 8,
+  },
+  required: {
+    color: theme.error,
+  },
+  input: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.border,
+    backgroundColor: theme.surface,
+    color: theme.text,
+    fontSize: 16,
+    minHeight: 56,
+  },
+  inputDisabled: {
+    opacity: 0.6,
+    backgroundColor: theme.surfaceVariant,
+  },
+  inputError: {
+    borderColor: theme.error,
+  },
+  errorText: {
+    color: theme.error,
+    fontSize: 14,
+    marginTop: 4,
+  },
+});

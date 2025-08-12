@@ -373,12 +373,12 @@ export function WorkoutScreen() {
         onRequestClose={handleCloseCreateWorkoutModal}
         presentationStyle="overFullScreen"
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
           onPress={handleCloseCreateWorkoutModal}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.modalContent}
             activeOpacity={1}
             onPress={(e) => e.stopPropagation()}
@@ -388,7 +388,7 @@ export function WorkoutScreen() {
                 label="日付"
                 value={selectedDate}
                 onChange={setSelectedDate}
-                mode="date"
+                returnType="date"
               />
             </View>
             <View style={styles.modalButtons}>
