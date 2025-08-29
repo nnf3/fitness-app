@@ -70,7 +70,9 @@ func main() {
 			next.ServeHTTP(w, r)
 		})
 	}
-	http.Handle("/query", c.Handler(authMiddleware.AuthMiddleware(withDataloaderHandler(srv))))
+
+	// Add delay middleware for testing loading states
+	http.Handle("/query", c.Handler(middleware.DelayMiddleware(authMiddleware.AuthMiddleware(withDataloaderHandler(srv)))))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
