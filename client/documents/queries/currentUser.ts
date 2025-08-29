@@ -38,9 +38,17 @@ export const HomeScreenDataDocument = gql(`
   query HomeScreenData {
     currentUser {
       id
+      uid
+      createdAt
+      updatedAt
       profile {
         id
         name
+        birthDate
+        gender
+        height
+        weight
+        activityLevel
       }
       workouts {
         id

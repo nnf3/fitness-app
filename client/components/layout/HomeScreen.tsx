@@ -3,6 +3,7 @@ import { useAuth, useWorkoutStats } from "../../hooks";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTheme } from "../../theme";
+import { LoadingState, ErrorState, EmptyState } from "../ui";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -149,16 +150,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontSize: 14,
     marginLeft: 8,
   },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  emptyStateText: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    textAlign: 'center',
-    marginTop: 8,
-  },
 });
 
 export function HomeScreen() {
@@ -167,7 +158,7 @@ export function HomeScreen() {
   const { theme } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
 
-  const { userData, refetch, ...workoutStats } = useWorkoutStats(user?.uid);
+  const { userData, refetch, loading, error, ...workoutStats } = useWorkoutStats(user?.uid);
 
   const styles = createStyles(theme);
 
@@ -189,8 +180,27 @@ export function HomeScreen() {
     }
   };
 
-  if (!user || !userData) {
-    return null; // ログイン画面に遷移中
+  // ユーザーが未認証の場合は何も表示しない（ログイン画面に遷移中）
+  if (!user) {
+    return null;
+  }
+
+  // データローディング中の表示
+  if (loading && !userData) {
+    return (
+      <LoadingState title="データを読み込み中..." />
+    );
+  }
+
+  // エラー時の表示
+  if (error) {
+    return (
+      <ErrorState
+        title="データの読み込みに失敗しました"
+        errorMessage={error.message}
+        onRetry={() => refetch()}
+      />
+    );
   }
 
   return (
@@ -209,7 +219,7 @@ export function HomeScreen() {
     >
       {/* ウェルカムセクション */}
       <View style={styles.welcomeSection}>
-        <Text style={styles.welcomeTitle}>ようこそ、{userData.profile?.name || 'ユーザー'}さん</Text>
+        <Text style={styles.welcomeTitle}>ようこそ、{userData?.profile?.name || 'ユーザー'}さん</Text>
         <Text style={styles.welcomeSubtitle}>今日も筋トレを頑張りましょう！</Text>
       </View>
 
@@ -267,10 +277,11 @@ export function HomeScreen() {
             </TouchableOpacity>
           ))
         ) : (
-          <View style={styles.emptyState}>
-            <FontAwesome name="calendar" size={24} color={theme.textSecondary} />
-            <Text style={styles.emptyStateText}>まだトレーニング記録がありません</Text>
-          </View>
+          <EmptyState
+            icon="calendar"
+            title="まだトレーニング記録がありません"
+            message="今日からトレーニングを始めてみましょう！"
+          />
         )}
       </View>
     </ScrollView>

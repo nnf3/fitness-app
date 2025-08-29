@@ -10,6 +10,7 @@ import {
   Image,
 } from 'react-native';
 import { useTheme } from '../../theme';
+import { LoadingState, ErrorState, EmptyState } from './index';
 import { useFriendSelection } from '../../hooks/useFriends';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -107,27 +108,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.textSecondary,
     marginTop: 2,
   },
-  emptyState: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: theme.textSecondary,
-    textAlign: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.textSecondary,
-    padding: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.error,
-    padding: 20,
-  },
 });
 
 export function FriendSelectionModal({
@@ -198,22 +178,21 @@ export function FriendSelectionModal({
           {/* フレンドリスト */}
           <ScrollView style={styles.friendsList} showsVerticalScrollIndicator={true}>
             {loading && (
-              <Text style={styles.loadingText}>フレンドを読み込み中...</Text>
+              <LoadingState title="フレンドを読み込み中..." />
             )}
 
             {error && (
-              <Text style={styles.errorText}>
-                フレンドの読み込みに失敗しました。
-              </Text>
+              <ErrorState 
+                title="フレンドの読み込みに失敗しました"
+                errorMessage={error.message}
+              />
             )}
 
             {!loading && !error && filteredFriends.length === 0 && (
-              <View style={styles.emptyState}>
-                <FontAwesome name="users" size={48} color={theme.textSecondary} />
-                <Text style={styles.emptyStateText}>
-                  {searchQuery ? '検索結果がありません' : 'フレンドがいません'}
-                </Text>
-              </View>
+              <EmptyState
+                title={searchQuery ? '検索結果がありません' : 'フレンドがいません'}
+                icon={searchQuery ? 'search' : 'users'}
+              />
             )}
 
             {filteredFriends.map((friend) => (

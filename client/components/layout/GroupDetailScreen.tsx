@@ -11,6 +11,7 @@ import {
   useDeleteWorkoutGroup,
 } from '../../hooks';
 import { useTheme } from '../../theme';
+import { LoadingState, ErrorState, EmptyState } from '../ui';
 import { FriendSelectionModal } from '../ui/FriendSelectionModal';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -198,28 +199,6 @@ const createStyles = (theme: any) => StyleSheet.create({
   memberStatus: {
     fontSize: 14,
     color: theme.textSecondary,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: theme.textSecondary,
-    textAlign: 'center',
-    marginTop: 12,
-  },
-  loadingText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.textSecondary,
-    marginBottom: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.error,
-    marginBottom: 20,
   },
   deleteButton: {
     backgroundColor: theme.error,
@@ -424,27 +403,26 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
 
   if (loading) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.loadingText}>グループ情報を読み込み中...</Text>
-      </ScrollView>
+      <LoadingState title="グループ情報を読み込み中..." />
     );
   }
 
   if (error) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.errorText}>
-          グループ情報の読み込みに失敗しました: {error.message}
-        </Text>
-      </ScrollView>
+      <ErrorState
+        title="グループ情報の読み込みに失敗しました"
+        errorMessage={error.message}
+        onRetry={() => refetch()}
+      />
     );
   }
 
   if (!workoutGroup) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.errorText}>グループが見つかりません</Text>
-      </ScrollView>
+      <ErrorState
+        title="グループが見つかりません"
+        errorMessage="指定されたグループは存在しないか、アクセス権限がありません"
+      />
     );
   }
 
@@ -559,13 +537,11 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
             </TouchableOpacity>
           ))
         ) : (
-          <View style={styles.emptyState}>
-            <FontAwesome name="users" size={48} color={theme.textSecondary} />
-            <Text style={styles.emptyStateText}>
-              まだメンバーがいません。{'\n'}
-              グループに参加してワークアウトを開始しましょう！
-            </Text>
-          </View>
+          <EmptyState
+            title="まだメンバーがいません"
+            message="グループに参加してワークアウトを開始しましょう！"
+            icon="users"
+          />
         )}
       </View>
 

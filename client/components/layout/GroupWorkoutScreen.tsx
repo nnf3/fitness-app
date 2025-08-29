@@ -7,6 +7,7 @@ import {
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTheme } from "../../theme";
+import { LoadingState, ErrorState, EmptyState } from "../ui";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { CreateGroupForm } from "../forms";
 
@@ -117,28 +118,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     marginLeft: 8,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: theme.textSecondary,
-    textAlign: 'center',
-    marginTop: 12,
-  },
-  loadingText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.textSecondary,
-    marginBottom: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.error,
-    marginBottom: 20,
   },
   modalOverlay: {
     flex: 1,
@@ -267,14 +246,16 @@ export function GroupWorkoutScreen() {
 
         {/* ローディング状態 */}
         {loading && (
-          <Text style={styles.loadingText}>合トレグループを読み込み中...</Text>
+          <LoadingState title="合トレグループを読み込み中..." />
         )}
 
         {/* エラー状態 */}
         {error && (
-          <Text style={styles.errorText}>
-            合トレグループの読み込みに失敗しました。
-          </Text>
+          <ErrorState
+            title="合トレグループの読み込みに失敗しました"
+            errorMessage={error.message}
+            onRetry={() => refetch()}
+          />
         )}
 
         {/* 参加中のグループ */}
@@ -306,13 +287,11 @@ export function GroupWorkoutScreen() {
 
         {/* 空の状態 */}
         {!loading && !error && joinedGroups.length === 0 && (
-          <View style={styles.emptyState}>
-            <FontAwesome name="users" size={48} color={theme.textSecondary} />
-            <Text style={styles.emptyStateText}>
-              まだ参加中のグループがありません。{'\n'}
-              新しいグループを作成して友達と一緒にトレーニングしましょう！
-            </Text>
-          </View>
+          <EmptyState
+            title="まだ参加中のグループがありません。"
+            message="新しいグループを作成して友達と一緒にトレーニングしましょう！"
+            icon="users"
+          />
         )}
       </View>
 

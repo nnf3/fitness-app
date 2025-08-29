@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks';
@@ -17,6 +16,7 @@ import { FormField } from './FormField';
 import { DateField } from './DateField';
 import { ImagePickerComponent } from './ImagePicker';
 import { useTheme } from '../../theme';
+import { LoadingState, ErrorState } from '../ui';
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -60,18 +60,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.background,
-  },
-  errorText: {
-    color: theme.error,
-    textAlign: 'center',
-    fontSize: 16,
-    marginTop: 20,
   },
 });
 
@@ -268,24 +256,16 @@ export const ProfileEditForm = () => {
 
   if (queryLoading) {
     return (
-      <View style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={{ marginTop: 16, color: '#666' }}>読み込み中...</Text>
-        </View>
-      </View>
+      <LoadingState title="読み込み中..." />
     );
   }
 
   if (queryError) {
     return (
-      <View style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.errorText}>
-            エラーが発生しました: {queryError.message}
-          </Text>
-        </View>
-      </View>
+      <ErrorState
+        title="エラーが発生しました"
+        errorMessage={queryError.message}
+      />
     );
   }
 
