@@ -15,6 +15,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "com.googleusercontent.apps.fitness-app-prd",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
+
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.nnf3.fitness-app",

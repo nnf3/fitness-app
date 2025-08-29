@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useFirebaseStorage } from '../../hooks';
+import { useTheme } from '../../theme';
 
 interface ImagePickerProps {
   selectedImage: string | null;
@@ -19,7 +20,7 @@ interface ImagePickerProps {
   uploadProgress: { percentage: number } | null;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   imageSection: {
     alignItems: 'center',
     marginBottom: 30,
@@ -28,11 +29,11 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#2D5A3D',
+    backgroundColor: theme.primaryVariant,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
   },
   imagePlaceholder: {
     fontSize: 48,
-    color: '#FFFFFF',
+    color: theme.surface,
     opacity: 0.6,
   },
   uploadOverlay: {
@@ -57,24 +58,24 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: theme.overlay,
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
   uploadText: {
-    color: '#FFFFFF',
+    color: theme.surface,
     fontSize: 12,
     marginTop: 4,
   },
   imageButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: theme.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
   },
   imageButtonDisabled: {
-    backgroundColor: '#2D5A3D',
+    backgroundColor: theme.textSecondary,
     opacity: 0.6,
   },
   imageButtonText: {
@@ -91,6 +92,8 @@ export function ImagePickerComponent({
   isUploading,
   uploadProgress,
 }: ImagePickerProps) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const { uploadImage } = useFirebaseStorage();
 
   const pickImage = async () => {
@@ -150,7 +153,7 @@ export function ImagePickerComponent({
         )}
         {isUploading && (
           <View style={styles.uploadOverlay}>
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <ActivityIndicator size="small" color={theme.surface} />
             <Text style={styles.uploadText}>
               {uploadProgress ? `${Math.round(uploadProgress.percentage)}%` : 'アップロード中...'}
             </Text>

@@ -7,6 +7,7 @@ import {
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTheme } from "../../theme";
+import { LoadingState, ErrorState, EmptyState } from "../ui";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { CreateGroupForm } from "../forms";
 
@@ -59,9 +60,10 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   groupCard: {
     backgroundColor: theme.surface,
-    padding: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 8,
     shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
@@ -75,66 +77,47 @@ const createStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  groupImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 16,
-  },
-  groupImagePlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: theme.surfaceVariant,
-    justifyContent: 'center',
+  groupAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: theme.primaryVariant,
     alignItems: 'center',
-    marginRight: 16,
+    justifyContent: 'center',
+    marginRight: 12,
+    overflow: 'hidden',
   },
-  groupCardHeader: {
+  groupAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  groupAvatarText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  groupInfo: {
     flex: 1,
-    marginBottom: 8,
   },
   groupTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: theme.text,
+    marginBottom: 4,
   },
   groupDate: {
     fontSize: 14,
     color: theme.textSecondary,
-    marginTop: 4,
   },
-  groupInfo: {
+  groupActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
   },
-  groupMemberCount: {
-    fontSize: 14,
-    color: theme.textSecondary,
+  actionButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     marginLeft: 8,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: theme.textSecondary,
-    textAlign: 'center',
-    marginTop: 12,
-  },
-  loadingText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.textSecondary,
-    marginBottom: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.error,
-    marginBottom: 20,
   },
   modalOverlay: {
     flex: 1,
@@ -263,14 +246,16 @@ export function GroupWorkoutScreen() {
 
         {/* ローディング状態 */}
         {loading && (
-          <Text style={styles.loadingText}>合トレグループを読み込み中...</Text>
+          <LoadingState title="合トレグループを読み込み中..." />
         )}
 
         {/* エラー状態 */}
         {error && (
-          <Text style={styles.errorText}>
-            合トレグループの読み込みに失敗しました。
-          </Text>
+          <ErrorState
+            title="合トレグループの読み込みに失敗しました"
+            errorMessage={error.message}
+            onRetry={() => refetch()}
+          />
         )}
 
         {/* 参加中のグループ */}
@@ -282,13 +267,15 @@ export function GroupWorkoutScreen() {
           >
             <View style={styles.groupCardContent}>
               {group?.imageURL ? (
-                <Image source={{ uri: group.imageURL }} style={styles.groupImage} />
+                <View style={styles.groupAvatar}>
+                  <Image source={{ uri: group.imageURL }} style={styles.groupAvatarImage} />
+                </View>
               ) : (
-                <View style={styles.groupImagePlaceholder}>
-                  <FontAwesome name="users" size={24} color={theme.textSecondary} />
+                <View style={styles.groupAvatar}>
+                  <Text style={styles.groupAvatarText}>{group?.title?.charAt(0)}</Text>
                 </View>
               )}
-              <View style={styles.groupCardHeader}>
+              <View style={styles.groupInfo}>
                 <Text style={styles.groupTitle}>{group?.title}</Text>
                 <Text style={styles.groupDate}>
                   {group?.date ? formatDate(group.date) : '日付未設定'}
@@ -300,13 +287,11 @@ export function GroupWorkoutScreen() {
 
         {/* 空の状態 */}
         {!loading && !error && joinedGroups.length === 0 && (
-          <View style={styles.emptyState}>
-            <FontAwesome name="users" size={48} color={theme.textSecondary} />
-            <Text style={styles.emptyStateText}>
-              まだ参加中のグループがありません。{'\n'}
-              新しいグループを作成して友達と一緒にトレーニングしましょう！
-            </Text>
-          </View>
+          <EmptyState
+            title="まだ参加中のグループがありません。"
+            message="新しいグループを作成して友達と一緒にトレーニングしましょう！"
+            icon="users"
+          />
         )}
       </View>
 
@@ -318,12 +303,12 @@ export function GroupWorkoutScreen() {
         onRequestClose={handleCloseCreateGroupModal}
         presentationStyle="overFullScreen"
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
           onPress={handleCloseCreateGroupModal}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.modalContent}
             activeOpacity={1}
             onPress={(e) => e.stopPropagation()}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useTheme } from '../../theme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -21,6 +21,7 @@ export function FriendItem({ friend, onPress }: FriendItemProps) {
 
   const friendName = friend.profile?.name || 'Unknown';
   const initial = friendName.charAt(0);
+  const profileImageURL = friend.profile?.imageURL;
   const createdAt = friend.createdAt ? new Date(friend.createdAt).toLocaleDateString('ja-JP') : '不明';
 
   return (
@@ -29,7 +30,15 @@ export function FriendItem({ friend, onPress }: FriendItemProps) {
       onPress={() => onPress(friend)}
     >
       <View style={styles.friendAvatar}>
-        <Text style={styles.friendAvatarText}>{initial}</Text>
+        {profileImageURL ? (
+          <Image
+            source={{ uri: profileImageURL }}
+            style={styles.friendAvatarImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <Text style={styles.friendAvatarText}>{initial}</Text>
+        )}
       </View>
       <View style={styles.friendInfo}>
         <Text style={styles.friendName}>{friendName}</Text>
@@ -67,6 +76,12 @@ const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  friendAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   friendAvatarText: {
     color: '#FFFFFF',

@@ -9,7 +9,7 @@ function StackNavigator() {
   return (
     <Stack>
       <Stack.Screen
-        name="login"
+        name="(auth)/login"
         options={{
           headerShown: false,
           gestureEnabled: false,

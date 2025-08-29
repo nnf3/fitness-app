@@ -1,15 +1,11 @@
 import { useMemo } from 'react';
 import { useQuery } from '@apollo/client';
-import { HomeScreenDataDocument, CurrentUserDocument } from '../documents';
-import { HomeScreenDataQuery, CurrentUserQuery } from '../types/graphql';
+import { HomeScreenDataDocument } from '../documents';
+import { HomeScreenDataQuery } from '../types/graphql';
 import dayjs from 'dayjs';
 
 export const useWorkoutStats = (userId?: string) => {
-  const { data: workoutData, refetch: refetchWorkouts } = useQuery<HomeScreenDataQuery>(HomeScreenDataDocument, {
-    skip: !userId,
-  });
-
-  const { data: userData, refetch: refetchUser } = useQuery<CurrentUserQuery>(CurrentUserDocument, {
+  const { data: workoutData, refetch: refetchWorkouts, loading, error } = useQuery<HomeScreenDataQuery>(HomeScreenDataDocument, {
     skip: !userId,
   });
 
@@ -90,9 +86,11 @@ export const useWorkoutStats = (userId?: string) => {
 
   return {
     ...workoutStats,
-    userData: userData?.currentUser,
+    userData: workoutData?.currentUser,
+    loading,
+    error,
     refetch: async () => {
-      await Promise.all([refetchUser(), refetchWorkouts()]);
+      await refetchWorkouts();
     }
   };
 };

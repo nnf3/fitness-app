@@ -19,6 +19,8 @@ import {
   FriendsTabBar,
   FriendshipRequestItem,
   EmptyState,
+  LoadingState,
+  ErrorState,
 } from '../ui';
 import { useFriends, useFriendRequest, useFriendshipActions } from '../../hooks';
 
@@ -135,10 +137,9 @@ export function FriendsScreen() {
       </View>
 
       {friendsLoading ? (
-        <EmptyState type="loading" title="フレンドを読み込み中..." />
+        <LoadingState title="フレンドを読み込み中..." />
       ) : friendsError ? (
-        <EmptyState
-          type="error"
+        <ErrorState
           title="エラーが発生しました"
           errorMessage={friendsError.message}
         />
@@ -152,7 +153,6 @@ export function FriendsScreen() {
         ))
       ) : (
         <EmptyState
-          type="empty"
           icon="users"
           title="まだフレンドがいません"
           message="フレンドを追加して一緒にワークアウトしましょう！"
@@ -166,10 +166,9 @@ export function FriendsScreen() {
       <Text style={styles.sectionTitle}>フレンドリクエスト</Text>
 
       {requestsLoading ? (
-        <EmptyState type="loading" title="リクエストを読み込み中..." />
+        <LoadingState title="リクエストを読み込み中..." />
       ) : requestsError ? (
-        <EmptyState
-          type="error"
+        <ErrorState
           title="エラーが発生しました"
           errorMessage={requestsError.message}
         />
@@ -186,7 +185,6 @@ export function FriendsScreen() {
         ))
       ) : (
         <EmptyState
-          type="empty"
           icon="user-plus"
           title="保留中のフレンドリクエストはありません"
         />

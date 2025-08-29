@@ -11,6 +11,7 @@ import {
   useDeleteWorkoutGroup,
 } from '../../hooks';
 import { useTheme } from '../../theme';
+import { LoadingState, ErrorState, EmptyState } from '../ui';
 import { FriendSelectionModal } from '../ui/FriendSelectionModal';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -77,20 +78,25 @@ const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     minHeight: 80,
   },
-  groupImage: {
+  groupAvatar: {
     width: 80,
     height: 80,
-    borderRadius: 12,
-    marginRight: 16,
-  },
-  groupImagePlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-    backgroundColor: theme.surfaceVariant,
-    justifyContent: 'center',
+    borderRadius: 40,
+    backgroundColor: theme.primaryVariant,
     alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 16,
+    overflow: 'hidden',
+  },
+  groupAvatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  groupAvatarText: {
+    color: '#FFFFFF',
+    fontSize: 32,
+    fontWeight: 'bold',
   },
   uploadOverlay: {
     position: 'absolute',
@@ -99,7 +105,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    borderRadius: 12,
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -144,9 +150,10 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   memberCard: {
     backgroundColor: theme.surface,
-    padding: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 8,
     shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
@@ -159,49 +166,39 @@ const createStyles = (theme: any) => StyleSheet.create({
   memberHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   memberAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  memberAvatarPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.surfaceVariant,
-    justifyContent: 'center',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: theme.primaryVariant,
     alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  memberAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  memberAvatarText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  memberInfo: {
+    flex: 1,
   },
   memberName: {
     fontSize: 16,
     fontWeight: '600',
     color: theme.text,
+    marginBottom: 4,
   },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyStateText: {
-    fontSize: 16,
+  memberStatus: {
+    fontSize: 14,
     color: theme.textSecondary,
-    textAlign: 'center',
-    marginTop: 12,
-  },
-  loadingText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.textSecondary,
-    marginBottom: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.error,
-    marginBottom: 20,
   },
   deleteButton: {
     backgroundColor: theme.error,
@@ -406,27 +403,26 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
 
   if (loading) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.loadingText}>グループ情報を読み込み中...</Text>
-      </ScrollView>
+      <LoadingState title="グループ情報を読み込み中..." />
     );
   }
 
   if (error) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.errorText}>
-          グループ情報の読み込みに失敗しました: {error.message}
-        </Text>
-      </ScrollView>
+      <ErrorState
+        title="グループ情報の読み込みに失敗しました"
+        errorMessage={error.message}
+        onRetry={() => refetch()}
+      />
     );
   }
 
   if (!workoutGroup) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.errorText}>グループが見つかりません</Text>
-      </ScrollView>
+      <ErrorState
+        title="グループが見つかりません"
+        errorMessage="指定されたグループは存在しないか、アクセス権限がありません"
+      />
     );
   }
 
@@ -454,13 +450,15 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
           <View style={styles.groupInfoContent}>
             <TouchableOpacity onPress={handleImageSelect} disabled={isUploading}>
               {(editedImageUrl || workoutGroup.imageURL) ? (
-                <Image
-                  source={{ uri: (editedImageUrl || workoutGroup.imageURL) || '' }}
-                  style={styles.groupImage}
-                />
+                <View style={styles.groupAvatar}>
+                  <Image
+                    source={{ uri: (editedImageUrl || workoutGroup.imageURL) || '' }}
+                    style={styles.groupAvatarImage}
+                  />
+                </View>
               ) : (
-                <View style={styles.groupImagePlaceholder}>
-                  <FontAwesome name="users" size={32} color={theme.textSecondary} />
+                <View style={styles.groupAvatar}>
+                  <Text style={styles.groupAvatarText}>{workoutGroup.title.charAt(0)}</Text>
                 </View>
               )}
               {isUploading && (
@@ -524,24 +522,26 @@ export function GroupDetailScreen({ groupId }: GroupDetailScreenProps) {
             >
               <View style={styles.memberHeader}>
                 {member.profileImageURL ? (
-                  <Image source={{ uri: member.profileImageURL }} style={styles.memberAvatar} />
+                  <View style={styles.memberAvatar}>
+                    <Image source={{ uri: member.profileImageURL }} style={styles.memberAvatarImage} />
+                  </View>
                 ) : (
-                  <View style={styles.memberAvatarPlaceholder}>
-                    <FontAwesome name="user" size={16} color={theme.textSecondary} />
+                  <View style={styles.memberAvatar}>
+                    <Text style={styles.memberAvatarText}>{member.userName.charAt(0)}</Text>
                   </View>
                 )}
-                <Text style={styles.memberName}>{member.userName}</Text>
+                <View style={styles.memberInfo}>
+                  <Text style={styles.memberName}>{member.userName}</Text>
+                </View>
               </View>
             </TouchableOpacity>
           ))
         ) : (
-          <View style={styles.emptyState}>
-            <FontAwesome name="users" size={48} color={theme.textSecondary} />
-            <Text style={styles.emptyStateText}>
-              まだメンバーがいません。{'\n'}
-              グループに参加してワークアウトを開始しましょう！
-            </Text>
-          </View>
+          <EmptyState
+            title="まだメンバーがいません"
+            message="グループに参加してワークアウトを開始しましょう！"
+            icon="users"
+          />
         )}
       </View>
 

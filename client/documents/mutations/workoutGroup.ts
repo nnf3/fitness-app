@@ -31,3 +31,43 @@ export const DeleteWorkoutGroupDocument = gql`
     deleteWorkoutGroup(input: $input)
   }
 `;
+
+export const AddWorkoutGroupMemberDocument = gql`
+  mutation AddWorkoutGroupMember($input: AddWorkoutGroupMember!) {
+    addWorkoutGroupMember(input: $input) {
+      id
+      title
+      date
+      createdAt
+      updatedAt
+      workouts {
+        id
+        date
+        createdAt
+        updatedAt
+        user {
+          id
+          profile {
+            id
+            name
+          }
+        }
+        workoutExercises {
+          id
+          exercise {
+            id
+            name
+            category
+            description
+          }
+          setLogs {
+            id
+            weight
+            repCount
+            setNumber
+          }
+        }
+      }
+    }
+  }
+`;

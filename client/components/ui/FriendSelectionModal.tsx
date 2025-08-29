@@ -7,8 +7,10 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
+  Image,
 } from 'react-native';
 import { useTheme } from '../../theme';
+import { LoadingState, ErrorState, EmptyState } from './index';
 import { useFriendSelection } from '../../hooks/useFriends';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -81,6 +83,12 @@ const createStyles = (theme: any) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  friendAvatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   friendAvatarText: {
     color: '#FFFFFF',
@@ -99,27 +107,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontSize: 14,
     color: theme.textSecondary,
     marginTop: 2,
-  },
-  emptyState: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: theme.textSecondary,
-    textAlign: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.textSecondary,
-    padding: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.error,
-    padding: 20,
   },
 });
 
@@ -191,22 +178,21 @@ export function FriendSelectionModal({
           {/* フレンドリスト */}
           <ScrollView style={styles.friendsList} showsVerticalScrollIndicator={true}>
             {loading && (
-              <Text style={styles.loadingText}>フレンドを読み込み中...</Text>
+              <LoadingState title="フレンドを読み込み中..." />
             )}
 
             {error && (
-              <Text style={styles.errorText}>
-                フレンドの読み込みに失敗しました。
-              </Text>
+              <ErrorState 
+                title="フレンドの読み込みに失敗しました"
+                errorMessage={error.message}
+              />
             )}
 
             {!loading && !error && filteredFriends.length === 0 && (
-              <View style={styles.emptyState}>
-                <FontAwesome name="users" size={48} color={theme.textSecondary} />
-                <Text style={styles.emptyStateText}>
-                  {searchQuery ? '検索結果がありません' : 'フレンドがいません'}
-                </Text>
-              </View>
+              <EmptyState
+                title={searchQuery ? '検索結果がありません' : 'フレンドがいません'}
+                icon={searchQuery ? 'search' : 'users'}
+              />
             )}
 
             {filteredFriends.map((friend) => (
@@ -216,9 +202,17 @@ export function FriendSelectionModal({
                 onPress={() => handleSelectFriend(friend)}
               >
                 <View style={styles.friendAvatar}>
-                  <Text style={styles.friendAvatarText}>
-                    {getInitials(friend.profile?.name || '名前未設定')}
-                  </Text>
+                  {friend.profile?.imageURL ? (
+                    <Image
+                      source={{ uri: friend.profile.imageURL }}
+                      style={styles.friendAvatarImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Text style={styles.friendAvatarText}>
+                      {getInitials(friend.profile?.name || '名前未設定')}
+                    </Text>
+                  )}
                 </View>
                 <View style={styles.friendInfo}>
                   <Text style={styles.friendName}>

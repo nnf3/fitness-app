@@ -426,6 +426,13 @@ export type DeleteWorkoutGroupMutationVariables = Exact<{
 
 export type DeleteWorkoutGroupMutation = { __typename?: 'Mutation', deleteWorkoutGroup: boolean };
 
+export type AddWorkoutGroupMemberMutationVariables = Exact<{
+  input: AddWorkoutGroupMember;
+}>;
+
+
+export type AddWorkoutGroupMemberMutation = { __typename?: 'Mutation', addWorkoutGroupMember: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, user: { __typename?: 'User', id: string, profile?: { __typename?: 'Profile', id: string, name: string } | null }, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } };
+
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -434,7 +441,7 @@ export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename
 export type HomeScreenDataQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type HomeScreenDataQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, profile?: { __typename?: 'Profile', id: string, name: string } | null, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string } | null, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } };
+export type HomeScreenDataQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, uid: string, createdAt: string, updatedAt: string, profile?: { __typename?: 'Profile', id: string, name: string, birthDate?: string | null, gender?: Gender | null, height?: number | null, weight?: number | null, activityLevel?: ActivityLevel | null } | null, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, workoutGroup?: { __typename?: 'WorkoutGroup', id: string, title: string } | null, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } };
 
 export type ExercisesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -450,13 +457,6 @@ export type GetFriendshipRequestsQueryVariables = Exact<{ [key: string]: never; 
 
 
 export type GetFriendshipRequestsQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: string, friendshipRequests: Array<{ __typename?: 'Friendship', id: string, status: FriendshipStatus, requester: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null }, requestee: { __typename?: 'User', id: string, uid: string, profile?: { __typename?: 'Profile', id: string, name: string, imageURL?: string | null } | null } }> } };
-
-export type AddWorkoutGroupMemberMutationVariables = Exact<{
-  input: AddWorkoutGroupMember;
-}>;
-
-
-export type AddWorkoutGroupMemberMutation = { __typename?: 'Mutation', addWorkoutGroupMember: { __typename?: 'WorkoutGroup', id: string, title: string, date?: string | null, createdAt: string, updatedAt: string, workouts: Array<{ __typename?: 'Workout', id: string, date?: string | null, createdAt: string, updatedAt: string, user: { __typename?: 'User', id: string, profile?: { __typename?: 'Profile', id: string, name: string } | null }, workoutExercises: Array<{ __typename?: 'WorkoutExercise', id: string, exercise: { __typename?: 'Exercise', id: string, name: string, category?: string | null, description?: string | null }, setLogs: Array<{ __typename?: 'SetLog', id: string, weight: number, repCount: number, setNumber: number }> }> }> } };
 
 export type GetProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -695,6 +695,45 @@ export const DeleteWorkoutGroupDocument = gql`
   deleteWorkoutGroup(input: $input)
 }
     `;
+export const AddWorkoutGroupMemberDocument = gql`
+    mutation AddWorkoutGroupMember($input: AddWorkoutGroupMember!) {
+  addWorkoutGroupMember(input: $input) {
+    id
+    title
+    date
+    createdAt
+    updatedAt
+    workouts {
+      id
+      date
+      createdAt
+      updatedAt
+      user {
+        id
+        profile {
+          id
+          name
+        }
+      }
+      workoutExercises {
+        id
+        exercise {
+          id
+          name
+          category
+          description
+        }
+        setLogs {
+          id
+          weight
+          repCount
+          setNumber
+        }
+      }
+    }
+  }
+}
+    `;
 export const CurrentUserDocument = gql`
     query CurrentUser {
   currentUser {
@@ -732,9 +771,17 @@ export const HomeScreenDataDocument = gql`
     query HomeScreenData {
   currentUser {
     id
+    uid
+    createdAt
+    updatedAt
     profile {
       id
       name
+      birthDate
+      gender
+      height
+      weight
+      activityLevel
     }
     workouts {
       id
@@ -812,45 +859,6 @@ export const GetFriendshipRequestsDocument = gql`
           id
           name
           imageURL
-        }
-      }
-    }
-  }
-}
-    `;
-export const AddWorkoutGroupMemberDocument = gql`
-    mutation AddWorkoutGroupMember($input: AddWorkoutGroupMember!) {
-  addWorkoutGroupMember(input: $input) {
-    id
-    title
-    date
-    createdAt
-    updatedAt
-    workouts {
-      id
-      date
-      createdAt
-      updatedAt
-      user {
-        id
-        profile {
-          id
-          name
-        }
-      }
-      workoutExercises {
-        id
-        exercise {
-          id
-          name
-          category
-          description
-        }
-        setLogs {
-          id
-          weight
-          repCount
-          setNumber
         }
       }
     }
@@ -1067,6 +1075,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     DeleteWorkoutGroup(variables: DeleteWorkoutGroupMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<DeleteWorkoutGroupMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<DeleteWorkoutGroupMutation>({ document: DeleteWorkoutGroupDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'DeleteWorkoutGroup', 'mutation', variables);
     },
+    AddWorkoutGroupMember(variables: AddWorkoutGroupMemberMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddWorkoutGroupMemberMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<AddWorkoutGroupMemberMutation>({ document: AddWorkoutGroupMemberDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddWorkoutGroupMember', 'mutation', variables);
+    },
     CurrentUser(variables?: CurrentUserQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<CurrentUserQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<CurrentUserQuery>({ document: CurrentUserDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'CurrentUser', 'query', variables);
     },
@@ -1081,9 +1092,6 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     GetFriendshipRequests(variables?: GetFriendshipRequestsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetFriendshipRequestsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetFriendshipRequestsQuery>({ document: GetFriendshipRequestsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetFriendshipRequests', 'query', variables);
-    },
-    AddWorkoutGroupMember(variables: AddWorkoutGroupMemberMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddWorkoutGroupMemberMutation> {
-      return withWrapper((wrappedRequestHeaders) => client.request<AddWorkoutGroupMemberMutation>({ document: AddWorkoutGroupMemberDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddWorkoutGroupMember', 'mutation', variables);
     },
     GetProfile(variables?: GetProfileQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetProfileQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetProfileQuery>({ document: GetProfileDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetProfile', 'query', variables);

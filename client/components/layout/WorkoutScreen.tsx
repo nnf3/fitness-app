@@ -5,6 +5,7 @@ import { useQuery } from '@apollo/client';
 import { useAuth } from '../../hooks';
 import { useWorkout } from '../../hooks/useWorkout';
 import { useTheme } from '../../theme';
+import { LoadingState, ErrorState, EmptyState } from '../ui';
 import { WorkoutsDocument } from '../../documents';
 import { WorkoutsQuery } from '../../types/graphql';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -80,28 +81,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontWeight: 'bold',
     color: theme.text,
   },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: theme.textSecondary,
-    textAlign: 'center',
-    marginTop: 12,
-  },
-  loadingText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.textSecondary,
-    marginBottom: 20,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: theme.error,
-    marginBottom: 20,
-  },
   exerciseListContainer: {
     marginTop: 8,
   },
@@ -130,8 +109,9 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   modalContent: {
     backgroundColor: theme.surface,
-    padding: 24,
-    borderRadius: 16,
+    borderRadius: 12,
+    padding: 20,
+    margin: 20,
     width: '80%',
     maxWidth: 400,
   },
@@ -309,16 +289,18 @@ export function WorkoutScreen() {
         </TouchableOpacity>
 
         {loading && (
-          <Text style={styles.loadingText}>記録を取得中...</Text>
+          <LoadingState title="記録を取得中..." />
         )}
 
         {error && (
-          <Text style={styles.errorText}>
-            記録の取得に失敗しました: {error.message}
-          </Text>
+          <ErrorState
+            title="記録の取得に失敗しました"
+            errorMessage={error.message}
+            onRetry={() => refetch()}
+          />
         )}
 
-        {data?.currentUser?.workouts && data.currentUser.workouts.length > 0 ? (
+        {!loading && !error && data?.currentUser?.workouts && data.currentUser.workouts.length > 0 ? (
           data.currentUser.workouts.map((workout) => {
             return (
               <TouchableOpacity
@@ -354,15 +336,13 @@ export function WorkoutScreen() {
               </TouchableOpacity>
             );
           })
-        ) : (
-          <View style={styles.emptyState}>
-            <FontAwesome name="list" size={48} color={theme.textSecondary} />
-            <Text style={styles.emptyStateText}>
-              まだ筋トレ記録がありません。{'\n'}
-              新しい筋トレを開始してみましょう！
-            </Text>
-          </View>
-        )}
+        ) : !loading && !error ? (
+          <EmptyState
+            title="まだ筋トレ記録がありません。"
+            message="新しい筋トレを開始してみましょう！"
+            icon="list"
+          />
+        ) : null}
       </View>
 
       {/* 新規筋トレ追加モーダル */}
@@ -373,12 +353,12 @@ export function WorkoutScreen() {
         onRequestClose={handleCloseCreateWorkoutModal}
         presentationStyle="overFullScreen"
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
           onPress={handleCloseCreateWorkoutModal}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.modalContent}
             activeOpacity={1}
             onPress={(e) => e.stopPropagation()}
@@ -388,7 +368,7 @@ export function WorkoutScreen() {
                 label="日付"
                 value={selectedDate}
                 onChange={setSelectedDate}
-                mode="date"
+                returnType="date"
               />
             </View>
             <View style={styles.modalButtons}>
