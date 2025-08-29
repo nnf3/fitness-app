@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import {
   getAuth,
@@ -43,21 +43,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
+  // Firebase Authインスタンスを一度だけ作成
+  const auth = useMemo(() => getAuth(), []);
+
+  // トークンキャッシュ
+  const tokenCache = useRef<{ token: string | null; expiresAt: number }>({
+    token: null,
+    expiresAt: 0,
+  });
+
+  // トークン自動更新のタイマー
+  const tokenRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // トークンの自動更新を設定
+  const setupTokenRefresh = (user: FirebaseAuthTypes.User) => {
+    // 既存のタイマーをクリア
+    if (tokenRefreshTimer.current) {
+      clearTimeout(tokenRefreshTimer.current);
+    }
+
+    // 50分後にトークンを更新（Firebaseのデフォルト有効期限は1時間）
+    tokenRefreshTimer.current = setTimeout(async () => {
+      try {
+        const token = await user.getIdToken(true);
+        if (token) {
+          const now = Date.now();
+          tokenCache.current = {
+            token,
+            expiresAt: now + 55 * 60 * 1000, // 55分後に期限切れ
+          };
+          // 次の更新を設定
+          setupTokenRefresh(user);
+        }
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      }
+    }, 50 * 60 * 1000); // 50分
+  };
+
+  // 認証状態の監視を最適化
   useEffect(() => {
-    const auth = getAuth();
+    let isMounted = true;
+
     const unsubscribe = onAuthStateChanged(auth, (u: FirebaseAuthTypes.User | null) => {
+      if (!isMounted) return;
+
       setUser(u);
       setLoading(false);
+      if (u) {
+        // ユーザーがログインした場合、トークンキャッシュをクリアして自動更新を設定
+        tokenCache.current = { token: null, expiresAt: 0 };
+        setupTokenRefresh(u);
+      } else {
+        // ログアウト時はキャッシュとタイマーをクリア
+        tokenCache.current = { token: null, expiresAt: 0 };
+        if (tokenRefreshTimer.current) {
+          clearTimeout(tokenRefreshTimer.current);
+          tokenRefreshTimer.current = null;
+        }
+      }
     });
-    return unsubscribe;
-  }, []);
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+      // クリーンアップ時にタイマーをクリア
+      if (tokenRefreshTimer.current) {
+        clearTimeout(tokenRefreshTimer.current);
+      }
+    };
+  }, [auth]);
 
   const signInWithGoogle = async () => {
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const signInResult = await GoogleSignin.signIn();
       const { data } = signInResult;
-      const auth = getAuth();
       const googleCredential = GoogleAuthProvider.credential(data?.idToken ?? "");
       const userCredential = await signInWithCredential(auth, googleCredential);
       const firebaseIdToken = await userCredential.user.getIdToken(true);
@@ -71,7 +132,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithEmail = async (email: string, password: string) => {
     try {
-      const auth = getAuth();
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseIdToken = await userCredential.user.getIdToken(true);
       setError("");
@@ -84,7 +144,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUpWithEmail = async (email: string, password: string) => {
     try {
-      const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseIdToken = await userCredential.user.getIdToken(true);
       setError("");
@@ -97,24 +156,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const handleSignOut = async () => {
     try {
-      const auth = getAuth();
       await signOut(auth);
+      // ログアウト時にトークンキャッシュとタイマーをクリア
+      tokenCache.current = { token: null, expiresAt: 0 };
+      if (tokenRefreshTimer.current) {
+        clearTimeout(tokenRefreshTimer.current);
+        tokenRefreshTimer.current = null;
+      }
     } catch (e: any) {
       setError(e.message);
     }
   };
 
-  const getIdToken = async (): Promise<string | null> => {
-    if (user) {
-      try {
-        return await user.getIdToken();
-      } catch (e: any) {
-        setError(e.message);
-        return null;
-      }
+  const getIdToken = useCallback(async (): Promise<string | null> => {
+    if (!user) {
+      return null;
     }
-    return null;
-  };
+
+    try {
+      const now = Date.now();
+
+      // キャッシュされたトークンが有効な場合はそれを返す
+      if (tokenCache.current.token && now < tokenCache.current.expiresAt) {
+        return tokenCache.current.token;
+      }
+
+      // トークンを取得（強制更新は行わない）
+      const token = await user.getIdToken(false);
+
+      if (token) {
+        // トークンの有効期限を設定
+        tokenCache.current = {
+          token,
+          expiresAt: now + 55 * 60 * 1000, // 55分後に期限切れ
+        };
+      }
+
+      return token;
+    } catch (e: any) {
+      setError(e.message);
+      // エラー時はキャッシュをクリア
+      tokenCache.current = { token: null, expiresAt: 0 };
+      return null;
+    }
+  }, [user]);
 
   const value = {
     user,
