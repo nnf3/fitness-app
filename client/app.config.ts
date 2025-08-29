@@ -15,16 +15,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "com.googleusercontent.apps.fitness-app-prd",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
-  splash: {
-    image: "./assets/images/splash.png",
-    resizeMode: "cover",
-    backgroundColor: "#40E0D0",
-    dark: {
-      image: "./assets/images/splash.png",
-      resizeMode: "cover",
-      backgroundColor: "#40E0D0"
-    }
-  },
+
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.nnf3.fitness-app",
@@ -74,8 +65,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     "expo-router",
     "expo-image-picker",
-    "expo-camera",
-    "expo-splash-screen"
+    "expo-camera"
   ],
   experiments: {
     typedRoutes: true
