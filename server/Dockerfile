@@ -1,13 +1,21 @@
-FROM golang:1.24
-
-WORKDIR /app
+# ---- Build stage ----
+FROM golang:1.24 AS build
+WORKDIR /src
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+RUN go build -trimpath -ldflags="-s -w" -buildvcs=false -o /out/app ./server.go
 
-RUN go mod tidy
-RUN go build -o main .
+# ---- Run stage (distroless) ----
+FROM gcr.io/distroless/static-debian12
+# Cloud Run/Neon/Firebase で TLS が必要 → distroless なら CA 同梱済み
+WORKDIR /app
+COPY --from=build /out/app /app/app
 
-CMD ["./main"]
+USER nonroot:nonroot
+ENV PORT=8080
+
+ENTRYPOINT ["/app/app"]

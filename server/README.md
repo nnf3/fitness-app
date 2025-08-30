@@ -387,8 +387,6 @@ main ブランチへのマージをトリガーにデプロイが実行されま
 
 ### Artifact Registryへの手動イメージプッシュ
 
-**注意**: 本番デプロイはGitHub Actionsで自動化予定です。以下は手動でプッシュする場合のコマンドです。
-
 ```bash
 # プロジェクトIDとリポジトリ名を設定
 export PROJECT_ID="fitness-app-prd"
