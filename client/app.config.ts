@@ -55,9 +55,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       }
     ],
     [
-      "react-native-google-mobile-ads", {
-        "ios_app_id": process.env.GOOGLE_IOS_APP_ID,
-        "android_app_id": process.env.GOOGLE_ANDROID_APP_ID,
+      "react-native-google-mobile-ads",
+      {
+        "iosAppId": "ca-app-pub-5614922645470689~3726530890",
+        "androidAppId": "ca-app-pub-5614922645470689~3693637653",
         "user_tracking_usage_description": "関連性の高い広告を表示するためにIDをトラッキングいたします。"
       }
     ],
