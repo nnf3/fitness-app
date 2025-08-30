@@ -7,23 +7,78 @@ substitutions:
   _JOB_NAME_MIGRATE: fitness-api-migrate
   _JOB_NAME_SEED: fitness-api-seed
 
+options:
+  logging: CLOUD_LOGGING_ONLY
+  env:
+    - DOCKER_BUILDKIT=1 # buildkit を有効にする
+
 steps:
-  # migrate
+  # buildx を使えるようにセットアップ
+  - id: setup-buildx
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        docker version
+        docker buildx create --use --name cb-builder
+        docker buildx inspect --bootstrap
+
+  ### 並列ビルド（migrate/seed/api）
+  ## migrate
   - id: build-migrate
-    name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'build',
-      '-f', 'server/Dockerfile.migrate',
-      '-t', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_MIGRATE/fitness-api-migrate:latest',
-      'server'
-    ]
-  - id: push-migrate
-    name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'push', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_MIGRATE/fitness-api-migrate:latest'
-    ]
+    name: gcr.io/cloud-builders/docker
+    waitFor: ["setup-buildx", "-"]
+    args:
+      - buildx
+      - build
+      - --platform=linux/amd64
+      - -f
+      - server/Dockerfile.migrate
+      - -t
+      - $_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_MIGRATE/fitness-api-migrate:latest
+      - --push
+      - --cache-to=type=registry,ref=$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_MIGRATE/cache:build,mode=max
+      - --cache-from=type=registry,ref=$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_MIGRATE/cache:build
+      - server
+  ## seed
+  - id: build-seed
+    name: gcr.io/cloud-builders/docker
+    waitFor: ["setup-buildx", "-"]
+    args:
+      - buildx
+      - build
+      - --platform=linux/amd64
+      - -f
+      - server/Dockerfile.seed
+      - -t
+      - $_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_SEED/fitness-api-seed:latest
+      - --push
+      - --cache-to=type=registry,ref=$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_SEED/cache:build,mode=max
+      - --cache-from=type=registry,ref=$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_SEED/cache:build
+      - server
+  ## api
+  - id: build-api
+    name: gcr.io/cloud-builders/docker
+    waitFor: ["setup-buildx", "-"]
+    args:
+      - buildx
+      - build
+      - --platform=linux/amd64
+      - -f
+      - server/Dockerfile
+      - -t
+      - $_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_API/fitness-api:latest
+      - --push
+      - --cache-to=type=registry,ref=$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_API/cache:build,mode=max
+      - --cache-from=type=registry,ref=$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_API/cache:build
+      - server
+
+  ### デプロイ
+  ## migrate
   - id: update-migrate-job
-    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    waitFor: ["build-migrate"]
     entrypoint: bash
     args:
       - -c
@@ -33,7 +88,8 @@ steps:
           --region=$_REGION \
           --quiet
   - id: run-migrate-job
-    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    waitFor: ["update-migrate-job"]
     entrypoint: gcloud
     args:
       - run
@@ -42,23 +98,10 @@ steps:
       - $_JOB_NAME_MIGRATE
       - --region=$_REGION
       - --wait
-
-  # seed
-  - id: build-seed
-    name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'build',
-      '-f', 'server/Dockerfile.seed',
-      '-t', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_SEED/fitness-api-seed:latest',
-      'server'
-    ]
-  - id: push-seed
-    name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'push', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_SEED/fitness-api-seed:latest'
-    ]
+  ## seed
   - id: update-seed-job
-    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    waitFor: ["build-seed"]
     entrypoint: bash
     args:
       - -c
@@ -67,23 +110,10 @@ steps:
           --image=$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_SEED/fitness-api-seed:latest \
           --region=$_REGION \
           --quiet
-
-  # api
-  - id: build-api
-    name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'build',
-      '-f', 'server/Dockerfile',
-      '-t', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_API/fitness-api:latest',
-      'server'
-    ]
-  - id: push-api
-    name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'push', '$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_API/fitness-api:latest'
-    ]
+  ## api
   - id: deploy-api
-    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    waitFor: ["build-api", "run-migrate-job"]
     entrypoint: gcloud
     args:
       - run
@@ -92,6 +122,3 @@ steps:
       - --region=$_REGION
       - --image=$_REGION-docker.pkg.dev/$_PROJECT_ID/$_REPO_API/fitness-api:latest
       - --quiet
-
-options:
-  logging: CLOUD_LOGGING_ONLY
