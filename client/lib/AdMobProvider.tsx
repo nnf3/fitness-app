@@ -1,13 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAdMob } from '../hooks';
-import { getAdMobConfig } from './admob';
-
-interface AdMobContextType {
-  isInitialized: boolean;
-  isInitializing: boolean;
-  error: Error | null;
-  config: ReturnType<typeof getAdMobConfig>;
-}
+import { AdMobContextType } from '../types';
 
 const AdMobContext = createContext<AdMobContextType | undefined>(undefined);
 

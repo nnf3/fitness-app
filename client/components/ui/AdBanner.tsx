@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { useTheme } from '../../theme';
 import { useAdMobContext } from '../../lib/AdMobProvider';
+import { AdRequestOptions } from '../../types';
 
 interface AdBannerProps {
   size?: BannerAdSize;
+  requestOptions?: AdRequestOptions;
 }
 
-export function AdBanner({
-  size = BannerAdSize.BANNER
+export const AdBanner = memo(function AdBanner({
+  size = BannerAdSize.BANNER,
+  requestOptions = { requestNonPersonalizedAdsOnly: true }
 }: AdBannerProps) {
   const { theme } = useTheme();
   const { isInitialized, isInitializing, error, config } = useAdMobContext();
@@ -61,10 +64,8 @@ export function AdBanner({
       <BannerAd
         unitId={config.bannerUnitId}
         size={size}
-        requestOptions={{
-          requestNonPersonalizedAdsOnly: true,
-        }}
+        requestOptions={requestOptions}
       />
     </View>
   );
-}
+});
