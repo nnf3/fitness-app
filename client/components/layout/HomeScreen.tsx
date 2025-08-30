@@ -3,7 +3,7 @@ import { useAuth, useWorkoutStats } from "../../hooks";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTheme } from "../../theme";
-import { LoadingState, ErrorState, EmptyState } from "../ui";
+import { LoadingState, ErrorState, EmptyState, AdBanner } from "../ui";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -222,6 +222,9 @@ export function HomeScreen() {
         <Text style={styles.welcomeTitle}>ようこそ、{userData?.profile?.name || 'ユーザー'}さん</Text>
         <Text style={styles.welcomeSubtitle}>今日も筋トレを頑張りましょう！</Text>
       </View>
+
+      {/* 広告セクション */}
+      <AdBanner />
 
       {/* 今週の活動サマリーセクション */}
       <View style={styles.summarySection}>

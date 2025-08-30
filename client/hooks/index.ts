@@ -6,3 +6,4 @@ export * from "./useFriends";
 export * from "./useWorkoutStats";
 export * from "./useFriendRequest";
 export * from "./useFriendshipActions";
+export * from "./useAdMob";

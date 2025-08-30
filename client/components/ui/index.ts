@@ -11,3 +11,4 @@ export { FriendsTabBar } from './FriendsTabBar';
 export { GoogleIcon } from './GoogleIcon';
 export { QRCodeGenerator } from './QRCodeGenerator';
 export { QRCodeScanner } from './QRCodeScanner';
+export { AdBanner } from './AdBanner';

@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 import { AuthProvider } from "../hooks";
-import { ApolloWrapper } from "../lib";
+import { ApolloWrapper, AdMobProvider } from "../lib";
 import { ThemeProvider, useTheme } from "../theme";
 
 function StackNavigator() {
@@ -65,7 +65,9 @@ export default function RootLayout() {
     <ThemeProvider>
       <AuthProvider>
         <ApolloWrapper>
-          <StackNavigator />
+          <AdMobProvider>
+            <StackNavigator />
+          </AdMobProvider>
         </ApolloWrapper>
       </AuthProvider>
     </ThemeProvider>
