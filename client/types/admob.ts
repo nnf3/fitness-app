@@ -24,6 +24,7 @@ export interface AdMobContextType {
   isInitializing: boolean;
   error: Error | null;
   config: AdMobConfig;
+  isTrackingAllowed: boolean | null;
   retry: () => void;
 }
 
