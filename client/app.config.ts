@@ -15,7 +15,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "com.googleusercontent.apps.fitness-app-prd",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
-
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.nnf3.fitness-app",
@@ -56,6 +55,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       }
     ],
     [
+      "react-native-google-mobile-ads",
+      {
+        "iosAppId": "ca-app-pub-5614922645470689~3726530890",
+        "androidAppId": "ca-app-pub-5614922645470689~3693637653",
+        "userTrackingUsageDescription": "関連性の高い広告を表示するためにIDをトラッキングいたします。"
+      }
+    ],
+    [
       "expo-build-properties",
       {
         "ios": {
@@ -65,7 +72,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     "expo-router",
     "expo-image-picker",
-    "expo-camera"
+    "expo-camera",
+    "expo-tracking-transparency"
   ],
   experiments: {
     typedRoutes: true
