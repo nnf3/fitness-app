@@ -7,3 +7,4 @@ export * from "./useWorkoutStats";
 export * from "./useFriendRequest";
 export * from "./useFriendshipActions";
 export * from "./useAdMob";
+export * from "./useRevenueCat";
