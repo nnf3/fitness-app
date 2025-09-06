@@ -22,7 +22,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       NSPhotoLibraryUsageDescription: "プロフィール写真を選択するためにカメラロールへのアクセスが必要です。",
-      NSCameraUsageDescription: "プロフィール写真の撮影とQRコードのスキャンにカメラへのアクセスが必要です。"
+      NSCameraUsageDescription: "プロフィール写真の撮影とQRコードのスキャンにカメラへのアクセスが必要です。",
+      NSUserTrackingUsageDescription: "関連性の高い広告を表示するためにIDをトラッキングいたします。"
     }
   },
   android: {
@@ -57,16 +58,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       "react-native-google-mobile-ads",
       {
-        "iosAppId": "ca-app-pub-5614922645470689~3726530890",
-        "androidAppId": "ca-app-pub-5614922645470689~3693637653",
-        "userTrackingUsageDescription": "関連性の高い広告を表示するためにIDをトラッキングいたします。"
+        iosAppId: "ca-app-pub-5614922645470689~3726530890",
+        androidAppId: "ca-app-pub-5614922645470689~3693637653",
+        userTrackingPermission: "関連性の高い広告を表示するためにIDをトラッキングいたします。"
       }
     ],
     [
       "expo-build-properties",
       {
-        "ios": {
-          "useFrameworks": "static"
+        ios: {
+          useFrameworks: "static"
         }
       }
     ],

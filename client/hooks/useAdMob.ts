@@ -6,6 +6,7 @@ export function useAdMob(): AdMobContextType {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [isTrackingAllowed, setIsTrackingAllowed] = useState<boolean | null>(null);
   const [config] = useState(() => getAdMobConfig());
 
   const initializeAdMob = useCallback(async () => {
@@ -17,7 +18,8 @@ export function useAdMob(): AdMobContextType {
     setError(null);
 
     try {
-      await initAds();
+      const trackingAllowed = await initAds();
+      setIsTrackingAllowed(trackingAllowed);
       setIsInitialized(true);
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown AdMob initialization error');
@@ -31,6 +33,7 @@ export function useAdMob(): AdMobContextType {
   const retry = useCallback(() => {
     setIsInitialized(false);
     setError(null);
+    setIsTrackingAllowed(null);
     initializeAdMob();
   }, [initializeAdMob]);
 
@@ -43,6 +46,7 @@ export function useAdMob(): AdMobContextType {
     isInitializing,
     error,
     config,
+    isTrackingAllowed,
     retry,
   };
 }

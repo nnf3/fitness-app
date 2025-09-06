@@ -12,10 +12,20 @@ interface AdBannerProps {
 
 export const AdBanner = memo(function AdBanner({
   size = BannerAdSize.BANNER,
-  requestOptions = { requestNonPersonalizedAdsOnly: true }
+  requestOptions
 }: AdBannerProps) {
   const { theme } = useTheme();
-  const { isInitialized, isInitializing, error, config } = useAdMobContext();
+  const { isInitialized, isInitializing, error, config, isTrackingAllowed } = useAdMobContext();
+
+  // トラッキング許可状態に基づいてリクエストオプションを設定
+  const defaultRequestOptions: AdRequestOptions = {
+    requestNonPersonalizedAdsOnly: isTrackingAllowed === false, // トラッキングが許可されていない場合のみ非パーソナライズ
+  };
+
+  const finalRequestOptions = {
+    ...defaultRequestOptions,
+    ...requestOptions,
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -64,7 +74,7 @@ export const AdBanner = memo(function AdBanner({
       <BannerAd
         unitId={config.bannerUnitId}
         size={size}
-        requestOptions={requestOptions}
+        requestOptions={finalRequestOptions}
       />
     </View>
   );
