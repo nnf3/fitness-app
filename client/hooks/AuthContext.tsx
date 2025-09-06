@@ -10,6 +10,16 @@ import {
   createUserWithEmailAndPassword
 } from "@react-native-firebase/auth";
 import type { FirebaseAuthTypes } from "@react-native-firebase/auth";
+import { CustomerInfo, PurchasesOffering } from 'react-native-purchases';
+import {
+  configureRevenueCat,
+  logInUser,
+  logOutUser,
+  getCustomerInfo,
+  getOfferings,
+  checkEntitlement,
+  getSubscriptionStatus
+} from '../lib/revenuecat';
 
 // Google Sign-In設定
 GoogleSignin.configure({
@@ -18,6 +28,7 @@ GoogleSignin.configure({
 });
 
 interface AuthContextType {
+  // Firebase Auth関連
   user: FirebaseAuthTypes.User | null;
   loading: boolean;
   error: string;
@@ -26,6 +37,21 @@ interface AuthContextType {
   signUpWithEmail: (email: string, password: string) => Promise<string | undefined>;
   signOut: () => Promise<void>;
   getIdToken: () => Promise<string | null>;
+
+  // RevenueCat関連
+  customerInfo: CustomerInfo | null;
+  offerings: PurchasesOffering[];
+  revenueCatLoading: boolean;
+  revenueCatError: string | null;
+  refreshCustomerInfo: () => Promise<void>;
+  refreshOfferings: () => Promise<void>;
+  isEntitled: (entitlementId: string) => boolean;
+  getSubscriptionInfo: (entitlementId: string) => {
+    isActive: boolean;
+    willRenew: boolean;
+    periodType: string | null;
+    expirationDate: string | null;
+  };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,9 +65,16 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Firebase Auth状態
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+
+  // RevenueCat状態
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
+  const [offerings, setOfferings] = useState<PurchasesOffering[]>([]);
+  const [revenueCatLoading, setRevenueCatLoading] = useState(true);
+  const [revenueCatError, setRevenueCatError] = useState<string | null>(null);
 
   // Firebase Authインスタンスを一度だけ作成
   const auth = useMemo(() => getAuth(), []);
@@ -55,8 +88,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // トークン自動更新のタイマー
   const tokenRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // RevenueCatの初期化
+  useEffect(() => {
+    const initializeRevenueCat = async () => {
+      try {
+        setRevenueCatLoading(true);
+        setRevenueCatError(null);
+
+        await configureRevenueCat();
+        await refreshOfferings();
+
+      } catch (err) {
+        console.error('RevenueCat initialization failed:', err);
+        setRevenueCatError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setRevenueCatLoading(false);
+      }
+    };
+
+    initializeRevenueCat();
+  }, []);
+
+  // RevenueCatの顧客情報を更新
+  const refreshCustomerInfo = async () => {
+    try {
+      const info = await getCustomerInfo();
+      setCustomerInfo(info);
+    } catch (err) {
+      console.error('Failed to refresh customer info:', err);
+      setRevenueCatError(err instanceof Error ? err.message : 'Failed to refresh customer info');
+    }
+  };
+
+  // RevenueCatのオファリングを更新
+  const refreshOfferings = async () => {
+    try {
+      const offeringsData = await getOfferings();
+      setOfferings(offeringsData);
+    } catch (err) {
+      console.error('Failed to refresh offerings:', err);
+      setRevenueCatError(err instanceof Error ? err.message : 'Failed to refresh offerings');
+    }
+  };
+
+  // エンタイトルメントの確認
+  const isEntitled = (entitlementId: string): boolean => {
+    if (!customerInfo) return false;
+    return checkEntitlement(customerInfo, entitlementId);
+  };
+
+  // サブスクリプション情報の取得
+  const getSubscriptionInfo = (entitlementId: string) => {
+    if (!customerInfo) {
+      return {
+        isActive: false,
+        willRenew: false,
+        periodType: null,
+        expirationDate: null,
+      };
+    }
+    return getSubscriptionStatus(customerInfo, entitlementId);
+  };
+
   // トークンの自動更新を設定
-  const setupTokenRefresh = (user: FirebaseAuthTypes.User) => {
+  const setupTokenRefresh = useCallback((user: FirebaseAuthTypes.User) => {
     // 既存のタイマーをクリア
     if (tokenRefreshTimer.current) {
       clearTimeout(tokenRefreshTimer.current);
@@ -79,27 +174,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Token refresh failed:', error);
       }
     }, 50 * 60 * 1000); // 50分
-  };
+  }, []);
 
-  // 認証状態の監視を最適化
+  // 認証状態の監視（RevenueCatとの同期を含む）
   useEffect(() => {
     let isMounted = true;
 
-    const unsubscribe = onAuthStateChanged(auth, (u: FirebaseAuthTypes.User | null) => {
+    const unsubscribe = onAuthStateChanged(auth, async (u: FirebaseAuthTypes.User | null) => {
       if (!isMounted) return;
 
       setUser(u);
       setLoading(false);
+
       if (u) {
-        // ユーザーがログインした場合、トークンキャッシュをクリアして自動更新を設定
+        // ユーザーがログインした場合
         tokenCache.current = { token: null, expiresAt: 0 };
         setupTokenRefresh(u);
+
+        // RevenueCatにログイン
+        try {
+          const customerInfo = await logInUser(u.uid);
+          setCustomerInfo(customerInfo);
+        } catch (err) {
+          console.error('Failed to log in user to RevenueCat:', err);
+          setRevenueCatError(err instanceof Error ? err.message : 'Failed to log in user');
+        }
       } else {
-        // ログアウト時はキャッシュとタイマーをクリア
+        // ログアウト時
         tokenCache.current = { token: null, expiresAt: 0 };
         if (tokenRefreshTimer.current) {
           clearTimeout(tokenRefreshTimer.current);
           tokenRefreshTimer.current = null;
+        }
+
+        // RevenueCatからログアウト
+        try {
+          const customerInfo = await logOutUser();
+          setCustomerInfo(customerInfo);
+        } catch (err) {
+          console.error('Failed to log out user from RevenueCat:', err);
+          setRevenueCatError(err instanceof Error ? err.message : 'Failed to log out user');
         }
       }
     });
@@ -107,12 +221,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       isMounted = false;
       unsubscribe();
-      // クリーンアップ時にタイマーをクリア
       if (tokenRefreshTimer.current) {
         clearTimeout(tokenRefreshTimer.current);
       }
     };
-  }, [auth]);
+  }, [auth, setupTokenRefresh]);
 
   const signInWithGoogle = async () => {
     try {
@@ -202,6 +315,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const value = {
+    // Firebase Auth関連
     user,
     loading,
     error,
@@ -210,6 +324,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUpWithEmail,
     signOut: handleSignOut,
     getIdToken,
+
+    // RevenueCat関連
+    customerInfo,
+    offerings,
+    revenueCatLoading,
+    revenueCatError,
+    refreshCustomerInfo,
+    refreshOfferings,
+    isEntitled,
+    getSubscriptionInfo,
   };
 
   return (

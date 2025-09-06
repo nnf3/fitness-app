@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useTheme } from "../../theme";
+import { SubscriptionStatus, SubscriptionPurchase } from "../ui";
 
 const createStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -162,6 +163,11 @@ export function SettingsScreen() {
           <FontAwesome name="chevron-right" size={16} color={theme.textTertiary} />
         </TouchableOpacity>
       </View>
+
+      {/* サブスクリプションセクション */}
+      <Text style={styles.sectionHeader}>サブスクリプション</Text>
+      <SubscriptionStatus entitlementId="premium" showDetails={true} />
+      <SubscriptionPurchase entitlementId="premium" />
 
       {/* アカウントセクション */}
       <Text style={styles.sectionHeader}>アカウント</Text>
